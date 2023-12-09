@@ -374,8 +374,12 @@ public class ChunkWrapper implements IChunkWrapper
 		}
 	}
 	
+	/** 
+	 * FIXME synchronized is necessary for a rare issue where this method is called from two separate threads at the same time
+	 *  before the list has finished populating.
+	 */
 	@Override
-	public ArrayList<DhBlockPos> getBlockLightPosList()
+	public synchronized ArrayList<DhBlockPos> getBlockLightPosList()
 	{
 		// only populate the list once
 		if (this.blockLightPosList == null)
