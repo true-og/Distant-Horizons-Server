@@ -1,11 +1,13 @@
 package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGenerationEnvironment;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionFileStorage;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.DataInputStream;
@@ -17,8 +19,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class RegionFileStorageExternalCache implements AutoCloseable
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
+	
 	public final RegionFileStorage storage;
 	public static final int MAX_CACHE_SIZE = 16;
+	
+	public static boolean regionCacheNullPointerWarningSent = false;
 	
 	/**
 	 * Present to reduce the chance that we accidentally break underlying MC code that isn't thread safe, 
@@ -97,6 +103,19 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 				{
 				}
 				#endif
+			}
+			catch (NullPointerException e)
+			{
+				// Can sometimes happen when other mods modify the region cache system (IE C2ME)
+				// instead of blowing up, just use DH's cache instead
+				
+				if (!regionCacheNullPointerWarningSent)
+				{
+					regionCacheNullPointerWarningSent = true;
+					LOGGER.warn("Unable to access Minecraft's chunk cache. This may be due to another mod changing said cache. Falling back to DH's internal cache.");
+				}
+				
+				break;
 			}
 			finally
 			{
