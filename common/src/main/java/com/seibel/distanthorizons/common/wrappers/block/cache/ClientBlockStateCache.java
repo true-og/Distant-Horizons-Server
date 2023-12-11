@@ -91,11 +91,13 @@ public class ClientBlockStateCache
 	{
 		Default,
 		Flower,
-		Leaves;
+		Leaves,
+		Chisel;
 		static ColorMode getColorMode(Block b)
 		{
 			if (b instanceof LeavesBlock) return Leaves;
 			if (b instanceof FlowerBlock) return Flower;
+			if (b.toString().equals("Block{chiselsandbits:chiseled}")) return Chisel;
 			return Default;
 		}
 	}
@@ -160,7 +162,14 @@ public class ClientBlockStateCache
 					{
 						scale = FLOWER_COLOR_SCALE;
 					}
-					
+					//make Chiseled block not render
+					else if (colorMode == ColorMode.Chisel)
+					{
+						r = 0;
+						g = 0;
+						b = 0;
+						a = 0;
+					}
 					count += scale;
 					alpha += a * a * scale;
 					red += r * r * scale;
