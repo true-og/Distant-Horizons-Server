@@ -47,7 +47,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-#if POST_MC_1_17_1
+#if MC_1_18 || MC_1_19 || MC_1_20
 import net.minecraft.core.QuartPos;
 #endif
 
@@ -55,19 +55,19 @@ import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 #endif
 
-#if MC_1_17_1
+#if MC_1_17
 import net.minecraft.world.level.chunk.LevelChunkSection;
 #endif
 
-#if MC_1_18_2
+#if MC_1_18
 import net.minecraft.world.level.chunk.LevelChunkSection;
 #endif
 
-#if MC_1_19_2 || MC_1_19_4
+#if MC_1_19
 import net.minecraft.world.level.chunk.LevelChunkSection;
 #endif
 
-#if POST_MC_1_20_1
+#if MC_1_20_2 || MC_1_20_4
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.core.SectionPos;
@@ -145,7 +145,7 @@ public class ChunkWrapper implements IChunkWrapper
 	@Override
 	public int getHeight()
 	{
-		#if PRE_MC_1_17_1
+		#if MC_1_16
 		return 255;
 		#else
 		return this.chunk.getHeight();
@@ -155,7 +155,7 @@ public class ChunkWrapper implements IChunkWrapper
 	@Override
 	public int getMinBuildHeight()
 	{
-		#if PRE_MC_1_17_1
+		#if MC_1_16
 		return 0;
 		#else
 		return this.chunk.getMinBuildHeight();
@@ -181,7 +181,7 @@ public class ChunkWrapper implements IChunkWrapper
 				// convert from an index to a block coordinate
 				return this.chunk.getSections()[index].bottomBlockY() * 16;
 			}
-			#elif MC_1_17_1
+			#elif MC_1_17
 			if (!sections[index].isEmpty())
 			{
 				// convert from an index to a block coordinate
@@ -210,15 +210,15 @@ public class ChunkWrapper implements IChunkWrapper
 	@Override
 	public IBiomeWrapper getBiome(int relX, int relY, int relZ)
 	{
-		#if PRE_MC_1_17_1
+		#if MC_1_16
 		return BiomeWrapper.getBiomeWrapper(this.chunk.getBiomes().getNoiseBiome(
 				relX >> 2, relY >> 2, relZ >> 2),
 				this.wrappedLevel);
-		#elif PRE_MC_1_18_2
+		#elif MC_1_16 || MC_1_17
 		return BiomeWrapper.getBiomeWrapper(this.chunk.getBiomes().getNoiseBiome(
 				QuartPos.fromBlock(relX), QuartPos.fromBlock(relY), QuartPos.fromBlock(relZ)),
 				this.wrappedLevel);
-		#elif PRE_MC_1_18_2
+		#elif MC_1_16 || MC_1_17
 		return BiomeWrapper.getBiomeWrapper(this.chunk.getNoiseBiome(
 				QuartPos.fromBlock(relX), QuartPos.fromBlock(relY), QuartPos.fromBlock(relZ)),
 				this.wrappedLevel);
@@ -264,7 +264,7 @@ public class ChunkWrapper implements IChunkWrapper
 		}
 		
 		
-		#if MC_1_16_5 || MC_1_17_1
+		#if MC_1_16_5 || MC_1_17
 		return false; // MC's lighting engine doesn't work consistently enough to trust for 1.16 or 1.17
 		#else
 		if (this.chunk instanceof LevelChunk)
@@ -387,7 +387,7 @@ public class ChunkWrapper implements IChunkWrapper
 			this.blockLightPosList = new ArrayList<>();
 			
 			
-			#if PRE_MC_1_20_1
+			#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 			this.chunk.getLights().forEach((blockPos) ->
 			{
 				this.blockLightPosList.add(new DhBlockPos(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
@@ -454,7 +454,7 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	public static void syncedUpdateClientLightStatus()
 	{
-		#if PRE_MC_1_18_2
+		#if MC_1_16 || MC_1_17
 		// TODO: Check what to do in 1.18.1 and older
 		
 		// since we don't currently handle this list,
@@ -481,16 +481,16 @@ public class ChunkWrapper implements IChunkWrapper
 			LevelChunk levelChunk = (LevelChunk) this.chunk;
 			ClientChunkCache clientChunkCache = ((ClientLevel) levelChunk.getLevel()).getChunkSource();
 			this.isMcClientLightingCorrect = clientChunkCache.getChunkForLighting(this.chunk.getPos().x, this.chunk.getPos().z) != null &&
-					#if MC_1_16_5 || MC_1_17_1
+					#if MC_1_16_5 || MC_1_17
 					levelChunk.isLightCorrect();
-					#elif PRE_MC_1_20_1
+					#elif MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 					levelChunk.isClientLightReady();
 					#else
 					checkLightSectionsOnChunk(levelChunk, levelChunk.getLevel().getLightEngine());
 					#endif
 		}
 	}
-	#if POST_MC_1_20_1
+	#if MC_1_20_2 || MC_1_20_4
 	private static boolean checkLightSectionsOnChunk(LevelChunk chunk, LevelLightEngine engine)
 	{
 		LevelChunkSection[] sections = chunk.getSections();

@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraft
 {
-	#if PRE_MC_1_20_2
+	#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19 || MC_1_20_1
 	#if MC_1_20_1
 	@Redirect(
 			method = "Lnet/minecraft/client/Minecraft;setInitialScreen(Lcom/mojang/realmsclient/client/RealmsClient;Lnet/minecraft/server/packs/resources/ReloadInstance;Lnet/minecraft/client/main/GameConfig$QuickPlayData;)V",
@@ -61,7 +61,7 @@ public class MixinMinecraft
 	}
 	#endif
 	
-	#if POST_MC_1_20_2
+	#if MC_1_20_4
 	@Redirect(
 			method = "Lnet/minecraft/client/Minecraft;onGameLoadFinished(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V",
 			at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V")

@@ -36,7 +36,7 @@ import com.seibel.distanthorizons.coreapi.ModInfo;
 import net.minecraft.world.level.LevelAccessor;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-#if PRE_MC_1_19_2
+#if MC_1_16 || MC_1_17 || MC_1_18
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 #else
@@ -44,7 +44,7 @@ import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 #endif
 
-#if POST_MC_1_18_2
+#if MC_1_19 || MC_1_20
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 #endif
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -79,7 +79,7 @@ public class ForgeClientProxy
 //	private static SimpleChannel multiversePluginChannel;
 	
 	
-	#if PRE_MC_1_19_2
+	#if MC_1_16 || MC_1_17 || MC_1_18
 	private static LevelAccessor GetEventLevel(WorldEvent e) { return e.getWorld(); }
 	#else
 	private static LevelAccessor GetEventLevel(LevelEvent e) { return e.getLevel(); }
@@ -107,7 +107,7 @@ public class ForgeClientProxy
 	//==============//
 	
 	@SubscribeEvent
-	#if PRE_MC_1_19_2
+	#if MC_1_16 || MC_1_17 || MC_1_18
 	public void clientLevelLoadEvent(WorldEvent.Load event)
 	#else
 	public void clientLevelLoadEvent(LevelEvent.Load event)
@@ -115,7 +115,7 @@ public class ForgeClientProxy
 	{
 		LOGGER.info("level load");
 		
-		#if PRE_MC_1_19_2
+		#if MC_1_16 || MC_1_17 || MC_1_18
 		LevelAccessor level = event.getWorld();
 		#else
 		LevelAccessor level = event.getLevel();
@@ -131,7 +131,7 @@ public class ForgeClientProxy
 		ClientApi.INSTANCE.clientLevelLoadEvent(clientLevelWrapper);
 	}
 	@SubscribeEvent
-	#if PRE_MC_1_19_2
+	#if MC_1_16 || MC_1_17 || MC_1_18
 	public void clientLevelUnloadEvent(WorldEvent.Unload event)
 	#else
 	public void clientLevelUnloadEvent(LevelEvent.Load event)
@@ -139,7 +139,7 @@ public class ForgeClientProxy
 	{
 		LOGGER.info("level unload");
 		
-		#if PRE_MC_1_19_2
+		#if MC_1_16 || MC_1_17 || MC_1_18
 		LevelAccessor level = event.getWorld();
 		#else
 		LevelAccessor level = event.getLevel();
@@ -165,7 +165,7 @@ public class ForgeClientProxy
 	{
 		LOGGER.trace("interact or block place event at blockPos: " + event.getPos());
 		
-		#if PRE_MC_1_19_2
+		#if MC_1_16 || MC_1_17 || MC_1_18
 		LevelAccessor level = event.getWorld();
 		#else
 		LevelAccessor level = event.getLevel();
@@ -179,7 +179,7 @@ public class ForgeClientProxy
 	{
 		LOGGER.trace("break or block attack at blockPos: " + event.getPos());
 		
-		#if PRE_MC_1_19_2
+		#if MC_1_16 || MC_1_17 || MC_1_18
 		LevelAccessor level = event.getWorld();
 		#else
 		LevelAccessor level = event.getLevel();
@@ -217,7 +217,7 @@ public class ForgeClientProxy
 	//==============//
 	
 	@SubscribeEvent
-	public void registerKeyBindings(#if PRE_MC_1_19_2 InputEvent.KeyInputEvent #else InputEvent.Key #endif event)
+	public void registerKeyBindings(#if MC_1_16 || MC_1_17 || MC_1_18 InputEvent.KeyInputEvent #else InputEvent.Key #endif event)
 	{
 		if (Minecraft.getInstance().player == null)
 		{
@@ -298,15 +298,15 @@ public class ForgeClientProxy
 	//===========//
 	
 	@SubscribeEvent
-	#if POST_MC_1_18_2
+	#if MC_1_19 || MC_1_20
 	public void afterLevelRenderEvent(RenderLevelStageEvent event)
 	#else
 	public void afterLevelRenderEvent(TickEvent.RenderTickEvent event)
 	#endif
 	{
-		#if POST_MC_1_20_1
+		#if MC_1_20_2 || MC_1_20_4
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
-		#elif POST_MC_1_18_2
+		#elif MC_1_19 || MC_1_20
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS)
 		#else
 		// FIXME: Is this the correct location for 1.16 & 1.17???

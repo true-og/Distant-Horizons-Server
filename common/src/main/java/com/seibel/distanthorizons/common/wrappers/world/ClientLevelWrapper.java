@@ -136,7 +136,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	@Override
 	public int getMinHeight()
 	{
-        #if PRE_MC_1_17_1
+        #if MC_1_16
         return 0;
         #else
 		return this.level.getMinBuildHeight();

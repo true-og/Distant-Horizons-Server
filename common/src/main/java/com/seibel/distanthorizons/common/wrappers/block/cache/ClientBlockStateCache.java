@@ -38,7 +38,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
-#if POST_MC_1_19_2
+#if MC_1_19 || MC_1_20
 import net.minecraft.util.RandomSource;
 #else
 import java.util.Random;
@@ -60,7 +60,7 @@ public class ClientBlockStateCache
 	private static final HashSet<BlockState> BLOCK_STATES_THAT_NEED_LEVEL = new HashSet<>();
 	private static final HashSet<BlockState> BROKEN_BLOCK_STATES = new HashSet<>();
 	
-	#if PRE_MC_1_19_2
+	#if MC_1_16 || MC_1_17 || MC_1_18
 	public static final Random random = new Random(0);
 	#else
 	public static final RandomSource random = RandomSource.create();
@@ -102,7 +102,7 @@ public class ClientBlockStateCache
 	
 	private static int getWidth(TextureAtlasSprite texture)
 	{
-        #if PRE_MC_1_19_4
+        #if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
 		return texture.getWidth();
         #else
 		return texture.contents().width();
@@ -111,7 +111,7 @@ public class ClientBlockStateCache
 	
 	private static int getHeight(TextureAtlasSprite texture)
 	{
-        #if PRE_MC_1_19_4
+        #if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
 		return texture.getHeight();
         #else
 		return texture.contents().height();
@@ -211,7 +211,7 @@ public class ClientBlockStateCache
 				needShade = quads.get(0).isShade();
 				tintIndex = quads.get(0).getTintIndex();
 				baseColor = calculateColorFromTexture(
-                        #if PRE_MC_1_17_1 quads.get(0).sprite,
+                        #if MC_1_16 quads.get(0).sprite,
 						#else quads.get(0).getSprite(), #endif
 						ColorMode.getColorMode(blockState.getBlock()));
 			}

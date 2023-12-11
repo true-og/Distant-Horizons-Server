@@ -22,7 +22,7 @@ package com.seibel.distanthorizons.common.forge;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftClientWrapper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
-#if POST_MC_1_19_2
+#if MC_1_19 || MC_1_20
 import net.minecraft.util.RandomSource;
 #endif
 import net.minecraft.world.level.ColorResolver;
@@ -41,7 +41,7 @@ import java.util.Random;
  */
 public interface LodForgeMethodCaller
 {
-	#if PRE_MC_1_19_2
+	#if MC_1_16 || MC_1_17 || MC_1_18
 	List<BakedQuad> getQuads(MinecraftClientWrapper mc, Block block, BlockState blockState, Direction direction, Random random); // FIXME: For 1.19
 	#else
 	List<BakedQuad> getQuads(MinecraftClientWrapper mc, Block block, BlockState blockState, Direction direction, RandomSource random); // FIXME: For 1.19

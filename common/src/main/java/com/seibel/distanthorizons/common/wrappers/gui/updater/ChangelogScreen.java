@@ -15,11 +15,11 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-#if POST_MC_1_17_1
+#if MC_1_18 || MC_1_19 || MC_1_20
 import net.minecraft.client.gui.narration.NarratableEntry;
 #endif
 
-#if PRE_MC_1_20_1
+#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 import net.minecraft.client.gui.GuiComponent;
 #else
 import net.minecraft.client.gui.GuiGraphics;
@@ -144,13 +144,13 @@ public class ChangelogScreen extends DhScreen
 	}
 	
 	@Override
-    #if PRE_MC_1_20_1
+    #if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 	public void render(PoseStack matrices, int mouseX, int mouseY, float delta)
     #else
 	public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta)
     #endif
 	{
-		#if PRE_MC_1_20_2
+		#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19 || MC_1_20_1
 		this.renderBackground(matrices); // Render background
 		#else
 		this.renderBackground(matrices, mouseX, mouseY, delta); // Render background
@@ -161,7 +161,7 @@ public class ChangelogScreen extends DhScreen
 		// Set the scroll position to the mouse height relative to the screen
 		// This is a bit of a hack as we cannot scroll on this area
 		double scrollAmount = ((double) mouseY) / ((double) this.height) * 1.1 * this.changelogArea.getMaxScroll();
-	    #if MC_1_16_5 || MC_1_17_1
+	    #if MC_1_16_5 || MC_1_17
 		this.changelogArea.setScrollAmount(scrollAmount);
 		#else
 		this.changelogArea.scrollAmount = scrollAmount;
@@ -187,7 +187,7 @@ public class ChangelogScreen extends DhScreen
 		
 		public TextArea(Minecraft minecraftClient, int canvasWidth, int canvasHeight, int topMargin, int botMargin, int itemSpacing)
 		{
-			#if PRE_MC_1_20_4
+			#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19 || MC_1_20_1 || MC_1_20_2
 			super(minecraftClient, canvasWidth, canvasHeight, topMargin, canvasHeight - botMargin, itemSpacing);
 			#else
 			super(minecraftClient, canvasWidth, canvasHeight - (topMargin + botMargin), topMargin, itemSpacing);
@@ -225,7 +225,7 @@ public class ChangelogScreen extends DhScreen
 			return new ButtonEntry(text);
 		}
 		
-		#if PRE_MC_1_20_1
+		#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 		@Override
 		public void render(PoseStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta)
 		{
@@ -244,7 +244,7 @@ public class ChangelogScreen extends DhScreen
 		{
 			return children;
 		}
-		#if POST_MC_1_17_1
+		#if MC_1_18 || MC_1_19 || MC_1_20
 		@Override
 		public List<? extends NarratableEntry> narratables()
 		{

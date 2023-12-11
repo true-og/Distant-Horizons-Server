@@ -33,7 +33,7 @@ public class ServerPlayerWrapper implements IServerPlayerWrapper
 	
 	public IServerLevelWrapper getLevel()
 	{
-		#if PRE_MC_1_20_1
+		#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 		return ServerLevelWrapper.getWrapper(this.serverPlayer.getLevel());
 		#else
 		return ServerLevelWrapper.getWrapper(this.serverPlayer.serverLevel());

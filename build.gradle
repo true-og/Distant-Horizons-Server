@@ -23,48 +23,35 @@ plugins {
  * @param mcVers array of all MC versions
  * @param mcIndex array index of the currently active MC version
  */
-def writeBuildGradlePredefine(List<String> mcVers, int mcIndex) {
+def writeBuildGradlePredefine(List<String> mcVers, int mcIndex) 
+{
     ArrayList<String> redefineList = new ArrayList<String>()
-
-    for (int i = 0; i < mcVers.size(); i++) {
-        String mcStr = mcVers[i].replace(".", "_")
+    
+    for (int i = 0; i < mcVers.size(); i++) 
+    {
+        String fullVerStr = mcVers[i].replace(".", "_");
+        String majorVerStr = fullVerStr.substring(0, fullVerStr.lastIndexOf("_"));
         
-        if (mcIndex < i) {
-            // exclusive before
-            // FIXME doesn't function correctly for 1.16.5 (IE the first item in the list)
-            redefineList.add("PRE_MC_" + mcStr)
-        }
-        if (mcIndex <= i) {
-            // inclusive before
-            redefineList.add("PRE_AND_MC_" + mcStr)
-        }
-        
-        if (mcIndex == i) {
+        if (mcIndex == i) 
+        {
             // exact
-            redefineList.add("MC_" + mcStr)
-        }
-        
-        if (mcIndex > i) {
-            // inclusive after
-            redefineList.add("POST_AND_MC_" + mcStr)
-        }
-        if (mcIndex >= i) {
-            // exclusive after
-            redefineList.add("POST_MC_" + mcStr)
+            redefineList.add("MC_" + fullVerStr);
+            redefineList.add("MC_" + majorVerStr);
         }
     }
 
     // Build the list of preprocessors to use
-    StringBuilder sb = new StringBuilder()
+    StringBuilder sb = new StringBuilder();
 
-    sb.append("# DON'T TOUCH THIS FILE, This is handled by the build script\n")
+    sb.append("# DON'T TOUCH THIS FILE, This is handled by the build script\n");
 
     // Check if this is a development build
-    if (mod_version.toLowerCase().contains("dev")) {
+    if (mod_version.toLowerCase().contains("dev")) 
+    {
         // WARNING: only use this for logging, we don't want to have confusion
         // when a method doesn't work correctly in the release build.
-        sb.append("DEV_BUILD")
-        sb.append("=\n")
+        sb.append("DEV_BUILD");
+        sb.append("=\n");
     }
 
     // Build the MC version preprocessors
@@ -500,6 +487,7 @@ allprojects { p ->
         maven { url "https://maven.architectury.dev" }
 
         // For Git repositories
+        // navigating to the URL in a web browser allows for testing and viewing possible downloads
         maven { url "https://jitpack.io" }
 
         // For Manifold Preprocessor

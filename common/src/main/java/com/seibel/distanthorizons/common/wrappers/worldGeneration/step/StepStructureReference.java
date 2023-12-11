@@ -27,7 +27,7 @@ import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGeneratio
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.ThreadedParameters;
 
 import net.minecraft.server.level.WorldGenRegion;
-#if PRE_MC_1_19_2
+#if MC_1_16 || MC_1_17 || MC_1_18
 #endif
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;

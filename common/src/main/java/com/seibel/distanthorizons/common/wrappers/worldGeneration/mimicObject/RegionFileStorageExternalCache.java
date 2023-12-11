@@ -70,7 +70,7 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 			{
 				this.getRegionFileLock.lock();
 				
-				#if MC_1_16_5 || MC_1_17_1
+				#if MC_1_16_5 || MC_1_17
 				rFile = this.storage.getRegionFile(pos);
 				
 				// keeping the region cache size low helps prevent concurrency issues
@@ -90,7 +90,7 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 			}
 			catch (ArrayIndexOutOfBoundsException e)
 			{
-				#if MC_1_16_5 || MC_1_17_1
+				#if MC_1_16_5 || MC_1_17
 				// the file just wasn't cached
 				break;
 				#else
@@ -145,7 +145,7 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 		
 		// Otherwise, check if file exist, and if so, add it to the cache
 		Path storageFolderPath;
-		#if MC_1_16_5 || MC_1_17_1
+		#if MC_1_16_5 || MC_1_17
 		storageFolderPath = this.storage.folder.toPath();
 		#else
 		storageFolderPath = this.storage.folder;
@@ -157,7 +157,7 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 		}
 		
 		Path regionFilePath = storageFolderPath.resolve("r." + pos.getRegionX() + "." + pos.getRegionZ() + ".mca");
-		#if MC_1_16_5 || MC_1_17_1
+		#if MC_1_16_5 || MC_1_17
 		rFile = new RegionFile(regionFilePath.toFile(), storageFolderPath.toFile(), false);
 		#else
 		rFile = new RegionFile(regionFilePath, storageFolderPath, false);

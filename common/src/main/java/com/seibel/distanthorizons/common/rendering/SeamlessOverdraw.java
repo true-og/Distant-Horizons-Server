@@ -19,7 +19,7 @@
 
 package com.seibel.distanthorizons.common.rendering;
 
-#if PRE_MC_1_19_4
+#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
 
 import com.mojang.math.Matrix4f;
 #else
@@ -43,7 +43,7 @@ public class SeamlessOverdraw
 	{
 		float[] matrixFloatArray;
 		
-		#if PRE_MC_1_19_4
+		#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
 		FloatBuffer matrixFloatBuffer = FloatBuffer.allocate(16);
 		minecraftProjectionMatrix.store(matrixFloatBuffer);
 		matrixFloatArray = matrixFloatBuffer.array();

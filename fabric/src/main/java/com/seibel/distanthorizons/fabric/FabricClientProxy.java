@@ -205,7 +205,7 @@ public class FabricClientProxy
 				
 				#if MC_1_16_5
 				SeamlessOverdraw.applyLegacyProjectionMatrix(matrixFloatArray);
-				#elif PRE_MC_1_19_4
+				#elif MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
 				renderContext.projectionMatrix().load(FloatBuffer.wrap(matrixFloatArray));
 				#else
 				renderContext.projectionMatrix().set(matrixFloatArray);

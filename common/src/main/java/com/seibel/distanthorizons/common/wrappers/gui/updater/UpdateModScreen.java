@@ -11,7 +11,7 @@ import com.seibel.distanthorizons.core.jar.JarUtils;
 import com.seibel.distanthorizons.core.jar.installer.ModrinthGetter;
 import com.seibel.distanthorizons.core.jar.updater.SelfUpdater;
 import net.minecraft.client.Minecraft;
-#if POST_MC_1_20_1
+#if MC_1_20_2 || MC_1_20_4
 import net.minecraft.client.gui.GuiGraphics;
 #else
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -146,13 +146,13 @@ public class UpdateModScreen extends DhScreen
 	}
 	
 	@Override
-    #if PRE_MC_1_20_1
+    #if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19
 	public void render(PoseStack matrices, int mouseX, int mouseY, float delta)
     #else
 	public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta)
     #endif
 	{
-		#if PRE_MC_1_20_2
+		#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19 || MC_1_20_1
 		this.renderBackground(matrices); // Render background
 		#else
 		this.renderBackground(matrices, mouseX, mouseY, delta); // Render background
