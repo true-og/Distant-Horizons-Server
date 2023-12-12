@@ -53,7 +53,7 @@ public class TintGetterOverrideSmooth implements BlockAndTintGetter
 	
 	private Biome _getBiome(BlockPos pos)
 	{
-		#if MC_1_18 || MC_1_19 || MC_1_20
+		#if MC_VER > MC_1_18_2
 		return parent.getBiome(pos).value();
 		#else
 		return parent.getBiome(pos);
@@ -193,7 +193,7 @@ public class TintGetterOverrideSmooth implements BlockAndTintGetter
 		return parent.getMaxBuildHeight();
 	}
 	
-	#if MC_1_18 || MC_1_19 || MC_1_20
+	#if MC_VER > MC_1_17_1
 	@Override
 	public <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos blockPos, BlockEntityType<T> blockEntityType)
 	{

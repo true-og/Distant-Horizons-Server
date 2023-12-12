@@ -130,7 +130,7 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	@Override
 	public int getMinHeight()
 	{
-        #if MC_1_16
+        #if MC_VER < MC_1_17_1
         return 0;
         #else
 		return level.getMinBuildHeight();

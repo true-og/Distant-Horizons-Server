@@ -77,10 +77,10 @@ public final class StepStructureStart
 			}
 		}
 		
-		#if MC_1_16 || MC_1_17 || MC_1_18
+		#if MC_VER < MC_1_19_2
 		if (environment.params.worldGenSettings.generateFeatures())
 		{
-		#elif MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
+		#elif MC_VER < MC_1_19_4
 		if (environment.params.worldGenSettings.generateStructures()) {
 		#else
 		if (environment.params.worldOptions.generateStructures())
@@ -98,10 +98,10 @@ public final class StepStructureStart
 				// and should prevent some concurrency issues
 				STRUCTURE_PLACEMENT_LOCK.lock();
 				
-				#if MC_1_16 || MC_1_17 || MC_1_18
+				#if MC_VER < MC_1_19_2
 				environment.params.generator.createStructures(environment.params.registry, tParams.structFeat, chunk, environment.params.structures,
 						environment.params.worldSeed);
-				#elif MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
+				#elif MC_VER < MC_1_19_4
 				environment.params.generator.createStructures(environment.params.registry, environment.params.randomState, tParams.structFeat, chunk, environment.params.structures,
 						environment.params.worldSeed);
 				#else
@@ -110,7 +110,7 @@ public final class StepStructureStart
 						tParams.structFeat, chunk, environment.params.structures);
 				#endif
 				
-				#if MC_1_19 || MC_1_20
+				#if MC_VER > MC_1_18_2
 				try
 				{
 					tParams.structCheck.onStructureLoad(chunk.getPos(), chunk.getAllStarts());

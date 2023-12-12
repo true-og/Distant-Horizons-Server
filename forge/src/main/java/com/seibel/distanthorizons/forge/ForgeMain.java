@@ -39,7 +39,7 @@ import com.seibel.distanthorizons.forge.wrappers.modAccessor.OptifineAccessor;
 
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
-#if MC_1_19 || MC_1_20
+#if MC_VER > MC_1_19_2
 import net.minecraft.util.RandomSource;
 #endif
 import net.minecraft.world.level.ColorResolver;
@@ -51,11 +51,11 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-#if MC_1_16
+#if MC_VER < MC_1_17_1
 import net.minecraftforge.fml.ExtensionPoint;
-#elif MC_1_17
+#elif MC_VER == MC_1_17_1
 import net.minecraftforge.fmlclient.ConfigGuiHandler;
-#elif MC_1_18
+#elif MC_VER > MC_1_18_2 && MC_VER < MC_1_19_2
 import net.minecraftforge.client.ConfigGuiHandler;
 #else
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -64,7 +64,7 @@ import net.minecraftforge.client.ConfigScreenHandler;
 import org.apache.logging.log4j.Logger;
 
 // these imports change due to forge refactoring classes in 1.19
-#if MC_1_16 || MC_1_17 || MC_1_18
+#if MC_VER < MC_1_19_2
 import net.minecraftforge.client.model.data.ModelDataMap;
 
 import java.util.Random;
@@ -128,10 +128,10 @@ public class ForgeMain implements LodForgeMethodCaller
 			ModAccessorInjector.INSTANCE.bind(IOptifineAccessor.class, new OptifineAccessor());
 		}
 
-		#if MC_1_16
+		#if MC_VER < MC_1_17_1
 		ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY,
 				() -> (client, parent) -> GetConfigScreen.getScreen(parent));
-		#elif MC_1_16 || MC_1_17 || MC_1_18
+		#elif MC_VER >= MC_1_17_1 && MC_VER <= MC_1_19_2
 		ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
 				() -> new ConfigGuiHandler.ConfigGuiFactory((client, parent) -> GetConfigScreen.getScreen(parent)));
 		#else
@@ -169,14 +169,14 @@ public class ForgeMain implements LodForgeMethodCaller
 		LOGGER.info("Mod Post-Initialized");
 	}
 	
-	#if MC_1_16 || MC_1_17 || MC_1_18
+	#if MC_VER < MC_1_19_2
 	private final ModelDataMap modelData = new ModelDataMap.Builder().build();
 	#else
 	private final ModelData modelData = ModelData.EMPTY;
 	#endif
 	
 	@Override
-	#if MC_1_16 || MC_1_17 || MC_1_18
+	#if MC_VER < MC_1_19_2
 	public List<BakedQuad> getQuads(MinecraftClientWrapper mc, Block block, BlockState blockState, Direction direction, Random random)
 	{
 		return mc.getModelManager().getBlockModelShaper().getBlockModel(block.defaultBlockState()).getQuads(blockState, direction, random, modelData);
@@ -184,14 +184,14 @@ public class ForgeMain implements LodForgeMethodCaller
 	#else
 	public List<BakedQuad> getQuads(MinecraftClientWrapper mc, Block block, BlockState blockState, Direction direction, RandomSource random)
 	{
-		return mc.getModelManager().getBlockModelShaper().getBlockModel(block.defaultBlockState()).getQuads(blockState, direction, random, modelData #if MC_1_19 || MC_1_20 , RenderType.solid() #endif );
+		return mc.getModelManager().getBlockModelShaper().getBlockModel(block.defaultBlockState()).getQuads(blockState, direction, random, modelData #if MC_VER > MC_1_19_2 , RenderType.solid() #endif );
 	}
 	#endif
 	
 	@Override //TODO: Check this if its still needed
 	public int colorResolverGetColor(ColorResolver resolver, Biome biome, double x, double z)
 	{
-		#if MC_1_17______Still_needed
+		#if MC_1_17_1______Still_needed
 		return resolver.m_130045_(biome, x, z);
 		#else
 		return resolver.getColor(biome, x, z);

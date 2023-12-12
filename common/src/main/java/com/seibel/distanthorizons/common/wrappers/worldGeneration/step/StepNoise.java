@@ -28,14 +28,14 @@ import com.seibel.distanthorizons.common.wrappers.worldGeneration.ThreadedParame
 
 import com.seibel.distanthorizons.core.util.objects.UncheckedInterruptedException;
 import net.minecraft.server.level.WorldGenRegion;
-#if MC_1_18 || MC_1_19 || MC_1_20
+#if MC_VER > MC_1_17_1
 #endif
-#if MC_1_16 || MC_1_17 || MC_1_18
+#if MC_VER < MC_1_19_2
 #endif
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.ProtoChunk;
-#if MC_1_18 || MC_1_19 || MC_1_20
+#if MC_VER > MC_1_18_2
 import net.minecraft.world.level.levelgen.blending.Blender;
 #endif
 
@@ -69,12 +69,12 @@ public final class StepNoise
 		for (ChunkAccess chunk : chunksToDo)
 		{
 			// System.out.println("StepNoise: "+chunk.getPos());
-			#if MC_1_16
+			#if MC_VER < MC_1_17_1
 			environment.params.generator.fillFromNoise(worldGenRegion, tParams.structFeat, chunk);
-			#elif MC_1_16 || MC_1_17
+			#elif MC_VER < MC_1_18_2
 			chunk = environment.joinSync(environment.params.generator.fillFromNoise(Runnable::run,
 					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
-			#elif MC_1_16 || MC_1_17 || MC_1_18
+			#elif MC_VER < MC_1_19_2
 			chunk = environment.joinSync(environment.params.generator.fillFromNoise(Runnable::run, Blender.of(worldGenRegion),
 					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
 			#else

@@ -22,7 +22,7 @@ package com.seibel.distanthorizons.fabric.mixins.server.unsafe;
 import org.spongepowered.asm.mixin.Mixin;
 
 //FIXME: Is this still needed?
-#if MC_1_19 || MC_1_20
+#if MC_VER > MC_1_18_2
 
 import net.minecraft.util.ThreadingDetector;
 import org.spongepowered.asm.mixin.Mutable;

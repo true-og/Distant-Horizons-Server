@@ -34,7 +34,7 @@ def writeBuildGradlePredefine(List<String> mcVers, int mcIndex)
     for (int i = 0; i < mcVers.size(); i++) 
     {
         String verStr = mcVers[i].replace(".", "_");
-        sb.append(verStr + "=" + i.toString() + "\n");
+        sb.append("MC_" + verStr + "=" + i.toString() + "\n");
         
         if (mcIndex == i)
             sb.append("MC_VER=" + i.toString() + "\n");
@@ -477,7 +477,6 @@ allprojects { p ->
         maven { url "https://maven.architectury.dev" }
 
         // For Git repositories
-        // navigating to the URL in a web browser allows for testing and viewing possible downloads
         maven { url "https://jitpack.io" }
 
         // For Manifold Preprocessor

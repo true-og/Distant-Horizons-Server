@@ -37,49 +37,49 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
-#if MC_1_16 || MC_1_17 || MC_1_18
+#if MC_VER < MC_1_19_2
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.StructureFeatureManager;
 #else
-#if MC_1_19_4 || MC_1_20
+#if MC_VER > MC_1_19_4
 import net.minecraft.world.level.levelgen.WorldOptions;
 #endif
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.StructureManager;
 #endif
-#if MC_1_18 || MC_1_19 || MC_1_20
+#if MC_VER > MC_1_18_2
 import net.minecraft.world.level.levelgen.structure.StructureCheck;
 #endif
 
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
-#if MC_1_16 || MC_1_17
+#if MC_VER < MC_1_18_2
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 #endif
 
 
 
-public class WorldGenStructFeatManager extends #if MC_1_16 || MC_1_17 || MC_1_18 StructureFeatureManager #else StructureManager #endif
+public class WorldGenStructFeatManager extends #if MC_VER < MC_1_19_2 StructureFeatureManager #else StructureManager #endif
 {
 	final WorldGenLevel genLevel;
 	
-	#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
+	#if MC_VER < MC_1_19_4
 	WorldGenSettings worldGenSettings;
 	#else
 	WorldOptions worldOptions;
 	#endif
 	
-	#if MC_1_18 || MC_1_19 || MC_1_20
+	#if MC_VER > MC_1_18_2
 	StructureCheck structureCheck;
 	#endif
 	
-	#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
+	#if MC_VER < MC_1_19_4
 	public WorldGenStructFeatManager(
 			WorldGenSettings worldGenSettings,
-			WorldGenLevel genLevel #if MC_1_18 || MC_1_19 || MC_1_20 , StructureCheck structureCheck #endif )
+			WorldGenLevel genLevel #if MC_VER > MC_1_18_2 , StructureCheck structureCheck #endif )
 	{
 		
-		super(genLevel, worldGenSettings #if MC_1_18 || MC_1_19 || MC_1_20 , structureCheck #endif );
+		super(genLevel, worldGenSettings #if MC_VER > MC_1_18_2 , structureCheck #endif );
 		this.genLevel = genLevel;
 		this.worldGenSettings = worldGenSettings;
 	}
@@ -100,8 +100,8 @@ public class WorldGenStructFeatManager extends #if MC_1_16 || MC_1_17 || MC_1_18
 	{
 		if (worldGenRegion == genLevel)
 			return this;
-	#if MC_1_16 || MC_1_17 || MC_1_18 || MC_1_19_2
-		return new WorldGenStructFeatManager(worldGenSettings, worldGenRegion #if MC_1_18 || MC_1_19 || MC_1_20 , structureCheck #endif );
+	#if MC_VER < MC_1_19_4
+		return new WorldGenStructFeatManager(worldGenSettings, worldGenRegion #if MC_VER > MC_1_18_2 , structureCheck #endif );
 	#else
 		return new WorldGenStructFeatManager(worldOptions, worldGenRegion, structureCheck);
 	#endif
@@ -113,7 +113,7 @@ public class WorldGenStructFeatManager extends #if MC_1_16 || MC_1_17 || MC_1_18
 		return genLevel.getChunk(x, z, status, false);
 	}
 	
-	#if MC_1_16 || MC_1_17
+	#if MC_VER < MC_1_18_2
 	@Override
 	public Stream<? extends StructureStart<?>> startsForFeature(
 			SectionPos sectionPos2,
@@ -140,7 +140,7 @@ public class WorldGenStructFeatManager extends #if MC_1_16 || MC_1_17 || MC_1_18
 		return chunk.hasAnyStructureReferences();
 	}
 	
-	#if MC_1_18_1
+	#if MC_VER == MC_1_18_1
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<? extends StructureStart<?>> startsForFeature(SectionPos sectionPos,
@@ -165,7 +165,7 @@ public class WorldGenStructFeatManager extends #if MC_1_16 || MC_1_17 || MC_1_18
 		return builder.build();
 	}
 	#else
-	#if MC_1_16 || MC_1_17 || MC_1_18
+	#if MC_VER < MC_1_19_2
 	@Override
 	public List<StructureStart> startsForFeature(SectionPos sectionPos, Predicate<ConfiguredStructureFeature<?, ?>> predicate)
 	{
