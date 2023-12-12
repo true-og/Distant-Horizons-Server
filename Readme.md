@@ -77,10 +77,10 @@ Modmenu: 1.16.22
 
 ### Plugin and Library versions
 
-Fabric loom: 1.1.+\
-Forge gradle (Using Architectury): 3.4-SNAPSHOT\
+Gradle: 8.5\
+Fabric loom: 1.4-SNAPSHOT\
+Architectury loom (Forge gradle replacement): 1.4-SNAPSHOT\
 Sponge vanilla gradle: 0.2.1-SNAPSHOT\
-Sponge mixin: 0.8.5\
 Java Preprocessor plugin: Manifold Preprocessor
 
 <br>
