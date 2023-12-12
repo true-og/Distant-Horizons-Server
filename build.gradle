@@ -25,40 +25,30 @@ plugins {
  */
 def writeBuildGradlePredefine(List<String> mcVers, int mcIndex) 
 {
-    ArrayList<String> redefineList = new ArrayList<String>()
-    
-    for (int i = 0; i < mcVers.size(); i++) 
-    {
-        String fullVerStr = mcVers[i].replace(".", "_");
-        String majorVerStr = fullVerStr.substring(0, fullVerStr.lastIndexOf("_"));
-        
-        if (mcIndex == i) 
-        {
-            // exact
-            redefineList.add("MC_" + fullVerStr);
-            redefineList.add("MC_" + majorVerStr);
-        }
-    }
-
     // Build the list of preprocessors to use
     StringBuilder sb = new StringBuilder();
 
     sb.append("# DON'T TOUCH THIS FILE, This is handled by the build script\n");
+    
+    
+    for (int i = 0; i < mcVers.size(); i++) 
+    {
+        String verStr = mcVers[i].replace(".", "_");
+        sb.append(verStr + "=" + i.toString() + "\n");
+        
+        if (mcIndex == i)
+            sb.append("MC_VER=" + i.toString() + "\n");
+    }
+    
 
     // Check if this is a development build
     if (mod_version.toLowerCase().contains("dev")) 
     {
         // WARNING: only use this for logging, we don't want to have confusion
         // when a method doesn't work correctly in the release build.
-        sb.append("DEV_BUILD");
-        sb.append("=\n");
+        sb.append("DEV_BUILD=\n");
     }
-
-    // Build the MC version preprocessors
-    for (String redefinedVersion : redefineList) {
-        sb.append(redefinedVersion)
-        sb.append("=\n")
-    }
+    
     new File(projectDir, "build.properties").text = sb.toString()
 }
 
