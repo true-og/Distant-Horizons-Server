@@ -32,7 +32,7 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.ProtoChunk;
-#if MC_VER > MC_1_18_2
+#if MC_VER >= MC_1_18_2
 import net.minecraft.world.level.levelgen.blending.Blender;
 #endif
 

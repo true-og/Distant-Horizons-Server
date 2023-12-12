@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-#if MC_VER > MC_1_20_1
+#if MC_VER >= MC_1_20_1
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
 import net.minecraft.world.level.chunk.LevelChunk;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
@@ -45,7 +45,7 @@ public class MixinClientPacketListener
 		ClientApi.INSTANCE.onClientOnlyDisconnected();
 	}
 	
-	#if MC_VER > MC_1_20_1
+	#if MC_VER >= MC_1_20_1
 	@Inject(method = "enableChunkLight", at = @At("TAIL"))
 	void onEnableChunkLight(LevelChunk chunk, int x, int z, CallbackInfo ci)
 	{

@@ -22,7 +22,7 @@ package com.seibel.distanthorizons.common.forge;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftClientWrapper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
-#if MC_VER > MC_1_19_2
+#if MC_VER >= MC_1_19_2
 import net.minecraft.util.RandomSource;
 #endif
 import net.minecraft.world.level.ColorResolver;

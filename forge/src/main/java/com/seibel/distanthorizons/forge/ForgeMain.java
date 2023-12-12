@@ -39,7 +39,7 @@ import com.seibel.distanthorizons.forge.wrappers.modAccessor.OptifineAccessor;
 
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
-#if MC_VER > MC_1_19_2
+#if MC_VER >= MC_1_19_2
 import net.minecraft.util.RandomSource;
 #endif
 import net.minecraft.world.level.ColorResolver;
@@ -55,7 +55,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.ExtensionPoint;
 #elif MC_VER == MC_1_17_1
 import net.minecraftforge.fmlclient.ConfigGuiHandler;
-#elif MC_VER > MC_1_18_2 && MC_VER < MC_1_19_2
+#elif MC_VER >= MC_1_18_2 && MC_VER < MC_1_19_2
 import net.minecraftforge.client.ConfigGuiHandler;
 #else
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -131,7 +131,7 @@ public class ForgeMain implements LodForgeMethodCaller
 		#if MC_VER < MC_1_17_1
 		ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY,
 				() -> (client, parent) -> GetConfigScreen.getScreen(parent));
-		#elif MC_VER >= MC_1_17_1 && MC_VER <= MC_1_19_2
+		#elif MC_VER >= MC_1_17_1 && MC_VER < MC_1_19_2
 		ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
 				() -> new ConfigGuiHandler.ConfigGuiFactory((client, parent) -> GetConfigScreen.getScreen(parent)));
 		#else
@@ -184,7 +184,7 @@ public class ForgeMain implements LodForgeMethodCaller
 	#else
 	public List<BakedQuad> getQuads(MinecraftClientWrapper mc, Block block, BlockState blockState, Direction direction, RandomSource random)
 	{
-		return mc.getModelManager().getBlockModelShaper().getBlockModel(block.defaultBlockState()).getQuads(blockState, direction, random, modelData #if MC_VER > MC_1_19_2 , RenderType.solid() #endif );
+		return mc.getModelManager().getBlockModelShaper().getBlockModel(block.defaultBlockState()).getQuads(blockState, direction, random, modelData #if MC_VER >= MC_1_19_2 , RenderType.solid() #endif );
 	}
 	#endif
 	

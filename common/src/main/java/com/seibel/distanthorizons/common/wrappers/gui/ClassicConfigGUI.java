@@ -49,7 +49,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.resources.language.I18n;    // translation
-#if MC_VER > MC_1_17_1
+#if MC_VER >= MC_1_17_1
 import net.minecraft.client.gui.narration.NarratableEntry;
 #endif
 import net.minecraft.resources.ResourceLocation;
@@ -642,7 +642,7 @@ public class ClassicConfigGUI
 		
 		// Only for 1.17 and over
 		// Remove in 1.16 and below
-		#if MC_VER > MC_1_17_1
+		#if MC_VER >= MC_1_17_1
 		@Override
 		public List<? extends NarratableEntry> narratables()
 		{

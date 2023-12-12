@@ -34,7 +34,7 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-#if MC_VER > MC_1_17_1
+#if MC_VER >= MC_1_17_1
 import net.minecraft.client.renderer.GameRenderer;
 #endif
 #if MC_VER < MC_1_20_1

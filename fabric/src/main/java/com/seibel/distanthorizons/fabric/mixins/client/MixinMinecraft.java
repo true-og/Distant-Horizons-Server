@@ -61,7 +61,7 @@ public class MixinMinecraft
 	}
 	#endif
 	
-	#if MC_VER > MC_1_20_2
+	#if MC_VER >= MC_1_20_2
 	@Redirect(
 			method = "Lnet/minecraft/client/Minecraft;onGameLoadFinished(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V",
 			at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V")

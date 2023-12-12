@@ -44,7 +44,7 @@ import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 #endif
 
-#if MC_VER > MC_1_18_2
+#if MC_VER >= MC_1_18_2
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 #endif
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -298,15 +298,15 @@ public class ForgeClientProxy
 	//===========//
 	
 	@SubscribeEvent
-	#if MC_VER > MC_1_18_2
+	#if MC_VER >= MC_1_18_2
 	public void afterLevelRenderEvent(RenderLevelStageEvent event)
 	#else
 	public void afterLevelRenderEvent(TickEvent.RenderTickEvent event)
 	#endif
 	{
-		#if MC_VER > MC_1_20_1
+		#if MC_VER >= MC_1_20_1
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
-		#elif MC_VER > MC_1_18_2
+		#elif MC_VER >= MC_1_18_2
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS)
 		#else
 		// FIXME: Is this the correct location for 1.16 & 1.17???

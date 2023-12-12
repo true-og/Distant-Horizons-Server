@@ -37,7 +37,7 @@ import java.util.Objects;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
-#if MC_VER > MC_1_19_4
+#if MC_VER >= MC_1_19_4
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 #endif
@@ -55,7 +55,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraft.world.level.levelgen.Heightmap;
-#if MC_VER > MC_1_18_2
+#if MC_VER >= MC_1_18_2
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 #if MC_VER < MC_1_19_2
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
@@ -64,7 +64,7 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.ticks.LevelChunkTicks;
 #endif
-#if MC_VER > MC_1_18_2
+#if MC_VER >= MC_1_18_2
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 #if MC_VER < MC_1_19_2
@@ -81,9 +81,9 @@ import net.minecraft.world.level.material.Fluid;
 
 public class ChunkLoader
 {
-	#if MC_VER > MC_1_19_2
+	#if MC_VER >= MC_1_19_2
 	private static final Codec<PalettedContainer<BlockState>> BLOCK_STATE_CODEC = PalettedContainer.codecRW(Block.BLOCK_STATE_REGISTRY, BlockState.CODEC, PalettedContainer.Strategy.SECTION_STATES, Blocks.AIR.defaultBlockState());
-	#elif MC_VER > MC_1_18_2
+	#elif MC_VER >= MC_1_18_2
 	private static final Codec<PalettedContainer<BlockState>> BLOCK_STATE_CODEC = PalettedContainer.codec(Block.BLOCK_STATE_REGISTRY, BlockState.CODEC, PalettedContainer.Strategy.SECTION_STATES, Blocks.AIR.defaultBlockState());
 	#endif
 	private static final String TAG_UPGRADE_DATA = "UpgradeData";
@@ -93,7 +93,7 @@ public class ChunkLoader
 	private static final String FLUID_TICKS_TAG_PRE18 = "LiquidTicks";
 	private static final ConfigBasedLogger LOGGER = BatchGenerationEnvironment.LOAD_LOGGER;
 	
-	#if MC_VER > MC_1_18_2
+	#if MC_VER >= MC_1_18_2
 	private static BlendingData readBlendingData(CompoundTag chunkData)
 	{
 		BlendingData blendingData = null;
@@ -109,7 +109,7 @@ public class ChunkLoader
 	
 	private static LevelChunkSection[] readSections(LevelAccessor level, ChunkPos chunkPos, CompoundTag chunkData)
 	{
-		#if MC_VER > MC_1_18_2
+		#if MC_VER >= MC_1_18_2
 		#if MC_VER < MC_1_19_4
 		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
 		#else
@@ -255,25 +255,25 @@ public class ChunkLoader
 		
 		//================== Read params for making the LevelChunk ==================
 		UpgradeData upgradeData = tagLevel.contains(TAG_UPGRADE_DATA, 10)
-				? new UpgradeData(tagLevel.getCompound(TAG_UPGRADE_DATA)#if MC_VER > MC_1_17_1 , level #endif )
+				? new UpgradeData(tagLevel.getCompound(TAG_UPGRADE_DATA)#if MC_VER >= MC_1_17_1 , level #endif )
 				: UpgradeData.EMPTY;
 		
 		boolean isLightOn = tagLevel.getBoolean("isLightOn");
 		#if MC_VER < MC_1_18_2
 		ChunkBiomeContainer chunkBiomeContainer = new ChunkBiomeContainer(
-				level.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)#if MC_VER > MC_1_17_1 , level #endif ,
+				level.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)#if MC_VER >= MC_1_17_1 , level #endif ,
 				chunkPos, level.getLevel().getChunkSource().getGenerator().getBiomeSource(),
 				tagLevel.contains("Biomes", 11) ? tagLevel.getIntArray("Biomes") : null);
 		
 		TickList<Block> blockTicks = tagLevel.contains(BLOCK_TICKS_TAG_PRE18, 9)
 				? ChunkTickList.create(tagLevel.getList(BLOCK_TICKS_TAG_PRE18, 10), Registry.BLOCK::getKey, Registry.BLOCK::get)
 				: new ProtoTickList<Block>(block -> (block == null || block.defaultBlockState().isAir()), chunkPos,
-				tagLevel.getList("ToBeTicked", 9)#if MC_VER > MC_1_17_1 , level #endif );
+				tagLevel.getList("ToBeTicked", 9)#if MC_VER >= MC_1_17_1 , level #endif );
 		
 		TickList<Fluid> fluidTicks = tagLevel.contains(FLUID_TICKS_TAG_PRE18, 9)
 				? ChunkTickList.create(tagLevel.getList(FLUID_TICKS_TAG_PRE18, 10), Registry.FLUID::getKey, Registry.FLUID::get)
 				: new ProtoTickList<Fluid>(fluid -> (fluid == null || fluid == Fluids.EMPTY), chunkPos,
-				tagLevel.getList("LiquidsToBeTicked", 9)#if MC_VER > MC_1_17_1 , level #endif );
+				tagLevel.getList("LiquidsToBeTicked", 9)#if MC_VER >= MC_1_17_1 , level #endif );
 		#else
 		#if MC_VER < MC_1_19_4
 		LevelChunkTicks<Block> blockTicks = LevelChunkTicks.load(tagLevel.getList(BLOCK_TICKS_TAG_18, 10),

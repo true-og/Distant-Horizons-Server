@@ -11,7 +11,7 @@ import com.seibel.distanthorizons.core.jar.JarUtils;
 import com.seibel.distanthorizons.core.jar.installer.ModrinthGetter;
 import com.seibel.distanthorizons.core.jar.updater.SelfUpdater;
 import net.minecraft.client.Minecraft;
-#if MC_VER > MC_1_20_1
+#if MC_VER >= MC_1_20_1
 import net.minecraft.client.gui.GuiGraphics;
 #else
 import com.mojang.blaze3d.vertex.PoseStack;

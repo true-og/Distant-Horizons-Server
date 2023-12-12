@@ -31,7 +31,7 @@ import net.minecraft.server.level.ThreadedLevelLightEngine;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-#if MC_VER > MC_1_18_2
+#if MC_VER >= MC_1_18_2
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
 #endif
 import net.minecraft.world.level.levelgen.WorldGenSettings;
@@ -40,7 +40,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureMana
 #else
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.levelgen.RandomState;
-#if MC_VER > MC_1_19_4
+#if MC_VER >= MC_1_19_4
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.core.registries.Registries;
 #endif
@@ -67,7 +67,7 @@ public final class GlobalParameters
 	public final RegistryAccess registry;
 	public final long worldSeed;
 	public final DataFixer fixerUpper;
-	#if MC_VER > MC_1_18_2
+	#if MC_VER >= MC_1_18_2
 	public final BiomeManager biomeManager;
 	public final ChunkScanAccess chunkScanner; // FIXME: Figure out if this is actually needed
 	#endif
@@ -90,14 +90,14 @@ public final class GlobalParameters
 		biomes = registry.registryOrThrow(Registries.BIOME);
 		worldSeed = worldOptions.seed();
 		#endif
-		#if MC_VER > MC_1_18_2
+		#if MC_VER >= MC_1_18_2
 		biomeManager = new BiomeManager(level, BiomeManager.obfuscateSeed(worldSeed));
 		chunkScanner = level.getChunkSource().chunkScanner();
 		#endif
 		structures = server.getStructureManager();
 		generator = level.getChunkSource().getGenerator();
 		fixerUpper = server.getFixerUpper();
-		#if MC_VER > MC_1_19_2
+		#if MC_VER >= MC_1_19_2
 		randomState = level.getChunkSource().randomState();
 		#endif
 	}

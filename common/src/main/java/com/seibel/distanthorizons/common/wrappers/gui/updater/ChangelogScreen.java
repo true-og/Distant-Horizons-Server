@@ -15,7 +15,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-#if MC_VER > MC_1_17_1
+#if MC_VER >= MC_1_17_1
 import net.minecraft.client.gui.narration.NarratableEntry;
 #endif
 
@@ -244,7 +244,7 @@ public class ChangelogScreen extends DhScreen
 		{
 			return children;
 		}
-		#if MC_VER > MC_1_17_1
+		#if MC_VER >= MC_1_17_1
 		@Override
 		public List<? extends NarratableEntry> narratables()
 		{

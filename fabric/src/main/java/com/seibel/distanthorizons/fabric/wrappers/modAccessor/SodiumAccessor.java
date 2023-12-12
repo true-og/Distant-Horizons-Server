@@ -60,21 +60,21 @@ public class SodiumAccessor implements ISodiumAccessor
 		return "Sodium-Fabric";
 	}
 
-	#if MC_VER > MC_1_17_1
+	#if MC_VER >= MC_1_17_1
 	@Override
 	public HashSet<DhChunkPos> getNormalRenderedChunks()
 	{
 		SodiumWorldRenderer renderer = SodiumWorldRenderer.instance();
 		LevelHeightAccessor height = Minecraft.getInstance().level;
 
-		#if MC_VER > MC_1_20_1
+		#if MC_VER >= MC_1_20_1
 		// TODO: This is just a tmp solution, use a proper solution later
 		return MC_RENDER.getMaximumRenderedChunks().stream().filter((DhChunkPos chunk) -> {
 			return (renderer.isBoxVisible(
 					chunk.getMinBlockX() + 1, height.getMinBuildHeight() + 1, chunk.getMinBlockZ() + 1,
 					chunk.getMinBlockX() + 15, height.getMaxBuildHeight() - 1, chunk.getMinBlockZ() + 15));
 		}).collect(Collectors.toCollection(HashSet::new));
-		#elif MC_VER > MC_1_18_2
+		#elif MC_VER >= MC_1_18_2
 		// 0b11 = Lighted chunk & loaded chunk
 		return renderer.getChunkTracker().getChunks(0b00).filter(
 				(long l) -> {
@@ -134,7 +134,7 @@ public class SodiumAccessor implements ISodiumAccessor
 	@Override
 	public void setFogOcclusion(boolean b)
 	{
-		#if MC_VER > MC_1_20_1
+		#if MC_VER >= MC_1_20_1
 		me.jellysquid.mods.sodium.client.SodiumClientMod.options().performance.useFogOcclusion = b;
 		#endif
 	}

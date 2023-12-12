@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.seibel.distanthorizons.core.config.gui.AbstractScreen;
 import net.minecraft.client.Minecraft;
-#if MC_VER > MC_1_20_1
+#if MC_VER >= MC_1_20_1
 import net.minecraft.client.gui.GuiGraphics;
 #endif
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;

@@ -87,7 +87,7 @@ public class DummyLightEngine extends LevelLightEngine
 	@Override
 	public void retainData(ChunkPos chunkPos, boolean bl) { }
 	
-	#if MC_VER > MC_1_17_1
+	#if MC_VER >= MC_1_17_1
 	@Override
 	public int getLightSectionCount() { throw new UnsupportedOperationException("This should never be used!"); }
 	@Override

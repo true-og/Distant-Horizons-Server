@@ -41,13 +41,13 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.StructureFeatureManager;
 #else
-#if MC_VER > MC_1_19_4
+#if MC_VER >= MC_1_19_4
 import net.minecraft.world.level.levelgen.WorldOptions;
 #endif
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.StructureManager;
 #endif
-#if MC_VER > MC_1_18_2
+#if MC_VER >= MC_1_18_2
 import net.minecraft.world.level.levelgen.structure.StructureCheck;
 #endif
 
@@ -69,17 +69,17 @@ public class WorldGenStructFeatManager extends #if MC_VER < MC_1_19_2 StructureF
 	WorldOptions worldOptions;
 	#endif
 	
-	#if MC_VER > MC_1_18_2
+	#if MC_VER >= MC_1_18_2
 	StructureCheck structureCheck;
 	#endif
 	
 	#if MC_VER < MC_1_19_4
 	public WorldGenStructFeatManager(
 			WorldGenSettings worldGenSettings,
-			WorldGenLevel genLevel #if MC_VER > MC_1_18_2 , StructureCheck structureCheck #endif )
+			WorldGenLevel genLevel #if MC_VER >= MC_1_18_2 , StructureCheck structureCheck #endif )
 	{
 		
-		super(genLevel, worldGenSettings #if MC_VER > MC_1_18_2 , structureCheck #endif );
+		super(genLevel, worldGenSettings #if MC_VER >= MC_1_18_2 , structureCheck #endif );
 		this.genLevel = genLevel;
 		this.worldGenSettings = worldGenSettings;
 	}
@@ -101,7 +101,7 @@ public class WorldGenStructFeatManager extends #if MC_VER < MC_1_19_2 StructureF
 		if (worldGenRegion == genLevel)
 			return this;
 	#if MC_VER < MC_1_19_4
-		return new WorldGenStructFeatManager(worldGenSettings, worldGenRegion #if MC_VER > MC_1_18_2 , structureCheck #endif );
+		return new WorldGenStructFeatManager(worldGenSettings, worldGenRegion #if MC_VER >= MC_1_18_2 , structureCheck #endif );
 	#else
 		return new WorldGenStructFeatManager(worldOptions, worldGenRegion, structureCheck);
 	#endif

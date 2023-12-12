@@ -38,7 +38,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
-#if MC_VER > MC_1_19_2
+#if MC_VER >= MC_1_19_2
 import net.minecraft.util.RandomSource;
 #else
 import java.util.Random;

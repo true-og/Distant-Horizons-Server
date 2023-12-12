@@ -47,7 +47,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-#if MC_VER > MC_1_17_1
+#if MC_VER >= MC_1_17_1
 import net.minecraft.core.QuartPos;
 #endif
 
@@ -67,7 +67,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 #endif
 
-#if MC_VER > MC_1_20_1
+#if MC_VER >= MC_1_20_1
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.core.SectionPos;
@@ -490,7 +490,7 @@ public class ChunkWrapper implements IChunkWrapper
 					#endif
 		}
 	}
-	#if MC_VER > MC_1_20_1
+	#if MC_VER >= MC_1_20_1
 	private static boolean checkLightSectionsOnChunk(LevelChunk chunk, LevelLightEngine engine)
 	{
 		LevelChunkSection[] sections = chunk.getSections();

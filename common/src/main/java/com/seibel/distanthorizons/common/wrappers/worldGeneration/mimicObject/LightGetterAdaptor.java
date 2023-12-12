@@ -23,12 +23,12 @@ import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IStarlightAccessor;
 
 import net.minecraft.world.level.BlockGetter;
-#if MC_VER > MC_1_17_1
+#if MC_VER >= MC_1_17_1
 import net.minecraft.world.level.LevelHeightAccessor;
 #endif
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LightChunkGetter;
-#if MC_VER > MC_1_20_1
+#if MC_VER >= MC_1_20_1
 import net.minecraft.world.level.chunk.LightChunk;
 #endif
 
@@ -64,7 +64,7 @@ public class LightGetterAdaptor implements LightChunkGetter
 		return shouldReturnNull ? null : (genRegion != null ? genRegion : heightGetter);
 	}
 	
-	#if MC_VER > MC_1_17_1
+	#if MC_VER >= MC_1_17_1
 	public LevelHeightAccessor getLevelHeightAccessor()
 	{
 		return heightGetter;

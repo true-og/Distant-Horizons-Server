@@ -110,7 +110,7 @@ public final class StepStructureStart
 						tParams.structFeat, chunk, environment.params.structures);
 				#endif
 				
-				#if MC_VER > MC_1_18_2
+				#if MC_VER >= MC_1_18_2
 				try
 				{
 					tParams.structCheck.onStructureLoad(chunk.getPos(), chunk.getAllStarts());
