@@ -100,6 +100,9 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	private boolean useDhLighting;
 	
+	private int minNonEmptyHeight = Integer.MIN_VALUE;
+	private int maxNonEmptyHeight = Integer.MAX_VALUE;
+	
 	/**
 	 * Due to vanilla `isClientLightReady()` not being designed for use by a non-render thread, it may return 'true'
 	 * before the light engine has ticked, (right after all light changes is marked by the engine to be processed).
@@ -165,8 +168,18 @@ public class ChunkWrapper implements IChunkWrapper
 	public int getMaxBuildHeight() { return this.chunk.getMaxBuildHeight(); }
 	
 	@Override
-	public int getMinFilledHeight()
+	public int getMinNonEmptyHeight()
 	{
+		if (this.minNonEmptyHeight != Integer.MIN_VALUE)
+		{
+			return this.minNonEmptyHeight;
+		}
+		
+		
+		// default if every section is empty or missing
+		this.minNonEmptyHeight = this.getMinBuildHeight();
+		
+		// determine the lowest empty section (bottom up)
 		LevelChunkSection[] sections = this.chunk.getSections();
 		for (int index = 0; index < sections.length; index++)
 		{
@@ -175,27 +188,65 @@ public class ChunkWrapper implements IChunkWrapper
 				continue;
 			}
 			
-			#if MC_VER == MC_1_16_5
-			if (!sections[index].isEmpty())
+			if (!isChunkSectionEmpty(sections[index]))
 			{
-				// convert from an index to a block coordinate
-				return this.chunk.getSections()[index].bottomBlockY() * 16;
+				this.minNonEmptyHeight = this.getChunkSectionMinHeight(index);
+				break;
 			}
-			#elif MC_VER == MC_1_17_1
-			if (!sections[index].isEmpty())
-			{
-				// convert from an index to a block coordinate
-				return this.chunk.getSections()[index].bottomBlockY() * 16;
-			}	
-			#else
-			if (!sections[index].hasOnlyAir())
-			{
-				// convert from an index to a block coordinate
-				return this.chunk.getSectionYFromSectionIndex(index) * 16;
-			}
-			#endif
 		}
-		return Integer.MAX_VALUE;
+		
+		return this.minNonEmptyHeight;
+	}
+	
+	
+	@Override
+	public int getMaxNonEmptyHeight()
+	{
+		if (this.maxNonEmptyHeight != Integer.MAX_VALUE)
+		{
+			return this.maxNonEmptyHeight;
+		}
+		
+		
+		// default if every section is empty or missing
+		this.maxNonEmptyHeight = this.getMaxBuildHeight();
+		
+		// determine the highest empty section (top down)
+		LevelChunkSection[] sections = this.chunk.getSections();
+		for (int index = sections.length-1; index >= 0; index--)
+		{
+			if (sections[index] == null)
+			{
+				continue;
+			}
+			
+			if (!isChunkSectionEmpty(sections[index]))
+			{
+				this.maxNonEmptyHeight = this.getChunkSectionMinHeight(index) + 16;
+				break;
+			}
+		}
+		
+		return this.maxNonEmptyHeight;
+	}
+	private static boolean isChunkSectionEmpty(LevelChunkSection section)
+	{
+		#if MC_VER == MC_1_16_5
+		return section.isEmpty();
+		#elif MC_VER == MC_1_17_1
+		return section.isEmpty();
+		#else
+		return section.hasOnlyAir();
+		#endif
+	}
+	private int getChunkSectionMinHeight(int index)
+	{
+		// convert from an index to a block coordinate
+		#if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
+		return this.chunk.getSections()[index].bottomBlockY() * 16;
+		#else
+		return this.chunk.getSectionYFromSectionIndex(index) * 16;
+		#endif
 	}
 	
 	
