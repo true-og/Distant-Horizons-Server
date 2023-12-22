@@ -4,10 +4,14 @@ pluginManagement {
             name "Fabric"
             url "https://maven.fabricmc.net/"
         }
-        // TODO: Stop using Forge for versions with NeoForge
+        // TODO: Stop using Forge for versions with NeoForged
         maven {
             name "Forge"
             url "https://maven.minecraftforge.net/"
+        }
+        maven {
+            name "Neoforged"
+            url "https://maven.neoforged.net/releases/"
         }
         maven {
             name "Architectury (Better Forge because regular Forge is annoying)" // TODO: Once we switch to NeoForge, would it's gradle work better? or will it have Forge's problems in it

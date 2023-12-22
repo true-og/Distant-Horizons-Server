@@ -75,6 +75,12 @@ forgix {
         forge {
             jarLocation = "build/libs/DistantHorizons-forge-${rootProject.versionStr}.jar"
         }
+    
+    if (findProject(":neoforged"))
+        custom {
+            projectName = "neoforged"
+            jarLocation = "build/libs/DistantHorizons-neoforged-${rootProject.versionStr}.jar"
+        }
 
     if (findProject(":fabric"))
         fabric {
@@ -105,7 +111,10 @@ subprojects { p ->
 //    apply plugin: "org.spongepowered.gradle.vanilla" // Provides minecraft libraries
 
     // Apply forge's loom
-    if (findProject(":forge") && p == project(":forge"))
+    if (
+            (findProject(":forge") && p == project(":forge")) ||
+            (findProject(":neoforged") && p == project(":neoforged"))
+    )
         apply plugin: "dev.architectury.loom"
 
 

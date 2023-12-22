@@ -17,29 +17,43 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.forge.mixins.client;
+package com.seibel.distanthorizons.forge.mixins.server.unsafe;
 
-
-import com.seibel.distanthorizons.common.util.ILightTextureMarker;
-
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+#if MC_VER >= MC_1_18_2
+
+import net.minecraft.util.ThreadingDetector;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LightTexture.class)
-public class MixinLightTexture
+import java.util.concurrent.Semaphore;
+
+/**
+ * Why does this exist? But okay! (Will be probably removed when the experimental generator is done)
+ * FIXME: Recheck this // STILL check this
+ */
+@Mixin(ThreadingDetector.class)
+public class MixinThreadingDetector
 {
+	@Mutable
 	@Shadow
-	@Final
-	private DynamicTexture lightTexture;
+	private Semaphore lock;
 	
 	@Inject(method = "<init>", at = @At("RETURN"))
-	public void markLightTexture(CallbackInfo ci) { ((ILightTextureMarker) this.lightTexture).markLightTexture(); }
+	private void setSemaphore(CallbackInfo ci)
+	{
+		this.lock = new Semaphore(2);
+	}
 	
 }
+
+#else
+
+import net.minecraft.world.level.chunk.ChunkGenerator;
+
+@Mixin(ChunkGenerator.class)
+public class MixinThreadingDetector { }
+#endif
