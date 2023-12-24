@@ -1,5 +1,6 @@
 package com.seibel.distanthorizons.forge.mixins;
 
+import net.minecraft.client.ClientBrandRetriever;
 import net.minecraftforge.fml.ModList;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -18,6 +19,9 @@ public class ForgeMixinPlugin implements IMixinConfigPlugin
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName)
 	{
+		if (!ClientBrandRetriever.getClientModName().equals("forge"))
+			return false;
+		
 		if (mixinClassName.contains(".mods."))
 		{ // If the mixin wants to go into a mod then we check if that mod is loaded or not
 			return ModList.get().isLoaded(
