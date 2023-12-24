@@ -470,8 +470,21 @@ allprojects { p ->
     // this is the text that appears at the top of the overview (home) page
     // and is used when bookmarking a page
     javadoc.title = rootProject.mod_name + "-" + project.name
-    
-    
+
+    // Some annotations arent "technically" part of the official java standard,
+    //  so we define it ourself here
+    javadoc {
+        configure( options ) {
+            tags(
+                    'todo:X"',
+                    'apiNote:a:API Note:',
+                    'implSpec:a:Implementation Requirements:',
+                    'implNote:a:Implementation Note:'
+            )
+        }
+    }
+
+
     repositories {
         // The central repo
         mavenCentral()
