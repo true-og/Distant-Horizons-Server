@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.forge.mixins.server;
+package com.seibel.distanthorizons.neoforged.mixins.server;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;

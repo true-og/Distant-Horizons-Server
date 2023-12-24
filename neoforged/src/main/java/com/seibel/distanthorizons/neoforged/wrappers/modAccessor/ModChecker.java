@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.forge.wrappers.modAccessor;
+package com.seibel.distanthorizons.neoforged.wrappers.modAccessor;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModChecker;
 import net.neoforged.fml.ModList;

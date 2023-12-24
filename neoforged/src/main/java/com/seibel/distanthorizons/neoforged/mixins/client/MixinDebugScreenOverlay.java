@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.forge.mixins.client;
+package com.seibel.distanthorizons.neoforged.mixins.client;
 
 import com.seibel.distanthorizons.core.logging.f3.F3Screen;
 import net.minecraft.client.gui.components.DebugScreenOverlay;

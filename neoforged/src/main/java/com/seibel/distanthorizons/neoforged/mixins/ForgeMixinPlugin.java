@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.forge.mixins;
+package com.seibel.distanthorizons.neoforged.mixins;
 
 import net.neoforged.fml.ModList;
 import org.objectweb.asm.tree.ClassNode;

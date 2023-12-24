@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.forge.mixins.client;
+package com.seibel.distanthorizons.neoforged.mixins.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 #if MC_VER < MC_1_19_4

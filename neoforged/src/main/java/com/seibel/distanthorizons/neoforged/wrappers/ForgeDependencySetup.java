@@ -17,11 +17,11 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.forge.wrappers;
+package com.seibel.distanthorizons.neoforged.wrappers;
 
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModChecker;
-import com.seibel.distanthorizons.forge.wrappers.modAccessor.ModChecker;
+import com.seibel.distanthorizons.neoforged.wrappers.modAccessor.ModChecker;
 
 /**
  * Binds all necessary dependencies so we

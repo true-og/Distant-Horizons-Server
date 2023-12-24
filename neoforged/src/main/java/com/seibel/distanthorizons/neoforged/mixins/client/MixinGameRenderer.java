@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.forge.mixins.client;
+package com.seibel.distanthorizons.neoforged.mixins.client;
 
 import com.seibel.distanthorizons.common.wrappers.DependencySetupDoneCheck;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;

@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.forge.mixins.server;
+package com.seibel.distanthorizons.neoforged.mixins.server;
 
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import org.spongepowered.asm.mixin.Mixin;

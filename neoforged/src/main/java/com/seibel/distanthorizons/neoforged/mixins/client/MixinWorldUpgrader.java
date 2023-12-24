@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.forge.mixins.client;
+package com.seibel.distanthorizons.neoforged.mixins.client;
 
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiLevelType;
 import com.seibel.distanthorizons.api.interfaces.world.IDhApiDimensionTypeWrapper;

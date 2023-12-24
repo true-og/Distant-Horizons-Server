@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.forge.mixins.server.unsafe;
+package com.seibel.distanthorizons.neoforged.mixins.server.unsafe;
 
 import org.spongepowered.asm.mixin.Mixin;
 #if MC_VER >= MC_1_18_2

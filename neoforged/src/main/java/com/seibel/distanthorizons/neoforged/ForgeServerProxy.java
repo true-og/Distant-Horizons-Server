@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.forge;
+package com.seibel.distanthorizons.neoforged;
 
 import com.seibel.distanthorizons.common.util.ProxyUtil;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
