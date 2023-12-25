@@ -44,10 +44,10 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.*;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.client.ConfigScreenHandler;
 
 import net.neoforged.neoforge.common.NeoForge;
@@ -76,15 +76,15 @@ public class ForgeMain implements LodForgeMethodCaller
 	public static ForgeClientProxy client_proxy = null;
 	public static ForgeServerProxy server_proxy = null;
 	
-	public ForgeMain()
+	public ForgeMain(IEventBus eventBus)
 	{
 		DependencySetup.createClientBindings();
 
 //		initDedicated(null);
 //		initDedicated(null);
 		// Register the mod initializer (Actual event registration is done in the different proxies)
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::initClient);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::initDedicated);
+		eventBus.addListener(this::initClient);
+		eventBus.addListener(this::initDedicated);
 	}
 	
 	private void initClient(final FMLClientSetupEvent event)
