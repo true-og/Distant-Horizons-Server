@@ -152,10 +152,16 @@ subprojects { p ->
             shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
             compileClasspath.extendsFrom common
             runtimeClasspath.extendsFrom common
-            developmentForge.extendsFrom common
+            if (findProject(":forge"))
+                developmentForge.extendsFrom common
+            if (findProject(":neoforged"))
+                developmentNeoForge.extendsFrom common
             compileClasspath.extendsFrom coreProjects
             runtimeClasspath.extendsFrom coreProjects
-            developmentForge.extendsFrom coreProjects
+            if (findProject(":forge"))
+                developmentForge.extendsFrom coreProjects
+            if (findProject(":neoforged"))
+                developmentNeoForge.extendsFrom coreProjects
 
             if (findProject(":fabricLike") && p != project(":fabricLike")) {
                 // Shadow fabricLike
@@ -163,7 +169,6 @@ subprojects { p ->
                 shadowFabricLike
                 compileClasspath.extendsFrom fabricLike
                 runtimeClasspath.extendsFrom fabricLike
-                developmentForge.extendsFrom fabricLike
             }
         }
     }

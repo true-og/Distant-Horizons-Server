@@ -8,7 +8,7 @@ sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
 architectury {
     platformSetupLoomIde()
-    forge()
+    neoForge()
 }
 
 repositories {
@@ -41,8 +41,6 @@ loom {
 //        ]
     }
     mixin {
-        useLegacyMixinAp = true
-        
         // Mixins are now defined in the `mods.toml`
 //        mixinConfigs = [
 //                "DistantHorizons.mixins.json"
