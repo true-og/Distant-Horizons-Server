@@ -14,16 +14,23 @@ import java.util.Set;
  */
 public class NeoforgeMixinPlugin implements IMixinConfigPlugin
 {
-	private boolean isNeoforgeMixinFile = false;
+	private boolean firstRun = false;
+	private boolean isNeoforgeMixinFile;
 	
 	
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName)
 	{
-		if (!this.isNeoforgeMixinFile)
-		{
-			return false;
+		if (!this.firstRun) {
+			try {
+				Class<?> cls = Class.forName("net.neoforged.fml.common.Mod"); // Check if a NeoForge exclusive class exists
+				this.isNeoforgeMixinFile = true;
+			} catch (ClassNotFoundException e) {
+				this.isNeoforgeMixinFile = false;
+			}
 		}
+		if (!this.isNeoforgeMixinFile)
+			return false;
 		
 		if (mixinClassName.contains(".mods."))
 		{ // If the mixin wants to go into a mod then we check if that mod is loaded or not
@@ -41,12 +48,7 @@ public class NeoforgeMixinPlugin implements IMixinConfigPlugin
 	
 	
 	@Override
-	public void onLoad(String mixinPackage)
-	{
-		// prevents running forge mixins
-		// example string: com.seibel.distanthorizons.neoforge.mixins
-		this.isNeoforgeMixinFile = mixinPackage.contains("neo");
-	}
+	public void onLoad(String mixinPackage) { }
 	
 	@Override
 	public String getRefMapperConfig() { return null; }
