@@ -19,6 +19,7 @@
 
 package com.seibel.distanthorizons.forge;
 
+import com.seibel.distanthorizons.common.IEventProxy;
 import com.seibel.distanthorizons.common.util.ProxyUtil;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftRenderWrapper;
 import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
@@ -50,6 +51,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 //import net.minecraftforge.network.NetworkRegistry;
 //import net.minecraftforge.network.simple.SimpleChannel;
@@ -71,7 +73,7 @@ import org.lwjgl.opengl.GL32;
  * @author James_Seibel
  * @version 2023-7-27
  */
-public class ForgeClientProxy
+public class ForgeClientProxy implements IEventProxy
 {
 	private static final IMinecraftClientWrapper MC = SingletonInjector.INSTANCE.get(IMinecraftClientWrapper.class);
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
@@ -84,6 +86,15 @@ public class ForgeClientProxy
 	#else
 	private static LevelAccessor GetEventLevel(LevelEvent e) { return e.getLevel(); }
 	#endif
+	
+	
+	
+	@Override
+	public void registerEvents()
+	{
+		MinecraftForge.EVENT_BUS.register(this);
+		this.setupNetworkingListeners();
+	}
 	
 	
 	
@@ -237,8 +248,7 @@ public class ForgeClientProxy
 	// networking //
 	//============//
 	
-	/** @param event this is just to ensure the event is called at the right time, if it is called outside the {@link FMLClientSetupEvent} event, the binding may fail */
-	public static void setupNetworkingListeners(FMLClientSetupEvent event)
+	public void setupNetworkingListeners()
 	{
 //		multiversePluginChannel = NetworkRegistry.newSimpleChannel(
 //				new ResourceLocation(ModInfo.NETWORKING_RESOURCE_NAMESPACE, ModInfo.MULTIVERSE_PLUGIN_NAMESPACE),
