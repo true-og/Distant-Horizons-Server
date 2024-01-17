@@ -8,13 +8,18 @@ plugins {
     id "io.github.pacifistmc.forgix" version "1.2.6"
 
     // Manifold preprocessor
-    id "systems.manifold.manifold-gradle-plugin" version "0.0.2-alpha"
+//    id "systems.manifold.manifold-gradle-plugin" version "0.0.2-alpha"
 
 //    // Provides mc libraries to core
 //    id "org.spongepowered.gradle.vanilla" version '0.2.1-SNAPSHOT' apply false
 
     // Architectury is used here only as a replacement for forge's own loom
-    id "dev.architectury.loom" version "1.4-SNAPSHOT" apply false
+//    id "dev.architectury.loom" version "1.4-SNAPSHOT" apply false
+    id "fabric-loom" version "1.4-SNAPSHOT" apply false
+
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)' apply false
+    id 'org.spongepowered.mixin' version '0.7.+' apply false
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+' apply false
 }
 
 /**
@@ -104,8 +109,8 @@ subprojects { p ->
     // Apply plugins
     apply plugin: "java"
     apply plugin: "com.github.johnrengelman.shadow"
-    if (isMinecraftSubProject)
-        apply plugin: "systems.manifold.manifold-gradle-plugin"
+//    if (isMinecraftSubProject)
+//        apply plugin: "systems.manifold.manifold-gradle-plugin"
     if (p == project(":core"))
         apply plugin: "application"
 //    apply plugin: "org.spongepowered.gradle.vanilla" // Provides minecraft libraries
@@ -114,14 +119,20 @@ subprojects { p ->
     if (
             (findProject(":forge") && p == project(":forge")) ||
             (findProject(":neoforge") && p == project(":neoforge"))
-    )
-        apply plugin: "dev.architectury.loom"
+    ) {
+//        apply plugin: 'net.minecraftforge.gradle'
+//        apply plugin: 'org.spongepowered.mixin'
+//        apply plugin: 'org.parchmentmc.librarian.forgegradle'
+
+        /* The code below creates the access transformer file */
+        new AWToAT().remap(project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"), accessWidenerVersion)
+    }
 
 
     // Set the manifold version (may not be required tough)
-    manifold {
-        manifoldVersion = rootProject.manifold_version
-    }
+//    manifold {
+//        manifoldVersion = rootProject.manifold_version
+//    }
 
 
     // set up custom configurations (configurations are a way to handle dependencies) 
@@ -143,7 +154,7 @@ subprojects { p ->
         // this should match shadowMe pretty closely
         implementation.extendsFrom(forgeShadowMe)
         shadowMe.extendsFrom(forgeShadowMe)
-        forgeRuntimeLibrary.extendsFrom(forgeShadowMe)
+        runtimeOnly.extendsFrom(forgeShadowMe)
         
         
         if (isMinecraftSubProject && p != project(":common")) {
@@ -154,14 +165,18 @@ subprojects { p ->
             runtimeClasspath.extendsFrom common
             if (findProject(":forge"))
                 developmentForge.extendsFrom common
+                implementation.extendsFrom common
             if (findProject(":neoforge"))
                 developmentNeoForge.extendsFrom common
+                implementation.extendsFrom common
             compileClasspath.extendsFrom coreProjects
             runtimeClasspath.extendsFrom coreProjects
             if (findProject(":forge"))
                 developmentForge.extendsFrom coreProjects
+                implementation.extendsFrom coreProjects
             if (findProject(":neoforge"))
                 developmentNeoForge.extendsFrom coreProjects
+                implementation.extendsFrom coreProjects
 
             if (findProject(":fabricLike") && p != project(":fabricLike")) {
                 // Shadow fabricLike
@@ -615,7 +630,7 @@ allprojects { p ->
         into p.file("build/resources/main")
     }
 
-    tasks.withType(JavaCompile) {
+    compileJava {
         if (isMinecraftSubProject) {
             options.release = rootProject.java_version as Integer
             options.compilerArgs += ["-Xplugin:Manifold"]

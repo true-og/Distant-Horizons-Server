@@ -29,5 +29,5 @@ issueTrackerURL = "${issues}"
     mandatory = true  # Forge syntax
     type = "required" # Neoforge syntax
     versionRange = "${compatible_forgemc_versions}" # Where we set what version of mc it is avalible for
-    ordering = "NONE"
+    ordering = "AFTER"
     side = "BOTH"

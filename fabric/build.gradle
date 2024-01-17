@@ -1,6 +1,4 @@
-plugins {
-    id "fabric-loom" version "1.4-SNAPSHOT"
-}
+apply plugin: "fabric-loom"
 
 loom {
     accessWidenerPath = project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")
@@ -22,17 +20,12 @@ loom {
     }
 }
 
-remapJar {
-    inputFile = shadowJar.archiveFile
-    dependsOn shadowJar
-//    classifier null
-}
-
 configurations {
     // The addModJar basically embeds the mod to the built jar
     addModJar
     include.extendsFrom addModJar
     modImplementation.extendsFrom addModJar
+    dummy
 }
 
 def addMod(path, enabled) {
@@ -112,6 +105,12 @@ dependencies {
         api("com.github.LlamaLad7:MixinExtras:0.2.0-beta.4")
         annotationProcessor("com.github.LlamaLad7:MixinExtras:0.2.0-beta.4")
     }
+}
+
+remapJar {
+    inputFile = shadowJar.archiveFile
+    dependsOn shadowJar
+//    classifier null
 }
 
 

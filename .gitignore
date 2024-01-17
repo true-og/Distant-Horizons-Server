@@ -34,3 +34,6 @@ build.properties
 
 # Sqlite databases
 *.sqlite
+
+# Don't add access transformers to git as it's dynamically generated
+accesstransformer.cfg

@@ -86,7 +86,7 @@ import java.util.List;
  * @author James Seibel
  * @version 8-15-2022
  */
-@Mod(ModInfo.ID)
+@Mod("distanthorizons") // TODO: Change it back to ModInfo.ID when forge works
 public class ForgeMain implements LodForgeMethodCaller
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
