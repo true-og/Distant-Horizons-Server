@@ -1,3 +1,6 @@
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
@@ -49,6 +52,9 @@ apply plugin: 'org.spongepowered.mixin'
 
 minecraft {
     mappings channel: 'official', version: minecraft_version
+
+    copyIdeResources = true
+    
     accessTransformer = project(":common").file('src/main/resources/META-INF/accesstransformer.cfg')
     runs {
         client {
@@ -187,10 +193,6 @@ tasks.register('copyAllResources') {
 processResources {
     dependsOn(tasks.named('copyAllResources'))
 }
-
-//processResources {
-//    dependsOn(tasks.named('copyAllResources'))
-//}
 
 //tasks.named('prepareClient') {
 //    dependsOn(tasks.named('copyAllResources'))
