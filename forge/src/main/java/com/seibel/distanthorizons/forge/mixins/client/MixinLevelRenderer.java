@@ -35,22 +35,15 @@ import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;
 import com.seibel.distanthorizons.coreapi.util.math.Mat4f;
-import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.nio.FloatBuffer;
 
 #if MC_VER < MC_1_17_1
 import org.lwjgl.opengl.GL15;
@@ -58,17 +51,13 @@ import org.lwjgl.opengl.GL15;
 
 
 /**
- * This class is used to mix in my rendering code
+ * This class is used to mix in DH's rendering code
  * before Minecraft starts rendering blocks.
  * If this wasn't done, and we used Forge's
  * render last event, the LODs would render on top
  * of the normal terrain. <br><br>
  *
  * This is also the mixin for rendering the clouds
- *
- * @author coolGi
- * @author James Seibel
- * @version 12-31-2021
  */
 @Mixin(LevelRenderer.class)
 public class MixinLevelRenderer
@@ -92,13 +81,15 @@ public class MixinLevelRenderer
 	public void renderClouds(PoseStack poseStack, Matrix4f projectionMatrix, float partialTicks, double cameraX, double cameraY, double cameraZ, CallbackInfo ci) 
 	#endif
 	{
+		// FIXME this is only called when clouds are enabled and vanilla render distance is far enough
+		//  not having the parital ticks doesn't appear to be critical currently, but might cause weird issues down the line
+		
 		// get the partial ticks since renderBlockLayer doesn't
 		// have access to them
 		previousPartialTicks = partialTicks;
 	}
 	
 	
-	// TODO: Can we move this to forge's client proxy similarly to how fabric does it
 	#if MC_VER < MC_1_17_1
     @Inject(at = @At("HEAD"),
 			method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDD)V",
@@ -142,7 +133,7 @@ public class MixinLevelRenderer
 		// only render before solid blocks
 		if (renderType.equals(RenderType.solid()))
 		{
-			ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
+			ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(this.level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
 			
 			// experimental proof-of-concept option
 			if (Config.Client.Advanced.Graphics.AdvancedGraphics.seamlessOverdraw.get())
@@ -157,6 +148,10 @@ public class MixinLevelRenderer
 				projectionMatrix.set(matrixFloatArray);
 				#endif
 			}
+		} 
+		else if (renderType.equals(RenderType.translucent())) 
+		{
+			ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
 		}
 		
 		if (Config.Client.Advanced.Debugging.lodOnlyMode.get())

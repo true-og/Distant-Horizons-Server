@@ -47,7 +47,6 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
 
-import java.nio.FloatBuffer;
 import java.util.HashSet;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -181,9 +180,6 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		// render event //
 		//==============//
 
-        //Define this in the MixinLevelRenderer so that it works with sodium without any changes to the code
-        // TODO: If all else is fine, can we remove these commented code
-		// Client Render Level
 		WorldRenderEvents.AFTER_SETUP.register((renderContext) ->
 		{
 			this.clientApi.renderLods(ClientLevelWrapper.getWrapper(renderContext.world()),
@@ -205,6 +201,14 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 				renderContext.projectionMatrix().set(matrixFloatArray);
 				#endif
 			}
+		});
+		
+		WorldRenderEvents.AFTER_TRANSLUCENT.register((renderContext) -> 
+		{
+			this.clientApi.renderDeferredLods(ClientLevelWrapper.getWrapper(renderContext.world()),
+					McObjectConverter.Convert(renderContext.matrixStack().last().pose()),
+					McObjectConverter.Convert(renderContext.projectionMatrix()),
+					renderContext.tickDelta());
 		});
 
 		// Debug keyboard event

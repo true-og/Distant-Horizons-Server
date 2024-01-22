@@ -24,7 +24,10 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrappe
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.Logger;
 
@@ -85,6 +88,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	 * Should be between {@link IBlockStateWrapper#FULLY_OPAQUE} and {@link IBlockStateWrapper#FULLY_OPAQUE}
 	 */
 	private int opacity = -1;
+	/** used by the Iris shader mod to determine how each LOD should be rendered */
+	private byte irisBlockMaterialId = 0;
 	
 	
 	
@@ -116,7 +121,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	{
 		this.blockState = blockState;
 		this.serialString = this.serialize(levelWrapper);
-		LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"]");
+		this.irisBlockMaterialId = this.calculateIrisBlockMaterialId();
+		LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.irisBlockMaterialId+"]");
 	}
 	
 	
@@ -273,6 +279,9 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		return !this.blockState.getFluidState().isEmpty();
         #endif
 	}
+	
+	@Override
+	public byte getIrisBlockMaterialId() { return this.irisBlockMaterialId; }
 	
 	@Override
 	public String toString() { return this.getSerialString(); }
@@ -456,5 +465,112 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	}
 	
 	
+	
+	//==============//
+	// Iris methods //
+	//==============//
+	
+	private byte calculateIrisBlockMaterialId() 
+	{
+		if (this.blockState == null)
+		{
+			return 0;
+		}
+		
+		
+		String serialString = this.getSerialString();
+		if (this.blockState.is(BlockTags.LEAVES)) 
+		{
+			return 1;
+		}
+		else if (serialString.contains("water") && this.isLiquid())
+		{
+			return 12;
+		}
+		else if (this.blockState.getSoundType() == SoundType.WOOD
+				#if MC_VER >= MC_1_19_2
+				|| this.blockState.getSoundType() == SoundType.CHERRY_WOOD
+				#endif
+				) 
+		{
+			return 3;
+		}
+		else if (this.blockState.getSoundType() == SoundType.METAL
+				#if MC_VER >= MC_1_19_2
+				|| this.blockState.getSoundType() == SoundType.COPPER
+				#endif
+				#if MC_VER >= MC_1_20_4
+				|| this.blockState.getSoundType() == SoundType.COPPER_BULB
+				|| this.blockState.getSoundType() == SoundType.COPPER_GRATE
+				#endif
+				) 
+		{
+			return 4;
+		}
+		else if (
+			#if MC_VER >= MC_1_18_2
+				this.blockState.is(BlockTags.DIRT)
+			#else
+				state.is(Blocks.DIRT)
+		        || state.is(Blocks.PODZOL)
+		        || state.is(Blocks.COARSE_DIRT)
+		        || state.is(Blocks.GRASS_BLOCK)
+			#endif
+			)
+		{
+			return 5;
+		} 
+		else if (this.blockState.is(Blocks.LAVA)) 
+		{
+			return 6;
+		}
+		#if MC_VER >= MC_1_17_1
+		else if (this.blockState.getSoundType() == SoundType.DEEPSLATE
+				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_BRICKS
+				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_TILES 
+				|| this.blockState.getSoundType() == SoundType.POLISHED_DEEPSLATE) 
+		{
+			return 7;
+		} 
+		#endif
+		else if (this.blockState.getSoundType() == SoundType.SNOW
+				#if MC_VER >= MC_1_17_1
+				|| this.blockState.getSoundType() == SoundType.POWDER_SNOW
+				#endif
+				)
+		{
+			return 8;
+		} 
+		else if (this.blockState.is(BlockTags.SAND))
+		{
+			return 9;
+		}
+		else if (
+			#if MC_VER >= MC_1_18_2
+			this.blockState.is(BlockTags.TERRACOTTA)
+			#else
+			serialString.contains("terracotta") 
+			#endif
+			)
+		{
+			return 10;
+		} 
+		else if (this.blockState.is(BlockTags.BASE_STONE_NETHER)) 
+		{
+			return 11;
+		} 
+		else if (serialString.contains("stone")) 
+		{
+			return 2;
+		}
+		else if (this.blockState.getLightEmission() > 0) 
+		{
+			return 15;
+		}
+		else
+		{
+			return 0;
+		}
+	}
 	
 }
