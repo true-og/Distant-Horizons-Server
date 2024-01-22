@@ -474,26 +474,31 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	{
 		if (this.blockState == null)
 		{
-			return 0;
+			return IrisBlockMaterial.AIR;
 		}
 		
 		
-		String serialString = this.getSerialString();
-		if (this.blockState.is(BlockTags.LEAVES)) 
+		String serialString = this.getSerialString().toLowerCase();
+		
+		if (this.blockState.is(BlockTags.LEAVES) 
+			|| serialString.contains("bamboo") 
+			|| serialString.contains("cactus")
+			) 
 		{
-			return 1;
+			return IrisBlockMaterial.LEAVES;
 		}
-		else if (serialString.contains("water") && this.isLiquid())
+		else if (this.isLiquid() || this.blockState.is(Blocks.WATER))
 		{
-			return 12;
+			return IrisBlockMaterial.WATER;
 		}
 		else if (this.blockState.getSoundType() == SoundType.WOOD
+				|| serialString.contains("root")
 				#if MC_VER >= MC_1_19_2
 				|| this.blockState.getSoundType() == SoundType.CHERRY_WOOD
 				#endif
 				) 
 		{
-			return 3;
+			return IrisBlockMaterial.WOOD;
 		}
 		else if (this.blockState.getSoundType() == SoundType.METAL
 				#if MC_VER >= MC_1_19_2
@@ -505,71 +510,59 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				#endif
 				) 
 		{
-			return 4;
+			return IrisBlockMaterial.METAL;
 		}
 		else if (
-			#if MC_VER >= MC_1_18_2
-				this.blockState.is(BlockTags.DIRT)
-			#else
-				state.is(Blocks.DIRT)
-		        || state.is(Blocks.PODZOL)
-		        || state.is(Blocks.COARSE_DIRT)
-		        || state.is(Blocks.GRASS_BLOCK)
-			#endif
+			serialString.contains("dirt")
+			|| serialString.contains("grass_block")
+			|| serialString.contains("gravel")
+			|| serialString.contains("mud")
 			)
 		{
-			return 5;
+			return IrisBlockMaterial.DIRT;
 		} 
 		else if (this.blockState.is(Blocks.LAVA)) 
 		{
-			return 6;
+			return IrisBlockMaterial.LAVA;
 		}
 		#if MC_VER >= MC_1_17_1
 		else if (this.blockState.getSoundType() == SoundType.DEEPSLATE
 				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_BRICKS
 				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_TILES 
-				|| this.blockState.getSoundType() == SoundType.POLISHED_DEEPSLATE) 
+				|| this.blockState.getSoundType() == SoundType.POLISHED_DEEPSLATE
+				|| serialString.contains("deepslate") ) 
 		{
-			return 7;
+			return IrisBlockMaterial.DEEPSLATE;
 		} 
 		#endif
-		else if (this.blockState.getSoundType() == SoundType.SNOW
-				#if MC_VER >= MC_1_17_1
-				|| this.blockState.getSoundType() == SoundType.POWDER_SNOW
-				#endif
-				)
+		else if (this.serialString.contains("snow"))
 		{
-			return 8;
+			return IrisBlockMaterial.SNOW;
 		} 
-		else if (this.blockState.is(BlockTags.SAND))
+		else if (serialString.contains("sand"))
 		{
-			return 9;
+			return IrisBlockMaterial.SAND;
 		}
-		else if (
-			#if MC_VER >= MC_1_18_2
-			this.blockState.is(BlockTags.TERRACOTTA)
-			#else
-			serialString.contains("terracotta") 
-			#endif
-			)
+		else if (serialString.contains("terracotta"))
 		{
-			return 10;
+			return IrisBlockMaterial.TERRACOTTA;
 		} 
 		else if (this.blockState.is(BlockTags.BASE_STONE_NETHER)) 
 		{
-			return 11;
+			return IrisBlockMaterial.NETHER_STONE;
 		} 
-		else if (serialString.contains("stone")) 
+		else if (serialString.contains("stone")
+				|| serialString.contains("ore")) 
 		{
-			return 2;
+			return IrisBlockMaterial.STONE;
 		}
 		else if (this.blockState.getLightEmission() > 0) 
 		{
-			return 15;
+			return IrisBlockMaterial.ILLUMINATED;
 		}
 		else
 		{
-			return 0;
+			return IrisBlockMaterial.UNKOWN;
 		}
 	}
 	
