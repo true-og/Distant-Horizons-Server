@@ -93,7 +93,6 @@ public class MixinLevelRenderer
 	}
 	
 	
-	// TODO: Can we move this to forge's client proxy similarly to how fabric does it
 	#if MC_VER < MC_1_17_1
     @Inject(at = @At("HEAD"),
 			method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDD)V",
@@ -137,7 +136,7 @@ public class MixinLevelRenderer
 		// only render before solid blocks
 		if (renderType.equals(RenderType.solid()))
 		{
-			ClientApi.INSTANCE.renderOpaqueLods(ClientLevelWrapper.getWrapper(level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
+			ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
 			
 			// experimental proof-of-concept option
 			if (Config.Client.Advanced.Graphics.AdvancedGraphics.seamlessOverdraw.get())
@@ -155,7 +154,7 @@ public class MixinLevelRenderer
 		} 
 		else if (renderType.equals(RenderType.translucent())) 
 		{
-			ClientApi.INSTANCE.renderTranslucentLods(ClientLevelWrapper.getWrapper(level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
+			ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(level), mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
 		}
 		
 		if (Config.Client.Advanced.Debugging.lodOnlyMode.get())
