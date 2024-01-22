@@ -483,6 +483,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		if (this.blockState.is(BlockTags.LEAVES) 
 			|| serialString.contains("bamboo") 
 			|| serialString.contains("cactus")
+			|| serialString.contains("chorus_flower")
 			) 
 		{
 			return IrisBlockMaterial.LEAVES;
@@ -517,6 +518,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			|| serialString.contains("grass_block")
 			|| serialString.contains("gravel")
 			|| serialString.contains("mud")
+			|| serialString.contains("podzol")
+			|| serialString.contains("mycelium")
 			)
 		{
 			return IrisBlockMaterial.DIRT;

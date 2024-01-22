@@ -202,14 +202,6 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 				#endif
 			}
 		});
-		
-		WorldRenderEvents.AFTER_TRANSLUCENT.register((renderContext) -> 
-		{
-			this.clientApi.renderDeferredLods(ClientLevelWrapper.getWrapper(renderContext.world()),
-					McObjectConverter.Convert(renderContext.matrixStack().last().pose()),
-					McObjectConverter.Convert(renderContext.projectionMatrix()),
-					renderContext.tickDelta());
-		});
 
 		// Debug keyboard event
 		// FIXME: Use better hooks so it doesn't trigger key press events in text boxes

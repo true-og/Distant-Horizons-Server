@@ -23,7 +23,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 #if MC_VER < MC_1_19_4
 import com.mojang.math.Matrix4f;
 #else
+import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
+import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
+import com.seibel.distanthorizons.core.api.internal.ClientApi;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import org.joml.Matrix4f;
@@ -106,6 +110,13 @@ public class MixinLevelRenderer
 	private void renderChunkLayer(RenderType renderType, PoseStack modelViewMatrixStack, double camX, double camY, double camZ, Matrix4f projectionMatrix, CallbackInfo callback)
     #endif
     {
+	    if (renderType.equals(RenderType.translucent())) {
+		    ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level),
+				    McObjectConverter.Convert(modelViewMatrixStack.last().pose()),
+				    McObjectConverter.Convert(projectionMatrix),
+				    previousPartialTicks);
+	    }
+		
 		// FIXME completely disables rendering when sodium is installed
 		if (Config.Client.Advanced.Debugging.lodOnlyMode.get())
 		{
