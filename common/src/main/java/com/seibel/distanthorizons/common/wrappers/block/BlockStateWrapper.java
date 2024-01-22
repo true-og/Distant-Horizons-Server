@@ -484,6 +484,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			|| serialString.contains("bamboo") 
 			|| serialString.contains("cactus")
 			|| serialString.contains("chorus_flower")
+			|| serialString.contains("mushroom")
 			) 
 		{
 			return IrisBlockMaterial.LEAVES;
