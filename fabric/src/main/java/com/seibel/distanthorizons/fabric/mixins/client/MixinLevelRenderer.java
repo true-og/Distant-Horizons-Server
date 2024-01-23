@@ -23,16 +23,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 #if MC_VER < MC_1_19_4
 import com.mojang.math.Matrix4f;
 #else
+import org.joml.Matrix4f;
+#endif
+import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;
+import com.seibel.distanthorizons.coreapi.util.math.Mat4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import org.joml.Matrix4f;
-#endif
-import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.core.config.Config;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -41,6 +42,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.lwjgl.opengl.GL15;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -89,10 +91,25 @@ public class MixinLevelRenderer
 	private void renderChunkLayer(RenderType renderType, PoseStack modelViewMatrixStack, double camX, double camY, double camZ, Matrix4f projectionMatrix, CallbackInfo callback)
     #endif
     {
+		#if MC_VER == MC_1_16_5
+	    // get the matrices from the OpenGL fixed pipeline
+	    float[] mcProjMatrixRaw = new float[16];
+	    GL15.glGetFloatv(GL15.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
+	    Mat4f mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
+	    mcProjectionMatrix.transpose();
+	    
+	    Mat4f mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
+		
+		#else
+		// get the matrices directly from MC
+		Mat4f mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrixStack.last().pose());
+		Mat4f mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
+		#endif
+	    
 	    if (renderType.equals(RenderType.translucent())) {
 		    ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level),
-				    McObjectConverter.Convert(modelViewMatrixStack.last().pose()),
-				    McObjectConverter.Convert(projectionMatrix),
+				    mcModelViewMatrix,
+				    mcProjectionMatrix,
 				    Minecraft.getInstance().getFrameTime());
 	    }
 		
