@@ -66,27 +66,6 @@ public class MixinLevelRenderer
 {
     @Shadow
     private ClientLevel level;
-    @Unique
-    private static float previousPartialTicks = 0;
-
-    // Inject rendering at first call to renderChunkLayer
-    // HEAD or RETURN
-	#if MC_VER < MC_1_17_1
-	@Inject(at = @At("RETURN"), method = "renderSky(Lcom/mojang/blaze3d/vertex/PoseStack;F)V")
-	private void renderSky(PoseStack matrixStackIn, float partialTicks, CallbackInfo callback)
-	{
-		// get the partial ticks since renderBlockLayer doesn't
-		// have access to them
-		previousPartialTicks = partialTicks;
-	}
-	#else
-    @Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
-    public void renderClouds(PoseStack poseStack, Matrix4f projectionMatrix, float tickDelta, double cameraX, double cameraY, double cameraZ, CallbackInfo ci) {
-        // get the partial ticks since renderChunkLayer doesn't
-        // have access to them
-        previousPartialTicks = tickDelta;
-    }
-    #endif
 
 	#if MC_VER < MC_1_17_1
     @Inject(at = @At("HEAD"),
@@ -114,7 +93,7 @@ public class MixinLevelRenderer
 		    ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level),
 				    McObjectConverter.Convert(modelViewMatrixStack.last().pose()),
 				    McObjectConverter.Convert(projectionMatrix),
-				    previousPartialTicks);
+				    Minecraft.getInstance().getFrameTime());
 	    }
 		
 		// FIXME completely disables rendering when sodium is installed
