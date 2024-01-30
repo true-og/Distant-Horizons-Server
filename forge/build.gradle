@@ -1,154 +1,19 @@
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
-
-//sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
-
-//architectury {
-//    platformSetupLoomIde()
-//    forge()
-//}
-
-//loom {
-//    forge {
-//        convertAccessWideners.set(true)
-//        extraAccessWideners.add("lod.accesswidener")
-//        mixinConfigs("DistantHorizons.mixins.json")
-//    }
-//}
-
-//loom {
-//    silentMojangMappingsLicense() // Shut the licencing warning
-//    accessWidenerPath = project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")
-//
-//    forge {
-//        convertAccessWideners = true
-//        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-//
-//        mixinConfigs = [
-//                "DistantHorizons.forge.mixins.json"
-//        ]
-//    }
-//
-//    // "runs" isn't required, but when we do need it then it can be useful
-//    runs {
-//        client {
-//            client()
-//            setConfigName("Forge Client")
-//            ideConfigGenerated(true)
-//            runDir("../run")
-////            vmArgs("-XX:-OmitStackTraceInFastThrow", minecraftMemoryJavaArg)
-//        }
-//        server {
-//            server()
-//            setConfigName("Forge Server")
-//            ideConfigGenerated(true)
-//            runDir("../run")
-//        }
-//    }
-//}
-
-minecraft {
-    mappings channel: 'official', version: minecraft_version
-    accessTransformer = project(":common").file('src/main/resources/META-INF/accesstransformer.cfg')
-    runs {
-        client {
-            workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Client'
-            args "-mixins.config=${mod_name}.forge.mixins.json"
-            mods {
-                modClientRun {
-                    source sourceSets.main
-                    source project(":common").sourceSets.main
-                    source project(":api").sourceSets.main
-                    source project(":core").sourceSets.main
-                }
-            }
-            property 'forge.enabledGameTestNamespaces', mod_id
-            property 'forge.logging.console.level', 'debug'
-            properties 'mixin.env.remapRefMap': 'true'
-            property 'mixin.env.refMapRemappingFile', "${project.projectDir}/build/createSrgToMcp/output.srg"
-        }
-
-        server {
-            workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Server'
-            args "-mixins.config=${mod_name}.forge.mixins.json"
-            mods {
-                modServerRun {
-                    source sourceSets.main
-                    source project(":common").sourceSets.main
-                    source project(":api").sourceSets.main
-                    source project(":core").sourceSets.main
-                }
-            }
-            property 'forge.logging.console.level', 'debug'
-            properties 'mixin.env.remapRefMap': 'true'
-            property 'mixin.env.refMapRemappingFile', "${project.projectDir}/build/createSrgToMcp/output.srg"
-        }
-
-        data {
-            workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            taskName 'Data'
-            args "-mixins.config=${mod_name}.forge.mixins.json"
-            mods {
-                modDataRun {
-                    source sourceSets.main
-                    source project(":common").sourceSets.main
-                    source project(":api").sourceSets.main
-                    source project(":core").sourceSets.main
-                }
-            }
-            property 'forge.logging.console.level', 'debug'
-        }
+unimined.minecraft {
+    minecraftForge {
+        loader forge_version
+        mixinConfig("DistantHorizons.forge.mixins.json")
+        accessTransformer(aw2at(project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")))
     }
 }
-sourceSets.main.resources.srcDir 'src/generated/resources'
 
-//remapJar {
-//    inputFile = shadowJar.archiveFile
-//    dependsOn shadowJar
-////    classifier null
-//}
-shadowJar {
-    finalizedBy 'reobfShadowJar'
-}
-jar.dependsOn('shadowJar')
-reobf {
-    shadowJar {}
-}
-
-minecraft.runs.all {
-    lazyToken('minecraft_classpath') {
-//        configurations.implementation.exclude group: 'org.jetbrains', module: 'annotations'
-//        configurations.implementation.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-//        configurations.runtimeLibrary.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-    }
-}
 
 def addMod(path, enabled) {
     if (enabled == "2")
-//        dependencies { implementation(path) }
-        dependencies { implementation(fg.deobf(path)) }
+        dependencies { modImplementation(path) }
     else if (enabled == "1")
-//        dependencies { modCompileOnly(path) }
-        dependencies { compileOnly(fg.deobf(path)) }
+        dependencies { compileOnly(path) }
 }
 dependencies {
-//    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-//    mappings loom.layered() {
-//        // Mojmap mappings
-//        officialMojangMappings()
-//        // Parchment mappings (it adds parameter mappings & javadoc)
-//        parchment("org.parchmentmc.data:parchment-${rootProject.parchment_version}@zip")
-//    }
-
-    // Forge
-    minecraft "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
-
     // Architectury API
 //    if (minecraft_version == "1.16.5") {
 //        implementation("me.shedaniel:architectury-forge:${rootProject.architectury_version}")
@@ -164,15 +29,11 @@ dependencies {
 
     addMod("curse.maven:TerraFirmaCraft-302973:4616004", rootProject.enable_terrafirmacraft)
     
-    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+//    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
 //    if (System.getProperty("idea.sync.active") != "true") {
 //        annotationProcessor "org.spongepowered:mixin:0.8.4:processor"
 //    }
-}
-
-mixin {
-    add sourceSets.main, "${mod_name}-forge-refmap.json"
 }
 
 task deleteResources(type: Delete) {
@@ -188,14 +49,18 @@ processResources {
     dependsOn(tasks.named('copyAllResources'))
 }
 
-//processResources {
-//    dependsOn(tasks.named('copyAllResources'))
-//}
+afterEvaluate {
+    runClient {
+        dependsOn(tasks.named('copyAllResources'))
+        finalizedBy(deleteResources)
+    }
+}
 
-//tasks.named('prepareClient') {
-//    dependsOn(tasks.named('copyAllResources'))
-//    finalizedBy(deleteResources)
-//}
+remapJar {
+    inputFile = shadowJar.archiveFile
+    dependsOn shadowJar
+//    classifier null
+}
 
 
 sourcesJar {
