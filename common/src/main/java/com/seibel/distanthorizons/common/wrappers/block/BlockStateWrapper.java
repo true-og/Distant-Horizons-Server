@@ -495,7 +495,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		}
 		else if (this.blockState.getSoundType() == SoundType.WOOD
 				|| serialString.contains("root")
-				#if MC_VER >= MC_1_19_2
+				#if MC_VER >= MC_1_19_4
 				|| this.blockState.getSoundType() == SoundType.CHERRY_WOOD
 				#endif
 				) 
