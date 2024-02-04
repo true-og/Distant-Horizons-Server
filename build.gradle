@@ -143,19 +143,19 @@ subprojects { p ->
     // set up custom configurations (configurations are a way to handle dependencies) 
     configurations {
         // extends the shadowJar configuration
-        shadowMe // Configuration that contains coreProjects
-        shade // Configuration that doesn't contain coreProjects
+        shadowCore // Configuration that contains coreProjects
+        shadowMc // Configuration that doesn't contain coreProjects
         
         // have implemented dependencies automatically embedded in the final jar
-        implementation.extendsFrom(shadowMe)
-        implementation.extendsFrom(shade)
+        implementation.extendsFrom(shadowCore)
+        implementation.extendsFrom(shadowMc)
 
         // Add shaded libraries very early in the classpath (excluding coreProjects as that's added in a different way)
-        minecraftLibraries.extendsFrom(shade)
+        minecraftLibraries.extendsFrom(shadowMc)
 
         // Configuration fpr core & api
         coreProjects
-        shadowMe.extendsFrom(coreProjects)
+        shadowCore.extendsFrom(coreProjects)
         
         
         if (isMinecraftSubProject && p != project(":common")) {
@@ -194,7 +194,7 @@ subprojects { p ->
         }
         
         // Log4j
-        // TODO: Change to shadowMe later to work in the standalone jar
+        // TODO: Change to shadowCore later to work in the standalone jar
         // We cannot do this now as it would break Quilt
         implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
         implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
@@ -208,24 +208,24 @@ subprojects { p ->
         implementation("junit:junit:4.13")
         
         // Compression
-        shade("org.lz4:lz4-java:${rootProject.lz4_version}")
+        shadowMc("org.lz4:lz4-java:${rootProject.lz4_version}")
         
         // Sqlite Database
-        shade("org.xerial:sqlite-jdbc:${rootProject.sqlite_jdbc_version}")
+        shadowMc("org.xerial:sqlite-jdbc:${rootProject.sqlite_jdbc_version}")
         
         // NightConfig (includes Toml & Json)
-        shade("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
-        shade("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
+        shadowMc("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
+        shadowMc("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
 
         // SVG (not needed atm)
-        //shade("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
+        //shadowMc("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
         
         // Netty
         // Breaks 1.16.5
-        //shade("io.netty:netty-all:${rootProject.netty_version}")
+        //shadowMc("io.netty:netty-all:${rootProject.netty_version}")
 
         // Remember, for lwjgl dependencies that arent included in Minecraft, you need to also need to add it to the ShadowJar thing
-        shade("org.lwjgl:lwjgl-jawt:${rootProject.lwjgl_version}") {
+        shadowMc("org.lwjgl:lwjgl-jawt:${rootProject.lwjgl_version}") {
             exclude group: "org.lwjgl", module: "lwjgl" // This module is imported by Minecraft so exclude it
         }
         
@@ -278,7 +278,7 @@ subprojects { p ->
 
 
     shadowJar {
-        configurations = [project.configurations.shadowMe, project.configurations.shade]
+        configurations = [project.configurations.shadowCore, project.configurations.shadowMc]
         
         if (isMinecraftSubProject && p != project(":common")) {
             configurations.push(project.configurations.shadowCommon) // Shadow the common subproject
