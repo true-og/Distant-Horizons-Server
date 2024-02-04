@@ -134,6 +134,16 @@ subprojects { p ->
     tasks.withType(GenerateModuleMetadata) {
         enabled = false
     }
+    
+    // Disable testing for projects that isn't the core or api project
+    if (isMinecraftSubProject) {
+        test {
+            enabled = false
+        }
+        compileTestJava {
+            enabled = false
+        }
+    }
 
 
     // Set the manifold version (may not be required tough)
