@@ -261,12 +261,6 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 	@Override
 	public int getTargetFrameBuffer()
 	{
-		int frameBufferOverrideId = DhApiRenderProxy.INSTANCE.targetFrameBufferOverride;
-		if (frameBufferOverrideId != -1)
-		{
-			return frameBufferOverrideId;
-		}
-		
 		// used so we can access the framebuffer shaders end up rendering to
 		if (AbstractOptifineAccessor.optifinePresent())
 		{
