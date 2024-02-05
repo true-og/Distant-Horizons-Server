@@ -74,3 +74,20 @@ sourcesJar {
 //        skip()
 //    }
 //}
+
+
+
+// TODO this was specifically added for MC 1.20.4 should it be enabled for anything below MC 1.20.4?
+// source: https://github.com/MinecraftForge/MinecraftForge/blob/5d0047753dfac0caaf5d97cc3f5c9a8b0990cb44/mdk/build.gradle#L209-L217
+//
+// Merge the resources and classes into the same directory. 
+// This is done because java expects modules to be in a single directory.
+// And if we have it in multiple we have to do performance intensive hacks like having the UnionFileSystem
+// This will eventually be migrated to ForgeGradle so modders don't need to manually do it. But that is later.
+sourceSets.each {
+    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+    //println "source name " + it.name // as of 2024-2-4 "it.name" only returned "main" and "test"
+    it.output.resourcesDir = dir
+    it.java.destinationDirectory = dir
+}
+
