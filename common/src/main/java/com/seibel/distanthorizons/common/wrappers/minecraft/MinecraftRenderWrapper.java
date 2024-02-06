@@ -164,7 +164,7 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 				.rotateX((float)Math.toRadians(camera.getXRot()))
 				.rotateY((float)Math.toRadians(camera.getYRot() + 180f))
 				.translate(cameraVec3);
-		return McObjectConverter.Convert(matWorldView);
+		return new Mat4f(matWorldView);
 	}
 	
 	@Override
