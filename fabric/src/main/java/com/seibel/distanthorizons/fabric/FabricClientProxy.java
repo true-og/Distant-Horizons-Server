@@ -47,7 +47,9 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
 
+#if MC_VER < MC_1_19_4
 import java.nio.FloatBuffer;
+#endif
 import java.util.HashSet;
 
 import net.minecraft.client.multiplayer.ClientLevel;

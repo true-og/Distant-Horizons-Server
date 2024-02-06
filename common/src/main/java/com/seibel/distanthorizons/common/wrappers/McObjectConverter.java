@@ -77,7 +77,11 @@ public class McObjectConverter
         #endif
 	}
 	
-	/** 4x4 float matrix converter */
+	/** 
+	 * 4x4 float matrix converter
+	 * TODO this should be moved into Mat4f's constructor
+	 */
+	@Deprecated
 	public static Mat4f Convert(Matrix4f mcMatrix)
 	{
 		FloatBuffer buffer = FloatBuffer.allocate(16);
