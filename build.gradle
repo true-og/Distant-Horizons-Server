@@ -199,13 +199,13 @@ subprojects { p ->
         implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
         implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
 
-        // JOML (doesn't have to be shaded in because NightConfig already includes it)
-        implementation("org.joml:joml:${rootProject.joml_version}")
-
         // JUnit tests
         implementation("org.junit.jupiter:junit-jupiter:5.8.2")
         implementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
         implementation("junit:junit:4.13")
+        
+        // JOML
+        shadowMc("org.joml:joml:${rootProject.joml_version}")
         
         // Compression
         shadowMc("org.lz4:lz4-java:${rootProject.lz4_version}")
@@ -303,6 +303,9 @@ subprojects { p ->
         // Sqlite Database
         //At the moment, there is a bug in this library which doesnt allow it to be relocated
 //        relocate "org.sqlite", "${librariesLocation}.sqlite"
+        
+        // JOML
+        relocate "org.joml", "${librariesLocation}.joml"
 
         // NightConfig (includes Toml & Json)
         relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"

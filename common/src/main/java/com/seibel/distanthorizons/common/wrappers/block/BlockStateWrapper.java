@@ -64,7 +64,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	// must be defined before AIR, otherwise a null pointer will be thrown
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
-	public static final ConcurrentHashMap<BlockState, BlockStateWrapper> WRAPPER_BY_BLOCK_STATE = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<BlockState, BlockStateWrapper> WRAPPER_BY_BLOCK_STATE = new ConcurrentHashMap<>();
 	
 	public static final String AIR_STRING = "AIR";
 	public static final BlockStateWrapper AIR = new BlockStateWrapper(null, null);
@@ -83,7 +83,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	public final BlockState blockState;
 	/** technically final, but since it requires a method call to generate it can't be marked as such */
 	private String serialString;
-	/**
+	/** 
 	 * Cached opacity value, -1 if not populated. <br>
 	 * Should be between {@link IBlockStateWrapper#FULLY_OPAQUE} and {@link IBlockStateWrapper#FULLY_OPAQUE}
 	 */
@@ -131,7 +131,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	// helper methods //
 	//================//
 	
-	/**
+	/** 
 	 * Requires a {@link ILevelWrapper} since {@link BlockStateWrapper#deserialize(String,ILevelWrapper)} also requires one. 
 	 * This way the method won't accidentally be called before the deserialization can be completed.
 	 */
@@ -470,7 +470,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	// Iris methods //
 	//==============//
 	
-	private byte calculateIrisBlockMaterialId()
+	private byte calculateIrisBlockMaterialId() 
 	{
 		if (this.blockState == null)
 		{
@@ -480,12 +480,12 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		
 		String serialString = this.getSerialString().toLowerCase();
 		
-		if (this.blockState.is(BlockTags.LEAVES)
-				|| serialString.contains("bamboo")
-				|| serialString.contains("cactus")
-				|| serialString.contains("chorus_flower")
-				|| serialString.contains("mushroom")
-		)
+		if (this.blockState.is(BlockTags.LEAVES) 
+			|| serialString.contains("bamboo") 
+			|| serialString.contains("cactus")
+			|| serialString.contains("chorus_flower")
+			|| serialString.contains("mushroom")
+			) 
 		{
 			return IrisBlockMaterial.LEAVES;
 		}
@@ -498,7 +498,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				#if MC_VER >= MC_1_19_4
 				|| this.blockState.getSoundType() == SoundType.CHERRY_WOOD
 				#endif
-		)
+				) 
 		{
 			return IrisBlockMaterial.WOOD;
 		}
@@ -510,31 +510,31 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				|| this.blockState.getSoundType() == SoundType.COPPER_BULB
 				|| this.blockState.getSoundType() == SoundType.COPPER_GRATE
 				#endif
-		)
+				) 
 		{
 			return IrisBlockMaterial.METAL;
 		}
 		else if (
-				serialString.contains("dirt")
-						|| serialString.contains("grass_block")
-						|| serialString.contains("gravel")
-						|| serialString.contains("mud")
-						|| serialString.contains("podzol")
-						|| serialString.contains("mycelium")
-		)
+			serialString.contains("dirt")
+			|| serialString.contains("grass_block")
+			|| serialString.contains("gravel")
+			|| serialString.contains("mud")
+			|| serialString.contains("podzol")
+			|| serialString.contains("mycelium")
+			)
 		{
 			return IrisBlockMaterial.DIRT;
-		}
-		else if (this.blockState.is(Blocks.LAVA))
+		} 
+		else if (this.blockState.is(Blocks.LAVA)) 
 		{
 			return IrisBlockMaterial.LAVA;
 		}
 		#if MC_VER >= MC_1_17_1
 		else if (this.blockState.getSoundType() == SoundType.DEEPSLATE
 				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_BRICKS
-				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_TILES
+				|| this.blockState.getSoundType() == SoundType.DEEPSLATE_TILES 
 				|| this.blockState.getSoundType() == SoundType.POLISHED_DEEPSLATE
-				|| serialString.contains("deepslate") )
+				|| serialString.contains("deepslate") ) 
 		{
 			return IrisBlockMaterial.DEEPSLATE;
 		} 
@@ -542,7 +542,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		else if (this.serialString.contains("snow"))
 		{
 			return IrisBlockMaterial.SNOW;
-		}
+		} 
 		else if (serialString.contains("sand"))
 		{
 			return IrisBlockMaterial.SAND;
@@ -550,17 +550,17 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		else if (serialString.contains("terracotta"))
 		{
 			return IrisBlockMaterial.TERRACOTTA;
-		}
-		else if (this.blockState.is(BlockTags.BASE_STONE_NETHER))
+		} 
+		else if (this.blockState.is(BlockTags.BASE_STONE_NETHER)) 
 		{
 			return IrisBlockMaterial.NETHER_STONE;
-		}
+		} 
 		else if (serialString.contains("stone")
-				|| serialString.contains("ore"))
+				|| serialString.contains("ore")) 
 		{
 			return IrisBlockMaterial.STONE;
 		}
-		else if (this.blockState.getLightEmission() > 0)
+		else if (this.blockState.getLightEmission() > 0) 
 		{
 			return IrisBlockMaterial.ILLUMINATED;
 		}
