@@ -173,6 +173,11 @@ public class ForgeClientProxy implements AbstractModInitializer.IEventProxy
 	@SubscribeEvent
 	public void rightClickBlockEvent(PlayerInteractEvent.RightClickBlock event)
 	{
+		if (SharedApi.isChunkAtBlockPosAlreadyUpdating(event.getPos().getX(), event.getPos().getZ()))
+		{
+			return;
+		}
+		
 		LOGGER.trace("interact or block place event at blockPos: " + event.getPos());
 		
 		#if MC_VER < MC_1_19_2
@@ -187,6 +192,11 @@ public class ForgeClientProxy implements AbstractModInitializer.IEventProxy
 	@SubscribeEvent
 	public void leftClickBlockEvent(PlayerInteractEvent.LeftClickBlock event)
 	{
+		if (SharedApi.isChunkAtBlockPosAlreadyUpdating(event.getPos().getX(), event.getPos().getZ()))
+		{
+			return;
+		}
+		
 		LOGGER.trace("break or block attack at blockPos: " + event.getPos());
 		
 		#if MC_VER < MC_1_19_2
