@@ -70,6 +70,7 @@ import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.UpgradeData;
+import net.minecraft.world.level.chunk.storage.IOWorker;
 import net.minecraft.world.level.chunk.storage.RegionFileStorage;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.FlatLevelSource;
@@ -387,6 +388,30 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			// Warning: if multiple threads attempt to access this method at the same time,
 			// it can throw EOFExceptions that are caught and logged by Minecraft
 			//chunkData = level.getChunkSource().chunkMap.readChunk(chunkPos);
+			
+			IOWorker ioWorker = this.params.level.getChunkSource().chunkMap.worker;
+			
+			#if MC_VER <= MC_1_18_2
+			chunkData = ioWorker.load(chunkPos);
+			#else
+			
+			// 10 second timeout should prevent locking up the thread if the ioWorker dies or has issues 
+			int maxGetTimeInMs = 10_000;
+			CompletableFuture<Optional<CompoundTag>> future = ioWorker.loadAsync(chunkPos);
+			try
+			{
+				Optional<CompoundTag> data = future.get(maxGetTimeInMs, TimeUnit.MILLISECONDS);
+				if (data.isPresent())
+				{
+					chunkData = data.get();
+				}
+			}
+			catch (Exception e)
+			{
+				LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInMs+"] milliseconds.", e);
+				future.cancel(true);
+			}
+			#endif
 			
 			RegionFileStorage storage = this.params.level.getChunkSource().chunkMap.worker.storage;
 			RegionFileStorageExternalCache cache = this.getOrCreateRegionFileCache(storage);
