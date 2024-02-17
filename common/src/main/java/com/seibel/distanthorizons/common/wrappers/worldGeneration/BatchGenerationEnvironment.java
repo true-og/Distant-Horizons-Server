@@ -382,25 +382,27 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	{
 		ServerLevel level = this.params.level;
 		
+		
+		
+		//====================//
+		// get the chunk data //
+		//====================//
+		
 		CompoundTag chunkData = null;
 		try
 		{
-			// Warning: if multiple threads attempt to access this method at the same time,
-			// it can throw EOFExceptions that are caught and logged by Minecraft
-			//chunkData = level.getChunkSource().chunkMap.readChunk(chunkPos);
-			
-			IOWorker ioWorker = this.params.level.getChunkSource().chunkMap.worker;
+			IOWorker ioWorker = level.getChunkSource().chunkMap.worker;
 			
 			#if MC_VER <= MC_1_18_2
 			chunkData = ioWorker.load(chunkPos);
 			#else
 			
-			// 10 second timeout should prevent locking up the thread if the ioWorker dies or has issues 
-			int maxGetTimeInMs = 10_000;
+			// timeout should prevent locking up the thread if the ioWorker dies or has issues 
+			int maxGetTimeInSec = Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get();
 			CompletableFuture<Optional<CompoundTag>> future = ioWorker.loadAsync(chunkPos);
 			try
 			{
-				Optional<CompoundTag> data = future.get(maxGetTimeInMs, TimeUnit.MILLISECONDS);
+				Optional<CompoundTag> data = future.get(maxGetTimeInSec, TimeUnit.SECONDS);
 				if (data.isPresent())
 				{
 					chunkData = data.get();
@@ -408,19 +410,21 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			}
 			catch (Exception e)
 			{
-				LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInMs+"] milliseconds.", e);
+				LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInSec+"] milliseconds.", e);
 				future.cancel(true);
 			}
 			#endif
-			
-			RegionFileStorage storage = this.params.level.getChunkSource().chunkMap.worker.storage;
-			RegionFileStorageExternalCache cache = this.getOrCreateRegionFileCache(storage);
-			chunkData = cache.read(chunkPos);
 		}
 		catch (Exception e)
 		{
 			LOAD_LOGGER.error("DistantHorizons: Couldn't load or make chunk " + chunkPos + ". Error: " + e.getMessage(), e);
 		}
+		
+		
+		
+		//========================//
+		// convert the chunk data //
+		//========================//
 		
 		if (chunkData == null)
 		{
