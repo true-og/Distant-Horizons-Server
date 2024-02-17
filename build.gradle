@@ -199,6 +199,12 @@ subprojects { p ->
         implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
         implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
 
+        // JOML
+        if (project.hasProperty("embed_joml") && embed_joml == "true")
+            forgeShadowMe("org.joml:joml:${rootProject.joml_version}")
+        else
+            implementation("org.joml:joml:${rootProject.joml_version}")
+
         // JUnit tests
         implementation("org.junit.jupiter:junit-jupiter:5.8.2")
         implementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
@@ -305,7 +311,8 @@ subprojects { p ->
 //        relocate "org.sqlite", "${librariesLocation}.sqlite"
         
         // JOML
-        relocate "org.joml", "${librariesLocation}.joml"
+        if (project.hasProperty("embed_joml") && embed_joml == "true")
+            relocate "org.joml", "${librariesLocation}.joml"
 
         // NightConfig (includes Toml & Json)
         relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
