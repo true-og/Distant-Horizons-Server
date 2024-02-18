@@ -164,13 +164,6 @@ subprojects { p ->
             shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
             implementation.extendsFrom common
             implementation.extendsFrom coreProjects
-
-            if (findProject(":fabricLike") && p != project(":fabricLike")) {
-                // Shadow fabricLike
-                fabricLike
-                shadowFabricLike
-                implementation.extendsFrom fabricLike
-            }
         }
     }
 
@@ -267,12 +260,6 @@ subprojects { p ->
             // Common
             common(project(":common")) { transitive false }
             shadowCommon(project(":common")) { transitive false }
-
-            // FabricLike
-            if (findProject(":fabricLike") && p != project(":fabricLike")) {
-                fabricLike(project(path: ":fabricLike")) { transitive false }
-                shadowFabricLike(project(path: ":fabricLike")) { transitive false }
-            }
         }
     }
 
@@ -283,11 +270,6 @@ subprojects { p ->
         if (isMinecraftSubProject && p != project(":common")) {
             configurations.push(project.configurations.shadowCommon) // Shadow the common subproject
             relocate "com.seibel.distanthorizons.common", "loaderCommon.${p.name}.com.seibel.distanthorizons.common" // Move the loader files to a different location
-
-            if (findProject(":fabricLike") && p != project(":fabricLike")) {
-                configurations.push(project.configurations.shadowFabricLike) // Shadow the fabricLike subproject
-                relocate "com.seibel.distanthorizons.fabriclike", "loaderCommon.${p.name}.com.seibel.distanthorizons.fabriclike" // Move the loader files to a different location
-            }
         }
         
         
@@ -324,7 +306,13 @@ subprojects { p ->
 
     // Put stuff from gradle.properties into the mod info
     processResources {
-        def resourceTargets = [ // Location of where to inject the properties
+        // Include all the resources
+        from project(":common").sourceSets.main.resources
+        from project(":core").sourceSets.main.resources
+        from project(":api").sourceSets.main.resources
+
+        // Location of where to inject the properties
+        def resourceTargets = [
                 // Holds info like git commit
                 // TODO: For some reason this script doesnt work with the core project
                 "build_info.json",
@@ -604,14 +592,6 @@ allprojects { p ->
         from project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")
         into(file(p.file("build/resources/main")))
         rename "${accessWidenerVersion}.distanthorizons.accesswidener", "distanthorizons.accesswidener"
-
-
-        // Move the fabricLike mixin to its different places for each subproject
-        if (findProject(":fabricLike")) {
-            from project(":fabricLike").file("src/main/resources/DistantHorizons.fabricLike.mixins.json")
-            into(file(p.file("build/resources/main")))
-            rename "DistantHorizons.fabricLike.mixins.json", "DistantHorizons." + p.name + ".fabricLike.mixins.json"
-        }
     }
 
     task copyCoreResources(type: Copy) {
