@@ -91,7 +91,7 @@ forgix {
 }
 
 subprojects { p ->
-    // Does the same as "p == project(":common") || p == project(":fabric") || p == project(":quilt")  || p == project(":forge") || p == project("WhateverLoaderWeAddLaterOn")"
+    // Does the same as "p == project(":common") || p == project(":fabric") || p == project(":forge") || p == project("WhateverLoaderWeAddLaterOn")"
     // Useful later on so we dont have duplicated code
     def isMinecraftSubProject = p != project(":core") && p != project(":api")
 
@@ -99,11 +99,10 @@ subprojects { p ->
     // Apply plugins
     apply plugin: "java"
     apply plugin: "com.github.johnrengelman.shadow"
-    if (p == project(":core")) {
+    if (p == project(":core")) 
         apply plugin: "application"
-    }
     
-    if (p != project(":common") && isMinecraftSubProject) {
+    if (isMinecraftSubProject) {
         apply plugin: "xyz.wagyourtail.unimined"
 
         unimined.minecraft(sourceSets.main, true) {
@@ -117,10 +116,12 @@ subprojects { p ->
             }
         }
 
-        tasks.withType(JavaCompile).configureEach {
-            source(project(":common").sourceSets.main.java)
-            source(project(":api").sourceSets.main.java)
-            source(project(":core").sourceSets.main.java)
+        if (p != project(":common")) {
+            tasks.withType(JavaCompile).configureEach {
+                source(project(":common").sourceSets.main.java)
+                source(project(":api").sourceSets.main.java)
+                source(project(":core").sourceSets.main.java)
+            }
         }
     }
 
