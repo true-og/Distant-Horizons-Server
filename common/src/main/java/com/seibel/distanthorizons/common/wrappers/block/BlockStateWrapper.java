@@ -489,6 +489,10 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		{
 			return IrisBlockMaterial.LEAVES;
 		}
+		else if (this.blockState.is(Blocks.LAVA))
+		{
+			return IrisBlockMaterial.LAVA;
+		}
 		else if (this.isLiquid() || this.blockState.is(Blocks.WATER))
 		{
 			return IrisBlockMaterial.WATER;
@@ -524,10 +528,6 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			)
 		{
 			return IrisBlockMaterial.DIRT;
-		} 
-		else if (this.blockState.is(Blocks.LAVA)) 
-		{
-			return IrisBlockMaterial.LAVA;
 		}
 		#if MC_VER >= MC_1_17_1
 		else if (this.blockState.getSoundType() == SoundType.DEEPSLATE
