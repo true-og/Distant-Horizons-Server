@@ -51,16 +51,6 @@ afterEvaluate {
     runClient {
         dependsOn(tasks.named('copyAllResources'))
     }
-    
-    // TODO this isn't a great place for these, but `tasks.build.doLast` doesn't always work and I'm not sure of a better place right now
-    tasks.runClient.doFirst {
-        // TODO can we just ignore these folders instead?
-        //  deleting them may cause issues if the OS locks the files
-        //  and it feels hacky
-        delete file("../common/build/libs")
-        delete file("../coreSubProjects/core/build/libs")
-        delete file("../coreSubProjects/api/build/libs")
-    }
 }
 
 remapJar {

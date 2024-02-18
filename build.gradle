@@ -143,28 +143,13 @@ subprojects { p ->
     // set up custom configurations (configurations are a way to handle dependencies) 
     configurations {
         // extends the shadowJar configuration
-        shadowCore // Configuration that contains coreProjects
         shadowMc // Configuration that doesn't contain coreProjects
         
         // have implemented dependencies automatically embedded in the final jar
-        implementation.extendsFrom(shadowCore)
         implementation.extendsFrom(shadowMc)
 
         // Add shaded libraries very early in the classpath (excluding coreProjects as that's added in a different way)
         minecraftLibraries.extendsFrom(shadowMc)
-
-        // Configuration fpr core & api
-        coreProjects
-        shadowCore.extendsFrom(coreProjects)
-        
-        
-        if (isMinecraftSubProject && p != project(":common")) {
-            // Shadow common
-            common
-            shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
-            implementation.extendsFrom common
-            implementation.extendsFrom coreProjects
-        }
     }
 
 
@@ -234,12 +219,12 @@ subprojects { p ->
 
         // Add core
         if (isMinecraftSubProject) {
-            coreProjects(project(":core")) {
+            compileOnly(project(":core")) {
                 // Remove Junit test libraries
                 exclude group: "org.junit.jupiter", module: "junit-jupiter"
                 exclude group: "org.junit.jupiter", module: "junit-jupiter-engine"
                 exclude group: "junit", module: "junit"
-                
+
                 // Removed dependencies
                 transitive false
             }
@@ -247,12 +232,12 @@ subprojects { p ->
 
         // Add the api
         if (p != project(":api")) {
-            coreProjects(project(":api")) {
+            implementation(project(":api")) {
                 // Remove Junit test libraries
                 exclude group: "org.junit.jupiter", module: "junit-jupiter"
                 exclude group: "org.junit.jupiter", module: "junit-jupiter-engine"
                 exclude group: "junit", module: "junit"
-                
+
                 // Removed dependencies
                 transitive false
             }
@@ -261,17 +246,15 @@ subprojects { p ->
         // Add common
         if (isMinecraftSubProject && p != project(":common")) {
             // Common
-            common(project(":common")) { transitive false }
-            shadowCommon(project(":common")) { transitive false }
+            compileOnly(project(":common")) { transitive false }
         }
     }
 
 
     shadowJar {
-        configurations = [project.configurations.shadowCore, project.configurations.shadowMc]
+        configurations = [project.configurations.shadowMc]
         
         if (isMinecraftSubProject && p != project(":common")) {
-            configurations.push(project.configurations.shadowCommon) // Shadow the common subproject
             relocate "com.seibel.distanthorizons.common", "loaderCommon.${p.name}.com.seibel.distanthorizons.common" // Move the loader files to a different location
         }
         
