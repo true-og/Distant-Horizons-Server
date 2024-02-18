@@ -118,9 +118,9 @@ subprojects { p ->
         }
 
         tasks.withType(JavaCompile).configureEach {
-            source(project(":common").sourceSets.main.allSource)
-            source(project(":api").sourceSets.main.allSource)
-            source(project(":core").sourceSets.main.allSource)
+            source(project(":common").sourceSets.main.java)
+            source(project(":api").sourceSets.main.java)
+            source(project(":core").sourceSets.main.java)
         }
     }
 
@@ -191,12 +191,6 @@ subprojects { p ->
         // We cannot do this now as it would break Quilt
         implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
         implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
-
-        // JOML
-        if (project.hasProperty("embed_joml") && embed_joml == "true")
-            forgeShadowMe("org.joml:joml:${rootProject.joml_version}")
-        else
-            implementation("org.joml:joml:${rootProject.joml_version}")
 
         // JUnit tests
         implementation("org.junit.jupiter:junit-jupiter:5.8.2")
