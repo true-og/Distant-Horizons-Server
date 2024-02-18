@@ -2,6 +2,8 @@ unimined.minecraft {
     fabric {
         loader rootProject.fabric_loader_version
         accessWidener(project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"))
+
+        skipInsertAw = true
     }
 }
 
