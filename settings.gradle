@@ -50,6 +50,21 @@ plugins {
 
 
 
+// Throw an error and a little help message if the user forgot to clone the core sub-project
+if (!file("./coreSubProjects/LICENSE.txt").exists()) { // the LICENCE.txt file should always, and only exist if the core-sub-project was cloned
+    println('''
+It seems that the core sub project was not included...
+ please make sure that when you were cloning the repo, you were using the `--recurse-submodules` flag on git.
+ and if its too late now to re-clone the project, please grab the core sub project in whatever way you can from https://gitlab.com/jeseibel/distant-horizons-core.git
+
+If you still need help with compiling, please read the Readme.md
+    ''')
+    throw new GradleException("coreSubProject not found")
+}
+
+
+
+
 /** Loads the VersionProperties fiel for the currently selected Minecraft version. */
 def loadProperties() {
     def defaultMcVersion = "1.20.1" // 1.20.1 is our current most stable version so we use that if no version was defined
