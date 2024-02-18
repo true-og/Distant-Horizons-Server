@@ -36,14 +36,24 @@ dependencies {
 //    }
 }
 
-task deleteResources(type: Delete) {
-    delete file("build/resources/main")
-}
-
 tasks.register('copyAllResources') {
     dependsOn(copyCoreResources)
     dependsOn(copyCommonLoaderResources)
 }
+
+tasks.build.doLast {
+    copy {
+        from file("build/resources/main")
+        into file("build/sourcesSets/main")
+    }
+    
+    // TODO may not be necessary since we also do this before runClient
+    delete file("../common/build/libs")
+    delete file("../coreSubProjects/core/build/libs")
+    delete file("../coreSubProjects/api/build/libs")
+}
+
+
 
 processResources {
     dependsOn(tasks.named('copyAllResources'))
@@ -52,7 +62,22 @@ processResources {
 afterEvaluate {
     runClient {
         dependsOn(tasks.named('copyAllResources'))
-        finalizedBy(deleteResources)
+    }
+    
+    // TODO this isn't a great place for these, but `tasks.build.doLast` doesn't always work and I'm not sure of a better place right now
+    tasks.runClient.doFirst {
+        // copy the resources into the sourceSets folder so Forge can access them
+        copy {
+            from file("build/resources/main")
+            into file("build/sourcesSets/main")
+        }
+        
+        // TODO can we just ignore these folders instead?
+        //  deleting them may cause issues if the OS locks the files
+        //  and it feels hacky
+        delete file("../common/build/libs")
+        delete file("../coreSubProjects/core/build/libs")
+        delete file("../coreSubProjects/api/build/libs")
     }
 }
 
@@ -77,7 +102,7 @@ sourcesJar {
 
 
 
-// TODO this was specifically added for MC 1.20.4 should it be enabled for anything below MC 1.20.4?
+// TODO this was specifically added for MC 1.20.4 and should probably be disabled for all MC versions below
 // source: https://github.com/MinecraftForge/MinecraftForge/blob/5d0047753dfac0caaf5d97cc3f5c9a8b0990cb44/mdk/build.gradle#L209-L217
 //
 // Merge the resources and classes into the same directory. 
@@ -85,8 +110,9 @@ sourcesJar {
 // And if we have it in multiple we have to do performance intensive hacks like having the UnionFileSystem
 // This will eventually be migrated to ForgeGradle so modders don't need to manually do it. But that is later.
 sourceSets.each {
+    // all of our code and resources should be in the sourceSets/main/ folder for Forge 1.20.4+
     def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-    //println "source name " + it.name // as of 2024-2-4 "it.name" only returned "main" and "test"
+    println "source name: [" + it.name  + "]"// as of 2024-2-4 "it.name" only returned "main" and "test"
     it.output.resourcesDir = dir
     it.java.destinationDirectory = dir
 }
