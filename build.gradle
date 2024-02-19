@@ -584,12 +584,16 @@ allprojects { p ->
     }
 
 
+    // TODO: Remove this as no loader needs this
+    //  - Fabric can rename which aw they use
+    //  - (Neo)Forge converts the aw to their own at, which is stored at a different place
     task copyCommonLoaderResources(type: Copy) {
         from project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")
         into(file(p.file("build/resources/main")))
         rename "${accessWidenerVersion}.distanthorizons.accesswidener", "distanthorizons.accesswidener"
     }
 
+    // TODO: Remove this later as we no longer need this. We are now including the resources in the processResources section
     task copyCoreResources(type: Copy) {
         from fileTree(project(":core").file("src/main/resources"))
         into p.file("build/resources/main")
