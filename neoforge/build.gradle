@@ -2,8 +2,10 @@ unimined.minecraft {
     neoForged {
         loader neoforge_version
         mixinConfig("DistantHorizons.neoforge.mixins.json")
+        
+        file("build/sourcesSets/main/META-INF/").mkdirs()
         accessTransformer(aw2at(
-                project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"), 
+                project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"),
                 file("build/sourcesSets/main/META-INF/accesstransformer.cfg") // We'd wanna output the access transformer to somewhere where it'll only appear in the final jar
         ))
     }

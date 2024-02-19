@@ -2,6 +2,8 @@ unimined.minecraft {
     minecraftForge {
         loader forge_version
         mixinConfig("DistantHorizons.forge.mixins.json")
+
+        file("build/sourcesSets/main/META-INF/").mkdirs()
         accessTransformer(aw2at(
                 project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"),
                 file("build/sourcesSets/main/META-INF/accesstransformer.cfg") // We'd wanna output the access transformer to somewhere where it'll only appear in the final jar

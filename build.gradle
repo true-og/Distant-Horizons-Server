@@ -304,7 +304,7 @@ subprojects { p ->
         // FIXME: remove copyCommonLoaderResources and use this instead (and if you are removing that task, also remove copyCoreResources while your at it)
 //        from project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")
 //        into(file(p.file("build/resources/main")))
-//        rename "${accessWidenerVersion}.distanthorizons.accesswidener", "distanthorizons.accesswidener"
+        rename "${accessWidenerVersion}.distanthorizons.accesswidener", "distanthorizons.accesswidener"
 
         // Location of where to inject the properties
         def resourceTargets = [
