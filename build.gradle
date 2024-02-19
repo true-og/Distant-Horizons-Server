@@ -114,6 +114,16 @@ subprojects { p ->
                 parchment(parchmentVersionParts[0], parchmentVersionParts[1])
                 devNamespace "mojmap"
             }
+            
+            runs {
+                config("client") {
+                    workingDir = rootProject.file("run")
+                }
+                config("server") {
+                    workingDir = rootProject.file("run") // TODO: When running the server, would it be a better idea to change this to a different dir?
+                    disabled = true // TODO: Once server-side support is added, remove this
+                }
+            }
         }
 
         if (p != project(":common")) {
