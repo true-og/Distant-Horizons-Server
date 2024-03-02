@@ -209,7 +209,8 @@ public class BiomeWrapper implements IBiomeWrapper
 		
 		// generate the serial string //
 		
-		net.minecraft.core.RegistryAccess registryAccess = Minecraft.getInstance().level.registryAccess();
+		Level level = (Level)levelWrapper.getWrappedMcObject();
+		net.minecraft.core.RegistryAccess registryAccess = level.registryAccess();
 		
 		ResourceLocation resourceLocation;
 		#if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
