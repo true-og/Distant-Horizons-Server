@@ -358,7 +358,10 @@ public class ChunkWrapper implements IChunkWrapper
 	{
 		if (this.blockLightStorage == null)
 		{
-			this.blockLightStorage = new ChunkLightStorage(this.getMinBuildHeight(), this.getMaxBuildHeight());
+			this.blockLightStorage = new ChunkLightStorage(
+					this.getMinBuildHeight(), this.getMaxBuildHeight(), 
+					// positions above and below the handled area should be unlit
+					LodUtil.MIN_MC_LIGHT, LodUtil.MIN_MC_LIGHT);
 		}
 		return this.blockLightStorage;
 	}
@@ -381,7 +384,10 @@ public class ChunkWrapper implements IChunkWrapper
 	{
 		if (this.skyLightStorage == null)
 		{
-			this.skyLightStorage = new ChunkLightStorage(this.getMinBuildHeight(), this.getMaxBuildHeight());
+			this.skyLightStorage = new ChunkLightStorage(
+					this.getMinBuildHeight(), this.getMaxBuildHeight(),
+					// positions above should be lit but positions below should be unlit
+					LodUtil.MAX_MC_LIGHT, LodUtil.MIN_MC_LIGHT);
 		}
 		return this.skyLightStorage;
 	}
