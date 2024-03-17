@@ -166,10 +166,7 @@ public abstract class AbstractModInitializer
 		LOGGER.info("Mod Post-Initialized");
 	}
 	
-	private void initCommands()
-	{
-		// TODO
-	}
+	private void initCommands() { /* currently unimplemented */ }
 	
 	
 	
