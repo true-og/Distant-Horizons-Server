@@ -83,6 +83,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	public final BlockState blockState;
 	/** technically final, but since it requires a method call to generate it can't be marked as such */
 	private String serialString;
+	private final int hashCode;
 	/** 
 	 * Cached opacity value, -1 if not populated. <br>
 	 * Should be between {@link IBlockStateWrapper#FULLY_OPAQUE} and {@link IBlockStateWrapper#FULLY_OPAQUE}
@@ -121,6 +122,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	{
 		this.blockState = blockState;
 		this.serialString = this.serialize(levelWrapper);
+		this.hashCode = Objects.hash(this.serialString);
 		this.irisBlockMaterialId = this.calculateIrisBlockMaterialId();
 		LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.irisBlockMaterialId+"]");
 	}
@@ -245,7 +247,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	}
 	
 	@Override
-	public int hashCode() { return Objects.hash(this.getSerialString()); }
+	public int hashCode() { return this.hashCode; } 
 	
 	
 	@Override

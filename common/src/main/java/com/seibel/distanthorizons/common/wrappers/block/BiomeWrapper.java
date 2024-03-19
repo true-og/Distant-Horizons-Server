@@ -88,7 +88,8 @@ public class BiomeWrapper implements IBiomeWrapper
     #endif
 	
 	/** technically final, but since it requires a method call to generate it can't be marked as such */
-	private String serialString = null;
+	private String serialString;
+	private int hashCode;
 	
 	
 	
@@ -119,6 +120,7 @@ public class BiomeWrapper implements IBiomeWrapper
 	{
 		this.biome = biome;
 		this.serialString = this.serialize(levelWrapper);
+		this.hashCode = Objects.hash(this.serialString);
 		LOGGER.trace("Created BiomeWrapper ["+this.serialString+"] for ["+biome+"]");
 	}
 	
@@ -127,6 +129,7 @@ public class BiomeWrapper implements IBiomeWrapper
 	{
 		this.biome = null;
 		this.serialString = EMPTY_STRING;
+		this.hashCode = Objects.hash(this.serialString);
 	}
 	
 	
@@ -168,7 +171,7 @@ public class BiomeWrapper implements IBiomeWrapper
 	}
 	
 	@Override
-	public int hashCode() { return Objects.hash(this.getSerialString()); }
+	public int hashCode() { return this.hashCode; }
 	
 	@Override
 	public String getSerialString() { return this.serialString; }
