@@ -56,7 +56,9 @@ import net.minecraft.world.level.biome.Biomes;
 /** This class wraps the minecraft BlockPos.Mutable (and BlockPos) class */
 public class BiomeWrapper implements IBiomeWrapper
 {
+	// must be defined before AIR, otherwise a null pointer will be thrown
 	private static final Logger LOGGER = LogManager.getLogger();
+	
 	
 	#if MC_VER < MC_1_18_2
 	public static final ConcurrentMap<Biome, BiomeWrapper> WRAPPER_BY_BIOME = new ConcurrentHashMap<>();
@@ -65,7 +67,7 @@ public class BiomeWrapper implements IBiomeWrapper
     #endif
 	
 	public static final String EMPTY_STRING = "EMPTY";
-	public static final BiomeWrapper EMPTY_WRAPPER = new BiomeWrapper();
+	public static final BiomeWrapper EMPTY_WRAPPER = new BiomeWrapper(null, null);
 	
 	/** keep track of broken biomes so we don't log every time */
 	private static final HashSet<String> brokenResourceLocationStrings = new HashSet<>();
@@ -89,7 +91,7 @@ public class BiomeWrapper implements IBiomeWrapper
 	
 	/** technically final, but since it requires a method call to generate it can't be marked as such */
 	private String serialString;
-	private int hashCode;
+	private final int hashCode;
 	
 	
 	
