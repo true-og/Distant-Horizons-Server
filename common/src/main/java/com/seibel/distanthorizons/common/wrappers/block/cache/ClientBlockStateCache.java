@@ -204,7 +204,7 @@ public class ClientBlockStateCache
 			for (Direction direction : DIRECTION_ORDER)
 			{
 				quads = Minecraft.getInstance().getModelManager().getBlockModelShaper().
-						getBlockModel(blockState).getQuads(blockState, direction, random);
+						getBlockModel(blockState).getQuads(blockState, direction, random); // TODO getQuads sometimes throws a "makeThreadingException", is there anything we can do about that? Note: this isn't a critical issue, it just prints an ugly error and the render data will need to be regenered.
 				if (quads != null && !quads.isEmpty() &&
 						!(blockState.getBlock() instanceof RotatedPillarBlock && direction == Direction.UP))
 					break;
