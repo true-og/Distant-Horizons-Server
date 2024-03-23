@@ -151,7 +151,7 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 			return;
 		}
 		
-		LOGGER.trace("interact or block place event at blockPos: " + event.getPos());
+		//LOGGER.trace("interact or block place event at blockPos: " + event.getPos());
 		
 		LevelAccessor level = event.getLevel();
 		
@@ -166,7 +166,7 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 			return;
 		}
 		
-		LOGGER.trace("break or block attack at blockPos: " + event.getPos());
+		//LOGGER.trace("break or block attack at blockPos: " + event.getPos());
 		
 		LevelAccessor level = event.getLevel();
 		

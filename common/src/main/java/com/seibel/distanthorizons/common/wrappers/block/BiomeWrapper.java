@@ -121,7 +121,8 @@ public class BiomeWrapper implements IBiomeWrapper
 		this.biome = biome;
 		this.serialString = this.serialize(levelWrapper);
 		this.hashCode = Objects.hash(this.serialString);
-		LOGGER.trace("Created BiomeWrapper ["+this.serialString+"] for ["+biome+"]");
+		
+		//LOGGER.trace("Created BiomeWrapper ["+this.serialString+"] for ["+biome+"]");
 	}
 	
 	/** should only be used to create {@link BiomeWrapper#EMPTY_WRAPPER} */

@@ -124,7 +124,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		this.serialString = this.serialize(levelWrapper);
 		this.hashCode = Objects.hash(this.serialString);
 		this.irisBlockMaterialId = this.calculateIrisBlockMaterialId();
-		LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.irisBlockMaterialId+"]");
+		
+		//LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.irisBlockMaterialId+"]");
 	}
 	
 	

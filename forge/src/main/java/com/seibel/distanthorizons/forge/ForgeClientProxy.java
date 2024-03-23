@@ -178,7 +178,7 @@ public class ForgeClientProxy implements AbstractModInitializer.IEventProxy
 			return;
 		}
 		
-		LOGGER.trace("interact or block place event at blockPos: " + event.getPos());
+		//LOGGER.trace("interact or block place event at blockPos: " + event.getPos());
 		
 		#if MC_VER < MC_1_19_2
 		LevelAccessor level = event.getWorld();
@@ -197,7 +197,7 @@ public class ForgeClientProxy implements AbstractModInitializer.IEventProxy
 			return;
 		}
 		
-		LOGGER.trace("break or block attack at blockPos: " + event.getPos());
+		//LOGGER.trace("break or block attack at blockPos: " + event.getPos());
 		
 		#if MC_VER < MC_1_19_2
 		LevelAccessor level = event.getWorld();

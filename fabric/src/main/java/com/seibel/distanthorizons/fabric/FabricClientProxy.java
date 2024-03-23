@@ -130,7 +130,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					ChunkAccess chunk = level.getChunk(blockPos);
 					if (chunk != null)
 					{
-						LOGGER.trace("attack block at blockPos: " + blockPos);
+						//LOGGER.trace("attack block at blockPos: " + blockPos);
 						
 						IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper((ClientLevel) level);
 						SharedApi.INSTANCE.chunkBlockChangedEvent(
@@ -160,7 +160,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 						ChunkAccess chunk = level.getChunk(hitResult.getBlockPos());
 						if (chunk != null)
 						{
-							LOGGER.trace("use block at blockPos: " + hitResult.getBlockPos());
+							//LOGGER.trace("use block at blockPos: " + hitResult.getBlockPos());
 							
 							IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper((ClientLevel) level);
 							SharedApi.INSTANCE.chunkBlockChangedEvent(
