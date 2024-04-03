@@ -221,6 +221,8 @@ subprojects { p ->
         // NightConfig (includes Toml & Json)
         forgeShadowMe("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
         forgeShadowMe("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
+        
+        forgeShadowMe("it.unimi.dsi:fastutil:${rootProject.fastutil_version}")
 
         // SVG (not needed atm)
 //        forgeShadowMe("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
@@ -600,7 +602,6 @@ allprojects { p ->
             implementation("com.google.code.findbugs:jsr305:3.0.2")
             implementation("com.google.common:google-collect:0.5")
             implementation("com.google.guava:guava:31.1-jre")
-            implementation("it.unimi.dsi:fastutil:8.5.11")
         }
     }
 
