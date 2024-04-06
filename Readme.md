@@ -139,7 +139,7 @@ From the File Explorer:
 
 From the command line:
 1. `git clone --recurse-submodules https://gitlab.com/jeseibel/distant-horizons.git`
-2. `cd minecraft-lod-mod`
+2. `cd distant-horizons`
 3. `./gradlew assemble`
 4. `./gradlew mergeJars`
 5. The compiled jar file will be in the folder `Merged`
