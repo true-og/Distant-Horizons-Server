@@ -122,12 +122,6 @@ To switch between different Minecraft versions, change `mcVer=1.?` in the `gradl
 If running in an IDE, to ensure the IDE noticed the version change, run any gradle command to refresh gradle.\
 In IntelliJ, you will also need to do a gradle sync if it didn't happen automatically.
 
->There may be a `java.nio.file.FileSystemException` thrown when running the command after switching versions.\
-To fix it, either restart your IDE (as your IDE is probably locking a file) or use a tool like LockHunter to unlock the linked file(s).\
-(Generally it is a lib file under `common\build\lib`, `forge\build\lib`, or `fabric\build\lib`.)
-> If anyone knows how to solve this issue please let us know here:
-> https://gitlab.com/jeseibel/distant-horizons/-/issues/233
-
 <br>
 
 ## Compiling
@@ -179,7 +173,7 @@ The Minecraft source code is NOT added to your workspace in an editable way. Min
 
 Source code uses Mojang mappings & [Parchment](https://parchmentmc.org/) mappings.
 
-To generate the source code run `./gradlew genSources`
+To generate the source code run `./gradlew genSources` <br>
 If your IDE fails to auto-detect the source jars when browsing Minecraft classes; manually select the JAR file ending with -sources.jar when prompted by your IDE. <br>
 (In IntelliJ it's at the top where it says "choose sources" when browsing a Minecraft class)
 
@@ -187,12 +181,12 @@ If your IDE fails to auto-detect the source jars when browsing Minecraft classes
 
 ## Other Useful commands
 
-Run the standalone jar: `./gradlew run`
-Build the standalone jar: `./gradlew core:build`
-Only build Fabric: `./gradlew fabric:assemble` or `./gradlew fabric:build`
-Only build Forge: `./gradlew forge:assemble` or `./gradlew forge:build`
-Run the Fabric client (for debugging): `./gradlew fabric:runClient`
-Run the Forge client (for debugging): `./gradlew forge:runClient`
+Run the standalone jar: `./gradlew run` <br>
+Build the standalone jar: `./gradlew core:build` <br>
+Only build Fabric: `./gradlew fabric:assemble` or `./gradlew fabric:build` <br>
+Only build Forge: `./gradlew forge:assemble` or `./gradlew forge:build` <br>
+Run the Fabric client (for debugging): `./gradlew fabric:runClient` <br>
+Run the Forge client (for debugging): `./gradlew forge:runClient` <br>
 
 To build all versions: `./buildAll` (all builds will end up in the `Merged` folder)
 
