@@ -69,6 +69,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	public static final String AIR_STRING = "AIR";
 	public static final BlockStateWrapper AIR = new BlockStateWrapper(null, null);
 	
+	public static final String DIRT_RESOURCE_LOCATION_STRING = "minecraft:dirt";
+	
 	// TODO: Make this changeable through the config
 	public static final String[] RENDERER_IGNORED_BLOCKS_RESOURCE_LOCATIONS = { AIR_STRING, "minecraft:barrier", "minecraft:structure_void", "minecraft:light", "minecraft:tripwire" };
 	public static HashSet<IBlockStateWrapper> rendererIgnoredBlocks = null;
@@ -521,9 +523,12 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		{
 			return IrisBlockMaterial.METAL;
 		}
+		else if (serialString.contains("grass_block"))
+		{
+			return IrisBlockMaterial.GRASS;
+		}
 		else if (
 			serialString.contains("dirt")
-			|| serialString.contains("grass_block")
 			|| serialString.contains("gravel")
 			|| serialString.contains("mud")
 			|| serialString.contains("podzol")
