@@ -117,7 +117,7 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 		switch (lodShading)
 		{
 			default:
-			case MINECRAFT:
+			case AUTO:
 				if (this.mc.level != null)
 				{
 					Direction mcDir = McObjectConverter.Convert(lodDirection);
@@ -128,7 +128,7 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 					return 0.0f;
 				}
 			
-			case OLD_LIGHTING:
+			case ENABLED:
 				switch (lodDirection)
 				{
 					case DOWN:
@@ -144,7 +144,7 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 						return 0.6F;
 				}
 			
-			case NONE:
+			case DISABLED:
 				return 1.0F;
 		}
 	}
