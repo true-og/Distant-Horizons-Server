@@ -231,10 +231,16 @@ public class ClientBlockStateCache
 					{
 						//switch (//FIXME add config option)
 						//	case BLACK:
-							a = 255; //simulate black background of fast leaves
+						//	a = 255; //simulate black background of fast leaves
 						//		break;
 						//	case IGNORE:
-						//	continue; //same long grass
+							if (a == 0) {
+								continue; //same long grass
+							}
+							else
+							{
+								a = 255 //just in case there are semi transparent pixels
+							}					
 						//		break;
 						//	case TRANSPARENT:
 						//		break; //do nothing, let it count towards transparency
