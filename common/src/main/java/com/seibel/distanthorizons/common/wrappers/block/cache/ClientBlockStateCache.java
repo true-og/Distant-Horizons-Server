@@ -239,7 +239,7 @@ public class ClientBlockStateCache
 							}
 							else
 							{
-								a = 255 //just in case there are semi transparent pixels
+								a = 255; //just in case there are semi transparent pixels
 							}					
 						//		break;
 						//	case TRANSPARENT:
