@@ -1,80 +1,24 @@
-plugins {
-    // Note: This is only needed for multi-loader projects
-    // The main architectury loom version is set at the start of the root build.gradle
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-}
+unimined.minecraft {
+    minecraftForge {
+        loader forge_version
+        mixinConfig("DistantHorizons.forge.mixins.json")
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
-
-architectury {
-    platformSetupLoomIde()
-    forge()
-}
-
-//loom {
-//    forge {
-//        convertAccessWideners.set(true)
-//        extraAccessWideners.add("lod.accesswidener")
-//        mixinConfigs("DistantHorizons.mixins.json")
-//    }
-//}
-
-loom {
-    silentMojangMappingsLicense() // Shut the licencing warning
-    accessWidenerPath = project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener")
-
-    forge {
-        convertAccessWideners = true
-        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-
-        mixinConfigs = [
-                "DistantHorizons.forge.mixins.json"
-        ]
+        file("build/sourcesSets/main/META-INF/").mkdirs()
+        accessTransformer(aw2at(
+                project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"),
+                file("build/sourcesSets/main/META-INF/accesstransformer.cfg") // We'd wanna output the access transformer to somewhere where it'll only appear in the final jar
+        ))
     }
-
-    // "runs" isn't required, but when we do need it then it can be useful
-    runs {
-        client {
-            client()
-            setConfigName("Forge Client")
-            ideConfigGenerated(true)
-            runDir("../run")
-//            vmArgs("-XX:-OmitStackTraceInFastThrow", minecraftMemoryJavaArg)
-        }
-        server {
-            server()
-            setConfigName("Forge Server")
-            ideConfigGenerated(true)
-            runDir("../run")
-        }
-    }
-}
-
-remapJar {
-    inputFile = shadowJar.archiveFile
-    dependsOn shadowJar
-//    classifier null
 }
 
 
 def addMod(path, enabled) {
     if (enabled == "2")
-        dependencies { implementation(path) }
+        dependencies { modImplementation(path) }
     else if (enabled == "1")
-        dependencies { modCompileOnly(path) }
+        dependencies { compileOnly(path) }
 }
 dependencies {
-    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings loom.layered() {
-        // Mojmap mappings
-        officialMojangMappings()
-        // Parchment mappings (it adds parameter mappings & javadoc)
-        parchment("org.parchmentmc.data:parchment-${rootProject.parchment_version}@zip")
-    }
-
-    // Forge
-    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
-
     // Architectury API
 //    if (minecraft_version == "1.16.5") {
 //        implementation("me.shedaniel:architectury-forge:${rootProject.architectury_version}")
@@ -89,14 +33,12 @@ dependencies {
     addMod("curse.maven:TerraForged-363820:${rootProject.terraforged_version}", rootProject.enable_terraforged)
 
     addMod("curse.maven:TerraFirmaCraft-302973:4616004", rootProject.enable_terrafirmacraft)
+    
+//    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
 //    if (System.getProperty("idea.sync.active") != "true") {
 //        annotationProcessor "org.spongepowered:mixin:0.8.4:processor"
 //    }
-}
-
-task deleteResources(type: Delete) {
-    delete file("build/resources/main")
 }
 
 tasks.register('copyAllResources') {
@@ -104,13 +46,32 @@ tasks.register('copyAllResources') {
     dependsOn(copyCommonLoaderResources)
 }
 
+
+
 processResources {
     dependsOn(tasks.named('copyAllResources'))
 }
 
-tasks.named('runClient') {
-    dependsOn(tasks.named('copyAllResources'))
-    finalizedBy(deleteResources)
+afterEvaluate {
+    runClient {
+        dependsOn(tasks.named('copyAllResources'))
+    }
+    
+    // TODO this isn't a great place for these, but `tasks.build.doLast` doesn't always work and I'm not sure of a better place right now
+    tasks.runClient.doFirst {
+        // TODO can we just ignore these folders instead?
+        //  deleting them may cause issues if the OS locks the files
+        //  and it feels hacky
+        delete file("../common/build/libs")
+        delete file("../coreSubProjects/core/build/libs")
+        delete file("../coreSubProjects/api/build/libs")
+    }
+}
+
+remapJar {
+    inputFile = shadowJar.archiveFile
+    dependsOn shadowJar
+//    classifier null
 }
 
 
@@ -125,3 +86,30 @@ sourcesJar {
 //        skip()
 //    }
 //}
+
+
+
+// TODO this was specifically added for MC 1.20.4 and should not be used on MC versions prior to it 
+// source: https://github.com/MinecraftForge/MinecraftForge/blob/5d0047753dfac0caaf5d97cc3f5c9a8b0990cb44/mdk/build.gradle#L209-L217
+//
+// Merge the resources and classes into the same directory. 
+// This is done because java expects modules to be in a single directory.
+// And if we have it in multiple we have to do performance intensive hacks like having the UnionFileSystem
+// This will eventually be migrated to ForgeGradle so modders don't need to manually do it. But that is later.
+sourceSets.each {
+    if ( // Only run on MC 1.20.4 or later
+        // FIXME: Add an environment variable for the Major, Minor, and Patch version number of Minecraft
+            minecraft_version.split("\\.")[1].toInteger() >= 20 &&
+            (
+                    minecraft_version.split("\\.").length > 1 && // Incase there isn't a minor version
+                    minecraft_version.split("\\.")[2].toInteger() >= 4
+            )
+    ) {
+        // all of our code and resources should be in the sourceSets/main/ folder for Forge 1.20.4+
+        def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+        println "source name: [" + it.name + "]"// as of 2024-2-4 "it.name" only returned "main" and "test"
+        it.output.resourcesDir = dir
+        it.java.destinationDirectory = dir
+    }
+}
+

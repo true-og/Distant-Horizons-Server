@@ -37,3 +37,6 @@ build.properties
 *.sqlite-journal
 *.sqlite-shm
 *.sqlite-wal
+
+# Don't add access transformers to git as it's dynamically generated
+accesstransformer.cfg

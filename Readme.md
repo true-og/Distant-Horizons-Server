@@ -21,8 +21,8 @@ Below is a video demonstrating the system:
 #### 1.20.4, 1.20.3 (Default)
 Fabric: 0.15.1\
 Fabric API: 0.91.2+1.20.4\
-Forge: 49.0.16\
-NeoForge: 20.4.83-beta\
+Forge: 49.0.30\
+NeoForge: 118-beta\
 Parchment: 1.20.2:2023.12.10\
 Modmenu: 9.0.0-pre.1
 
