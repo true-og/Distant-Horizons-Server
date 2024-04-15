@@ -193,6 +193,10 @@ subprojects { p ->
         implementation("org.junit.jupiter:junit-jupiter:5.8.2")
         implementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
         implementation("junit:junit:4.13")
+        
+        // javax.annotation's (IE @Nullable)
+        // only needed at compile time to prevent issues between javax.annotation's and org.jetbrains.annotations
+        implementation("com.google.code.findbugs:jsr305:3.0.2")
 
         // JOML
         if (project.hasProperty("embed_joml") && embed_joml == "true")
