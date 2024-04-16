@@ -14,3 +14,8 @@ unimined.minecraft {
 dependencies {
     
 }
+
+
+tasks.register('prepareWorkspace') {
+    // the build system complains if prepareWorkspace isn't present
+}
