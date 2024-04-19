@@ -62,9 +62,16 @@ afterEvaluate {
         // TODO can we just ignore these folders instead?
         //  deleting them may cause issues if the OS locks the files
         //  and it feels hacky
-        delete file("../common/build/libs")
-        delete file("../coreSubProjects/core/build/libs")
-        delete file("../coreSubProjects/api/build/libs")
+        try 
+        {
+            delete file("../common/build/libs")
+            delete file("../coreSubProjects/core/build/libs")
+            delete file("../coreSubProjects/api/build/libs")
+        } 
+        catch (ignored) 
+        {
+            println('lib directories already deleted')
+        }
     }
 }
 
