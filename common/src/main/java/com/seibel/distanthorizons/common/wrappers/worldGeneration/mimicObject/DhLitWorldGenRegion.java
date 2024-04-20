@@ -241,7 +241,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 			// lock is to prevent issues with underlying MC code that doesn't support multithreading
 			this.getChunkLock.lock();
 			
-			ChunkAccess chunk = this.getChunk(chunkX, chunkZ, chunkStatus, false);
+			ChunkAccess chunk = this.getChunk(chunkX, chunkZ, chunkStatus, true);
 			if (chunk == null)
 			{
 				LodUtil.assertNotReach("getChunk shouldn't return null values");
@@ -257,9 +257,9 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	/** Allows creating empty chunks even if they're outside the worldGenRegion */
 	@Override
 	@Nullable
-	public ChunkAccess getChunk(int chunkX, int chunkZ, @NotNull ChunkStatus chunkStatus, boolean returnNullIfChunkDoesntHaveStatus)
+	public ChunkAccess getChunk(int chunkX, int chunkZ, @NotNull ChunkStatus chunkStatus, boolean returnNonNull)
 	{
-		ChunkAccess chunk = this.getChunkAccess(chunkX, chunkZ, chunkStatus, returnNullIfChunkDoesntHaveStatus);
+		ChunkAccess chunk = this.getChunkAccess(chunkX, chunkZ, chunkStatus, returnNonNull);
 		if (chunk instanceof LevelChunk)
 		{
 			chunk = new ImposterProtoChunk((LevelChunk) chunk #if MC_VER >= MC_1_18_2 , true #endif );
@@ -267,14 +267,18 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 		return chunk;
 	}
 	
-	private ChunkAccess getChunkAccess(int chunkX, int chunkZ, ChunkStatus chunkStatus, boolean nonNull)
+	/**
+	 * @param returnNonNull if true this method will always return a non-null chunk,
+	 *                      if false it will return null if no chunk exists at the given position with the given status 
+	 */
+	private ChunkAccess getChunkAccess(int chunkX, int chunkZ, ChunkStatus chunkStatus, boolean returnNonNull)
 	{
 		ChunkAccess chunk = this.superHasChunk(chunkX, chunkZ) ? this.superGetChunk(chunkX, chunkZ) : null;
 		if (chunk != null && chunk.getStatus().isOrAfter(chunkStatus))
 		{
 			return chunk;
 		}
-		else if (!nonNull)
+		else if (!returnNonNull)
 		{
 			// no chunk found with the necessary status and null return values are allowed
 			return null;
