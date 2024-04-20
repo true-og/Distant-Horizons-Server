@@ -216,9 +216,6 @@ subprojects { p ->
         shadowMc("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
         shadowMc("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
         
-        // Fastutil
-        shadowMc("it.unimi.dsi:fastutil:${rootProject.fastutil_version}")
-
         // SVG (not needed atm)
         //shadowMc("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
         
@@ -297,9 +294,6 @@ subprojects { p ->
         if (project.hasProperty("embed_joml") && embed_joml == "true")
             relocate "org.joml", "${librariesLocation}.joml"
 
-        // FastUtil
-        relocate "it.unimi.dsi.fastutil", "${librariesLocation}.unimi.dsi.fastutil"
-        
         // NightConfig (includes Toml & Json)
         relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
 
@@ -595,6 +589,7 @@ allprojects { p ->
             runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
             runtimeOnly "org.lwjgl:lwjgl-tinyfd::$lwjglNatives"
             implementation "org.joml:joml:${rootProject.joml_version}"
+            implementation "it.unimi.dsi:fastutil:${rootProject.fastutil_version}"
 
 
             // Some other dependencies
