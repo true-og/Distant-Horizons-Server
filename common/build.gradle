@@ -1,21 +1,30 @@
-// Use Unimined's implimentation for MC as we can use Parchment mappings in common now! :tada:
-// With Sponge's vanilla gradle, we cannot change the mappings to anything out of mojmaps 
-unimined.minecraft {
-    fabric { // TODO: Find a way to only include the mc stuff, not fabric's loader
-        loader rootProject.fabric_loader_version
-        accessWidener(project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"))
 
-        skipInsertAw = true
-    }
-    
-    defaultRemapJar = false
+plugins {
+    id "org.spongepowered.gradle.vanilla" version "0.2.1-SNAPSHOT"
+}
+
+minecraft {
+    accessWideners(project(":common").file("src/main/resources/${accessWidenerVersion}.distanthorizons.accesswidener"))
+    version(rootProject.minecraft_version)
 }
 
 dependencies {
-    
+    // So mixins can be written in common
+    compileOnly group:'org.spongepowered', name:'mixin', version:'0.8.5'
 }
 
 
-tasks.register('prepareWorkspace') {
-    // the build system complains if prepareWorkspace isn't present
+publishing {
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = rootProject.mod_readable_name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+    }
 }
+
