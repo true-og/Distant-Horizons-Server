@@ -25,7 +25,6 @@ loom {
 remapJar {
     inputFile = shadowJar.archiveFile
     dependsOn shadowJar
-//    classifier null
 }
 
 
@@ -125,13 +124,6 @@ dependencies {
     }
 }
 
-remapJar {
-    inputFile = shadowJar.archiveFile
-    dependsOn shadowJar
-//    classifier null
-}
-
-
 
 task deleteResources(type: Delete) {
     delete file("build/resources/main")
@@ -145,6 +137,7 @@ processResources {
 runClient {
     dependsOn(copyCoreResources)
     dependsOn(copyCommonLoaderResources)
+//    jvmArgs([ "-XX:-OmitStackTraceInFastThrow", minecraftMemoryJavaArg ])
     finalizedBy(deleteResources)
 }
 
