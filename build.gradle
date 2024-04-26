@@ -104,8 +104,6 @@ subprojects { p ->
     apply plugin: "com.github.johnrengelman.shadow"
     if (isMinecraftSubProject)
         apply plugin: "systems.manifold.manifold-gradle-plugin"
-    if (p == project(":core"))
-        apply plugin: "application"
     
     // Apply forge's loom
     if (
@@ -171,14 +169,6 @@ subprojects { p ->
     }
 
 
-    // Let the application plugin know where the main class is
-    // (This will point to a non-existent class in all sub-projects except "Core")
-    if (p == project(":core")) {
-        application {
-            mainClass.set("com.seibel.distanthorizons.core.jar.JarMain")
-        }
-    }
-
     dependencies {
         //=====================//
         // shared dependencies //
@@ -206,27 +196,17 @@ subprojects { p ->
         implementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
         implementation("junit:junit:4.13")
 
-        // Compression
-        forgeShadowMe("org.lz4:lz4-java:${rootProject.lz4_version}") // LZ4
-        forgeShadowMe("com.github.luben:zstd-jni:${rootProject.zstd_version}") // Zstd
-        forgeShadowMe("org.tukaani:xz:${rootProject.xz_version}") // LZMA
 
-        // Sqlite Database
-        forgeShadowMe("org.xerial:sqlite-jdbc:${rootProject.sqlite_jdbc_version}")
         
         // NightConfig (includes Toml & Json)
+        // needs to be here and in core to prevent compiler errors
         forgeShadowMe("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
         forgeShadowMe("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
 
-        // Fastutil
-        forgeShadowMe("it.unimi.dsi:fastutil:${rootProject.fastutil_version}")
+        // Compression
+        // needs to be here and in core to prevent compiler errors
+        forgeShadowMe("org.lz4:lz4-java:${rootProject.lz4_version}") // LZ4
         
-        // SVG (not needed atm)
-//        forgeShadowMe("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
-        
-        // Netty
-        // Breaks 1.16.5
-        //forgeShadowMe("io.netty:netty-all:${rootProject.netty_version}")
 
         // Remember, for lwjgl dependencies that arent included in Minecraft, you need to also need to add it to the ShadowJar thing
         forgeShadowMe("org.lwjgl:lwjgl-jawt:${rootProject.lwjgl_version}") {
@@ -292,33 +272,14 @@ subprojects { p ->
         }
         def librariesLocation = "distanthorizons.libraries"
 
-        // LWJGL
-        // Only ever shadow the dependencies we use otherwise some stuff would break when running on an external client
-        relocate "org.lwjgl.system.jawt", "${librariesLocation}.lwjgl.system.jawt"
+        // SVG (not needed atm)
+//        relocate "com.kitfox.svg", "${librariesLocation}.kitfox.svg"
 
         // Compression (LZ4)
         relocate "net.jpountz", "${librariesLocation}.jpountz"
-        
-        // Sqlite Database
-        //At the moment, there is a bug in this library which doesnt allow it to be relocated
-//        relocate "org.sqlite", "${librariesLocation}.sqlite"
-        
-        // JOML
-        if (project.hasProperty("embed_joml") && embed_joml == "true")
-            relocate "org.joml", "${librariesLocation}.joml"
 
-        // FastUtil
-        relocate "it.unimi.dsi.fastutil", "${librariesLocation}.unimi.dsi.fastutil"
-
-        // NightConfig (includes Toml & Json)
         relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
-
-        // SVG (not needed atm)
-//        relocate "com.kitfox.svg", "${librariesLocation}.kitfox.svg"
         
-        // Netty
-        relocate "io.netty", "${librariesLocation}.netty"
-
         mergeServiceFiles()
     }
     // Using jar.finalizedBy(shadowJar) causes issues so we do this scuffed bypass
