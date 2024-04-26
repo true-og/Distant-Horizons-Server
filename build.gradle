@@ -199,13 +199,15 @@ subprojects { p ->
 
         
         // NightConfig (includes Toml & Json)
-        // needs to be here and in core to prevent compiler errors
+        // needs to be here and in core to prevent runtime/compiler errors
         forgeShadowMe("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
         forgeShadowMe("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
 
         // Compression
-        // needs to be here and in core to prevent compiler errors
+        // needs to be here and in core to prevent runtime/compiler errors
         forgeShadowMe("org.lz4:lz4-java:${rootProject.lz4_version}") // LZ4
+        forgeShadowMe("com.github.luben:zstd-jni:${rootProject.zstd_version}") // Zstd
+        forgeShadowMe("org.tukaani:xz:${rootProject.xz_version}") // LZMA
         
 
         // Remember, for lwjgl dependencies that arent included in Minecraft, you need to also need to add it to the ShadowJar thing
@@ -277,7 +279,10 @@ subprojects { p ->
 
         // Compression (LZ4)
         relocate "net.jpountz", "${librariesLocation}.jpountz"
+        relocate "com.github.luben", "${librariesLocation}.github.luben"
+        relocate "org.tukaani", "${librariesLocation}.tukaani"
 
+        // night config
         relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
         
         mergeServiceFiles()
