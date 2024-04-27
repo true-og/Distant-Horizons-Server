@@ -208,9 +208,6 @@ subprojects { p ->
         forgeShadowMe("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
         forgeShadowMe("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
 
-        // Fastutil
-        forgeShadowMe("it.unimi.dsi:fastutil:${rootProject.fastutil_version}")
-        
         // SVG (not needed atm)
 //        forgeShadowMe("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
         
@@ -296,9 +293,6 @@ subprojects { p ->
         // JOML
         if (project.hasProperty("embed_joml") && embed_joml == "true")
             relocate "org.joml", "${librariesLocation}.joml"
-
-        // FastUtil
-        relocate "it.unimi.dsi.fastutil", "${librariesLocation}.unimi.dsi.fastutil"
 
         // NightConfig (includes Toml & Json)
         relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
