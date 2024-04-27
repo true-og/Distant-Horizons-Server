@@ -3,7 +3,6 @@
     "minVersion": "0.8",
     "package": "com.seibel.distanthorizons.forge.mixins",
     "mixins": [
-        "server.unsafe.MixinThreadingDetector",
         "server.MixinUtilBackgroundThread",
         "server.MixinChunkGenerator",
         "server.MixinTFChunkGenerator"

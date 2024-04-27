@@ -3,7 +3,6 @@
     "minVersion": "0.8",
     "package": "com.seibel.distanthorizons.fabric.mixins",
     "mixins": [
-        "server.unsafe.MixinThreadingDetector",
         "server.MixinChunkGenerator",
         "server.MixinChunkMap",
         "server.MixinUtilBackgroundThread"
