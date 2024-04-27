@@ -181,8 +181,6 @@ subprojects { p ->
         
         // Log4j
         // TODO: Change to shadowMe later to work in the standalone jar
-        //       Note: this cannot be relocated if another log4j library is loaded in the JVM due to class casting issues
-        //       We might need to look into creating our own logging interface
         // We cannot do this now as it would break Quilt
         implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
         implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
@@ -198,19 +196,28 @@ subprojects { p ->
         implementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
         implementation("junit:junit:4.13")
 
-
-        
-        // NightConfig (includes Toml & Json)
-        // needs to be here and in core to prevent runtime/compiler errors
-        forgeShadowMe("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
-        forgeShadowMe("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
-
         // Compression
-        // needs to be here and in core to prevent runtime/compiler errors
         forgeShadowMe("org.lz4:lz4-java:${rootProject.lz4_version}") // LZ4
         forgeShadowMe("com.github.luben:zstd-jni:${rootProject.zstd_version}") // Zstd
         forgeShadowMe("org.tukaani:xz:${rootProject.xz_version}") // LZMA
+
+        // Sqlite Database
+        forgeShadowMe("org.xerial:sqlite-jdbc:${rootProject.sqlite_jdbc_version}")
         
+        // NightConfig (includes Toml & Json)
+        forgeShadowMe("com.electronwill.night-config:toml:${rootProject.nightconfig_version}")
+        forgeShadowMe("com.electronwill.night-config:json:${rootProject.nightconfig_version}")
+
+        // Fastutil
+        forgeShadowMe("it.unimi.dsi:fastutil:${rootProject.fastutil_version}")
+        
+        // SVG (not needed atm)
+//        forgeShadowMe("com.formdev:svgSalamander:${rootProject.svgSalamander_version}")
+        
+        // Netty
+        // Breaks 1.16.5
+        //forgeShadowMe("io.netty:netty-all:${rootProject.netty_version}")
+
         // Remember, for lwjgl dependencies that arent included in Minecraft, you need to also need to add it to the ShadowJar thing
         forgeShadowMe("org.lwjgl:lwjgl-jawt:${rootProject.lwjgl_version}") {
             exclude group: "org.lwjgl", module: "lwjgl" // This module is imported by Minecraft so exclude it
@@ -279,13 +286,12 @@ subprojects { p ->
         // Only ever shadow the dependencies we use otherwise some stuff would break when running on an external client
         relocate "org.lwjgl.system.jawt", "${librariesLocation}.lwjgl.system.jawt"
 
-        // Compression 
-        relocate "net.jpountz", "${librariesLocation}.jpountz" // LZ4
-        relocate "com.github.luben", "${librariesLocation}.github.luben" // ZStd
-        relocate "org.tukaani", "${librariesLocation}.tukaani" // XZ / LZMA
-
-        // night config
-        relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
+        // Compression (LZ4)
+        relocate "net.jpountz", "${librariesLocation}.jpountz"
+        
+        // Sqlite Database
+        //At the moment, there is a bug in this library which doesnt allow it to be relocated
+//        relocate "org.sqlite", "${librariesLocation}.sqlite"
         
         // JOML
         if (project.hasProperty("embed_joml") && embed_joml == "true")
@@ -293,11 +299,16 @@ subprojects { p ->
 
         // FastUtil
         relocate "it.unimi.dsi.fastutil", "${librariesLocation}.unimi.dsi.fastutil"
+
+        // NightConfig (includes Toml & Json)
+        relocate "com.electronwill.nightconfig", "${librariesLocation}.electronwill.nightconfig"
+
+        // SVG (not needed atm)
+//        relocate "com.kitfox.svg", "${librariesLocation}.kitfox.svg"
         
-        // Log4j
-        // can't be relocated due to reflection done on Log4j's side
-        //relocate "org.apache.logging", "${librariesLocation}.apache.logging"
-        
+        // Netty
+        relocate "io.netty", "${librariesLocation}.netty"
+
         mergeServiceFiles()
     }
     // Using jar.finalizedBy(shadowJar) causes issues so we do this scuffed bypass
