@@ -67,6 +67,8 @@ public class BiomeWrapper implements IBiomeWrapper
 	public static final String EMPTY_BIOME_STRING = "EMPTY";
 	public static final BiomeWrapper EMPTY_WRAPPER = new BiomeWrapper(null, null);
 	
+	public static final String PLAINS_RESOURCE_LOCATION_STRING = "minecraft:plains";
+	
 	/** keep track of broken biomes so we don't log every time */
 	private static final HashSet<String> brokenResourceLocationStrings = new HashSet<>();
 	
