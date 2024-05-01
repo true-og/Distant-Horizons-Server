@@ -196,6 +196,12 @@ subprojects { p ->
         implementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
         implementation("junit:junit:4.13")
 
+        // FastUtil
+        // Note: MC 1.16 uses 8.2.1, and versions after use 8.5.12
+        // We cannot relocate this library since we call some MC classes that reference it
+        implementation("it.unimi.dsi:fastutil:${rootProject.fastutil_version}")
+        
+        
         // Compression
         forgeShadowMe("org.lz4:lz4-java:${rootProject.lz4_version}") // LZ4
         forgeShadowMe("com.github.luben:zstd-jni:${rootProject.zstd_version}") // Zstd
