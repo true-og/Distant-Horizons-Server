@@ -204,7 +204,6 @@ subprojects { p ->
         
         // Compression
         forgeShadowMe("org.lz4:lz4-java:${rootProject.lz4_version}") // LZ4
-        forgeShadowMe("com.github.luben:zstd-jni:${rootProject.zstd_version}") // Zstd
         forgeShadowMe("org.tukaani:xz:${rootProject.xz_version}") // LZMA
 
         // Sqlite Database
