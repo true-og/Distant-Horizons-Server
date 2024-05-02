@@ -45,7 +45,7 @@ def addMod(path, enabled) {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${minecraft_version}"
+    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
     mappings loom.layered() {
         // Mojmap mappings
         officialMojangMappings()
