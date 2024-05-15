@@ -340,15 +340,18 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	/** will only work if a level is currently loaded */
 	public static IBlockStateWrapper deserialize(String resourceStateString, ILevelWrapper levelWrapper) throws IOException
 	{
-		if (resourceStateString.equals(AIR_STRING) || resourceStateString.equals("")) // the empty string shouldn't normally happen, but just in case
+		// we need the final string for the concurrent hash map later
+		final String finalResourceStateString = resourceStateString;
+		
+		if (finalResourceStateString.equals(AIR_STRING) || finalResourceStateString.equals("")) // the empty string shouldn't normally happen, but just in case
 		{
 			return AIR;
 		}
 		
 		// attempt to use the existing wrapper
-		if (WRAPPER_BY_RESOURCE_LOCATION.containsKey(resourceStateString))
+		if (WRAPPER_BY_RESOURCE_LOCATION.containsKey(finalResourceStateString))
 		{
-			return WRAPPER_BY_RESOURCE_LOCATION.get(resourceStateString);
+			return WRAPPER_BY_RESOURCE_LOCATION.get(finalResourceStateString);
 		}
 		
 		
@@ -458,14 +461,14 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			}
 			catch (Exception e)
 			{
-				throw new IOException("Failed to deserialize the string [" + resourceStateString + "] into a BlockStateWrapper: " + e.getMessage(), e);
+				throw new IOException("Failed to deserialize the string [" + finalResourceStateString + "] into a BlockStateWrapper: " + e.getMessage(), e);
 			}
 		}
 		finally
 		{
 			// put if absent in case two threads deserialize at the same time
 			// unfortunately we can't put everything in a computeIfAbsent() since we also throw exceptions
-			WRAPPER_BY_RESOURCE_LOCATION.putIfAbsent(resourceStateString, foundWrapper);
+			WRAPPER_BY_RESOURCE_LOCATION.putIfAbsent(finalResourceStateString, foundWrapper);
 		}
 	}
 	
