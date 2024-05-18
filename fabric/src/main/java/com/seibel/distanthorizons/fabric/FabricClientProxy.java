@@ -19,6 +19,8 @@
 
 package com.seibel.distanthorizons.fabric;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.seibel.distanthorizons.common.AbstractModInitializer;
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
@@ -36,6 +38,7 @@ import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
+import com.seibel.distanthorizons.coreapi.util.math.Mat4f;
 import com.seibel.distanthorizons.fabric.wrappers.modAccessor.SodiumAccessor;
 //import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;
@@ -58,6 +61,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.HitResult;
 import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -192,9 +196,18 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 
 		WorldRenderEvents.AFTER_SETUP.register((renderContext) ->
 		{
+			Matrix4f projectionMatrix = renderContext.projectionMatrix();
+			
+			Matrix4f modelViewMatrix;
+			#if MC_VER < MC_1_20_4
+			modelViewMatrix = matrixStack.last().pose();
+			#else
+			modelViewMatrix = renderContext.positionMatrix();
+			#endif
+			
 			this.clientApi.renderLods(ClientLevelWrapper.getWrapper(renderContext.world()),
-					McObjectConverter.Convert(renderContext.matrixStack().last().pose()),
-					McObjectConverter.Convert(renderContext.projectionMatrix()),
+					McObjectConverter.Convert(modelViewMatrix),
+					McObjectConverter.Convert(projectionMatrix),
 					renderContext.tickDelta());
 		});
 

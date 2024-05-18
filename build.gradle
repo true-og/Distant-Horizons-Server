@@ -2,7 +2,7 @@ plugins {
     id "java"
 
     // Plugin to put dependencies inside our final jar
-    id "com.github.johnrengelman.shadow" version '7.1.2' apply false
+    id "com.github.johnrengelman.shadow" version '8.1.1' apply false
 
     // Plugin to create merged jars
     id "io.github.pacifistmc.forgix" version "1.2.6"

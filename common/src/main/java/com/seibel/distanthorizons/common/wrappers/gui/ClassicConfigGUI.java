@@ -279,8 +279,11 @@ public class ClassicConfigGUI
 			}));
 			
 			this.list = new ConfigListWidget(this.minecraft, this.width * 2, this.height, 32, 32, 25);
+			
+			#if MC_VER < MC_1_20_6 // no background is rendered in MC 1.20.6+
 			if (this.minecraft != null && this.minecraft.level != null)
 				this.list.setRenderBackground(false);
+			#endif
 			
 			this.addWidget(this.list);
 			
