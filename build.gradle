@@ -325,6 +325,7 @@ subprojects { p ->
                                 "fabric.mod.json",
                                 "quilt.mod.json",
                                 "META-INF/mods.toml",
+                                "META-INF/NeoForge.mods.toml",
 
                                 // The mixins for each of the loaders
                                 "DistantHorizons."+ p.name +".fabricLike.mixins.json"

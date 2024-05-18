@@ -24,8 +24,8 @@ issueTrackerURL = "${issues}"
     acceptableRemoteVersions = "*"
 
 # We may need this to make forge (lexforge) & neoforge work together
-#[[mixins]]
-#    config = "DistantHorizons.neoforge.mixins.json"
+[[mixins]]
+    config = "DistantHorizons.neoforge.mixins.json"
 
 [[dependencies.distanthorizons]]
     modId = "minecraft"
