@@ -196,18 +196,18 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 
 		WorldRenderEvents.AFTER_SETUP.register((renderContext) ->
 		{
-			Matrix4f projectionMatrix = renderContext.projectionMatrix();
+			Mat4f projectionMatrix = McObjectConverter.Convert(renderContext.projectionMatrix());
 			
-			Matrix4f modelViewMatrix;
-			#if MC_VER < MC_1_20_4
-			modelViewMatrix = matrixStack.last().pose();
+			Mat4f modelViewMatrix;
+			#if MC_VER < MC_1_20_6
+			modelViewMatrix = McObjectConverter.Convert(renderContext.matrixStack().last().pose());
 			#else
-			modelViewMatrix = renderContext.positionMatrix();
+			modelViewMatrix = McObjectConverter.Convert(renderContext.positionMatrix());
 			#endif
 			
 			this.clientApi.renderLods(ClientLevelWrapper.getWrapper(renderContext.world()),
-					McObjectConverter.Convert(modelViewMatrix),
-					McObjectConverter.Convert(projectionMatrix),
+					modelViewMatrix,
+					projectionMatrix,
 					renderContext.tickDelta());
 		});
 

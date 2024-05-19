@@ -49,6 +49,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.nio.FloatBuffer;
 
 #if MC_VER < MC_1_17_1
@@ -68,7 +69,8 @@ import org.lwjgl.opengl.GL15;
 @Mixin(LevelRenderer.class)
 public class MixinLevelRenderer
 {
-	@Shadow
+	@Nullable
+	@Shadow //# if MC_VER >= MC_1_20_4 (remap = false) # endif
 	private ClientLevel level;
 	@Unique
 	private static float previousPartialTicks = 0;
