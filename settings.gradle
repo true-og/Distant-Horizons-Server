@@ -33,6 +33,14 @@ pluginManagement {
             name "ParchmentMC"
             url "https://maven.parchmentmc.org"
         }
+        maven { // Used for downgrading Java versions
+            name "Wagyourtail Release Repository"
+            url "https://maven.wagyourtail.xyz/releases"
+        }
+        maven { // Used for downgrading Java versions
+            name "Wagyourtail Snapshot Repository"
+            url "https://maven.wagyourtail.xyz/snapshots"
+        }
         mavenCentral()
         gradlePluginPortal()
         
