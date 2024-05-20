@@ -37,3 +37,6 @@ accessible field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet
 accessible field net/minecraft/util/ThreadingDetector lock Ljava/util/concurrent/Semaphore;
 mutable field net/minecraft/util/ThreadingDetector lock Ljava/util/concurrent/Semaphore;
 accessible field net/minecraft/client/gui/components/AbstractSelectionList scrollAmount D # Hack to bypass vanilla's setScrollAmount's clamp
+
+# TODO add a separate 1.20.6 Access widner file, this is only present in 1.20.6
+accessible field net/minecraft/client/gui/screens/OptionsScreen layout Lnet/minecraft/client/gui/layouts/HeaderAndFooterLayout;
