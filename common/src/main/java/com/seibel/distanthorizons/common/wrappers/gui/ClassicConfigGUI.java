@@ -252,7 +252,7 @@ public class ClassicConfigGUI
 						this.width - 28, this.height - 28,
 						// Width and height of the button
 						20, 20,
-						// Offset
+						// texture UV Offset
 						0, 0,
 						// Some textuary stuff
 						0, new ResourceLocation(ModInfo.ID, "textures/gui/changelog.png"), 20, 20,
@@ -270,10 +270,14 @@ public class ClassicConfigGUI
 			}
 			
 			
-			addBtn(MakeBtn(Translatable("distanthorizons.general.cancel"), this.width / 2 - 154, this.height - 28, 150, 20, button -> {
-				ConfigBase.INSTANCE.configFileINSTANCE.loadFromFile();
-				Objects.requireNonNull(minecraft).setScreen(parent);
-			}));
+			addBtn(MakeBtn(Translatable("distanthorizons.general.cancel"), 
+					this.width / 2 - 154, this.height - 28, 
+					150, 20, 
+					button -> 
+					{
+						ConfigBase.INSTANCE.configFileINSTANCE.loadFromFile();
+						Objects.requireNonNull(minecraft).setScreen(parent);
+					}));
 			doneButton = addBtn(MakeBtn(Translatable("distanthorizons.general.done"), this.width / 2 + 4, this.height - 28, 150, 20, (button) -> {
 				ConfigBase.INSTANCE.configFileINSTANCE.saveToFile();
 				Objects.requireNonNull(minecraft).setScreen(parent);
@@ -314,6 +318,7 @@ public class ClassicConfigGUI
 		{
 			initEntry(info, this.translationPrefix);
 			Component name = Translatable(translationPrefix + info.getNameWCategory());
+			
 			
 			if (ConfigEntry.class.isAssignableFrom(info.getClass()))
 			{
