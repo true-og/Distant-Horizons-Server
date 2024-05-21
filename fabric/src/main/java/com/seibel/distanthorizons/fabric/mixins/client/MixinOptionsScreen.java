@@ -94,7 +94,7 @@ public class MixinOptionsScreen extends Screen
 			// TODO is there a better way to do this instead of using access transformers to inject into the exact UI elements?
 			// TODO is there a way we can put the button on the left side of the FOV bar like before?
 			LinearLayout layout = (LinearLayout) this.layout.headerFrame.children.get(0).child;
-			layout.wrapped.addChild(this.getOptionsButton(), 1, 2); 
+			layout.wrapped.addChild(this.getOptionsButton(), 1, 2);
 			layout.arrangeElements();
 			
 		    #endif
@@ -125,7 +125,7 @@ public class MixinOptionsScreen extends Screen
 					// Create the button and tell it where to go
 					// For now it goes to the client option by default
 					(buttonWidget) -> Objects.requireNonNull(this.minecraft).setScreen(GetConfigScreen.getScreen(this)),
-					// Add a title to the utton
+					// Add a title to the button
 	                #if MC_VER < MC_1_19_2
 					new TranslatableComponent(ModInfo.ID + ".title"));
 	                #else
