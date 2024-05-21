@@ -285,7 +285,7 @@ subprojects { p ->
                 relocate "com.seibel.distanthorizons.fabriclike", "loaderCommon.${p.name}.com.seibel.distanthorizons.fabriclike" // Move the loader files to a different location
             }
         }
-        def librariesLocation = "distanthorizons.libraries"
+        def librariesLocation = "DistantHorizons.libraries"
 
         // LWJGL
         // Only ever shadow the dependencies we use otherwise some stuff would break when running on an external client
