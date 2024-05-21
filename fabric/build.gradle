@@ -23,8 +23,8 @@ loom {
 }
 
 remapJar {
-    inputFile = apiDowngrade.archiveFile
-    dependsOn apiDowngrade
+    inputFile = shadowJar.archiveFile
+    dependsOn shadowJar
 }
 
 
