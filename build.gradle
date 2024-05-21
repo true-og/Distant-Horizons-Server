@@ -12,6 +12,8 @@ plugins {
 
     // Architectury is used here only as a replacement for forge's own loom
     id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
+
+    id 'xyz.wagyourtail.jvmdowngrader' version '0.4.0' apply true
 }
 
 
@@ -102,6 +104,7 @@ subprojects { p ->
     // Apply plugins
     apply plugin: "java"
     apply plugin: "com.github.johnrengelman.shadow"
+    apply plugin: "xyz.wagyourtail.jvmdowngrader"
     if (isMinecraftSubProject)
         apply plugin: "systems.manifold.manifold-gradle-plugin"
     
@@ -282,7 +285,7 @@ subprojects { p ->
                 relocate "com.seibel.distanthorizons.fabriclike", "loaderCommon.${p.name}.com.seibel.distanthorizons.fabriclike" // Move the loader files to a different location
             }
         }
-        def librariesLocation = "distanthorizons.libraries"
+        def librariesLocation = "DistantHorizons.libraries"
 
         // LWJGL
         // Only ever shadow the dependencies we use otherwise some stuff would break when running on an external client
@@ -312,6 +315,22 @@ subprojects { p ->
     }
     // Using jar.finalizedBy(shadowJar) causes issues so we do this scuffed bypass
     jar.dependsOn(shadowJar)
+
+    // For downgrading our project to Java 8
+    if (isMinecraftSubProject) {
+        task jarDowngrade(type: xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar) {
+            inputFile = tasks.shadowJar.archiveFile
+            archiveClassifier = "downgraded-8"
+        }
+        task apiDowngrade(type: xyz.wagyourtail.jvmdg.gradle.task.ShadeAPI) {
+            inputFile = jarDowngrade.archiveFile
+            archiveClassifier = "downgraded-8-shaded"
+        }
+        
+        // We're using a custom downgrade task so we disable the original downgrade tasks
+        downgradeJar.enabled = false
+        shadeDowngradedApi.enabled = false
+    }
 
 
     // Put stuff from gradle.properties into the mod info
@@ -611,13 +630,16 @@ allprojects { p ->
 
     tasks.withType(JavaCompile) {
         if (isMinecraftSubProject) {
-            options.release = rootProject.java_version as Integer
+            options.release = rootProject.java_version as Integer // Neoforge complains without this
             options.compilerArgs += ["-Xplugin:Manifold"]
-        } else {
-            options.release = 8; // Core & Api should use Java 8 no matter what
-            //options.release = rootProject.java_version as Integer // But if you want to test some stuff, then this can be enabled
         }
         options.encoding = "UTF-8"
+    }
+    
+    // Sets the project's actual Java version (it's recommended to use this over the `options.release` method above)
+    java {
+        sourceCompatibility = rootProject.java_version
+        targetCompatibility = rootProject.java_version
     }
 
     java {
