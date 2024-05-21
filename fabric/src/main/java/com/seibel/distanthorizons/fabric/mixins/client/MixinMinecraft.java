@@ -50,7 +50,7 @@ public class MixinMinecraft
 			return;
 		}
 		
-		if (SelfUpdater.onStart() | debugAlwaysShowUpdater)
+		if (SelfUpdater.onStart() || debugAlwaysShowUpdater)
 		{
 			instance.setScreen(new UpdateModScreen(
 					new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
