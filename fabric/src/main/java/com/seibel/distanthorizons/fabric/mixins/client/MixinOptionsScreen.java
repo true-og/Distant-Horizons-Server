@@ -23,7 +23,6 @@ import com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen;
 import com.seibel.distanthorizons.common.wrappers.gui.TexturedButtonWidget;
 import com.seibel.distanthorizons.coreapi.ModInfo;
 import com.seibel.distanthorizons.core.config.Config;
-import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -43,6 +42,7 @@ import java.util.Objects;
 
 #if MC_VER == MC_1_20_6
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 #endif
 
 /**
@@ -127,7 +127,7 @@ public class MixinOptionsScreen extends Screen
 					(buttonWidget) -> Objects.requireNonNull(this.minecraft).setScreen(GetConfigScreen.getScreen(this)),
 					// Add a title to the utton
 	                #if MC_VER < MC_1_19_2
-					new TranslatableComponent(ModInfo.ID + ".title")));
+					new TranslatableComponent(ModInfo.ID + ".title"));
 	                #else
 					Component.translatable(ModInfo.ID + ".title"));
 					#endif
