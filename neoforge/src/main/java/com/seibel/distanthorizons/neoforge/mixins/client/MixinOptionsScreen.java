@@ -39,6 +39,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 #if MC_VER == MC_1_20_6
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -94,7 +95,13 @@ public class MixinOptionsScreen extends Screen
 			// TODO is there a better way to do this instead of using access transformers to inject into the exact UI elements?
 			// TODO is there a way we can put the button on the left side of the FOV bar like before?
 			LinearLayout layout = (LinearLayout) this.layout.headerFrame.children.get(0).child;
-			layout.wrapped.addChild(this.getOptionsButton(), 1, 2);
+			
+			// determine how wide the other option buttons are so we can put our botton to the left of them all
+			AtomicInteger width = new AtomicInteger(0);
+			layout.visitChildren(x -> { width.addAndGet(x.getWidth()); });
+			width.addAndGet(-10); // padding between the DH button and the FOV slider
+			
+			layout.wrapped.addChild(this.getOptionsButton(), 1, 2, (settings) -> { settings.paddingLeft(width.get() * -1); });
 			layout.arrangeElements();
 			
 		    #endif
