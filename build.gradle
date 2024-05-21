@@ -630,16 +630,13 @@ allprojects { p ->
 
     tasks.withType(JavaCompile) {
         if (isMinecraftSubProject) {
-            options.release = rootProject.java_version as Integer // Neoforge complains without this
+            options.release = rootProject.java_version as Integer
             options.compilerArgs += ["-Xplugin:Manifold"]
+        } else {
+            options.release = 8; // Core & Api should use Java 8 no matter what
+            //options.release = rootProject.java_version as Integer // But if you want to test some stuff, then this can be enabled
         }
         options.encoding = "UTF-8"
-    }
-    
-    // Sets the project's actual Java version (it's recommended to use this over the `options.release` method above)
-    java {
-        sourceCompatibility = rootProject.java_version
-        targetCompatibility = rootProject.java_version
     }
 
     java {
