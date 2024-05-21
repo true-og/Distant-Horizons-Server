@@ -25,6 +25,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraft
 {
+	// will always show the auto updater if true
+	boolean debugAlwaysShowUpdater = false;
+
 	#if MC_VER < MC_1_20_2
 	#if MC_VER == MC_1_20_1
 	@Redirect(
@@ -41,13 +44,13 @@ public class MixinMinecraft
 	public void onOpenScreen(Minecraft instance, Screen guiScreen)
 	{
 	#endif
-		if (!Config.Client.Advanced.AutoUpdater.enableAutoUpdater.get()) // Don't do anything if the user doesn't want it
+		if (!Config.Client.Advanced.AutoUpdater.enableAutoUpdater.get() && !debugAlwaysShowUpdater) // Don't do anything if the user doesn't want it
 		{
 			instance.setScreen(guiScreen); // Sets the screen back to the vanilla screen as if nothing ever happened
 			return;
 		}
 		
-		if (SelfUpdater.onStart())
+		if (SelfUpdater.onStart() | debugAlwaysShowUpdater)
 		{
 			instance.setScreen(new UpdateModScreen(
 					new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
@@ -71,6 +74,7 @@ public class MixinMinecraft
 		if (
 				Config.Client.Advanced.AutoUpdater.enableAutoUpdater.get() // Don't do anything if the user doesn't want it
 				&& SelfUpdater.onStart()
+				|| debugAlwaysShowUpdater
 		)
 		{
 			runnable = () -> {
