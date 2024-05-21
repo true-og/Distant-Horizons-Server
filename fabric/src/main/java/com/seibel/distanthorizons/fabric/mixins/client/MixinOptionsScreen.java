@@ -23,7 +23,6 @@ import com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen;
 import com.seibel.distanthorizons.common.wrappers.gui.TexturedButtonWidget;
 import com.seibel.distanthorizons.coreapi.ModInfo;
 import com.seibel.distanthorizons.core.config.Config;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,85 +34,106 @@ import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 
+#if MC_VER == MC_1_20_6
+import net.minecraft.client.gui.layouts.LinearLayout;
+#endif
+
 /**
  * Adds a button to the menu to goto the config
  *
  * @author coolGi
- * @version 12-02-2021
+ * @version 2024-5-20
  */
 @Mixin(OptionsScreen.class)
 public class MixinOptionsScreen extends Screen
 {
-	/** Get the texture for the button */
+	/** Texture used for the config opening button */
+	@Unique
 	private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ModInfo.ID, "textures/gui/button.png");
 	
-	public final TexturedButtonWidget optionsButton;
 	
+	@Unique
+	private TexturedButtonWidget optionsButton = null;
+	
+	#if MC_VER == MC_1_20_6
 	@Shadow
 	@Final
 	protected HeaderAndFooterLayout layout;
+	#endif
 	
 	
 	
-	protected MixinOptionsScreen(Component title) 
-	{ 
-		super(title);
-		
-		this.optionsButton = new TexturedButtonWidget(
-				// Where the button is on the screen
-				this.width / 2 - 180, this.height / 6 - 12,
-				// Width and height of the button
-				20, 20,
-				// texture UV Offset
-				0, 0,
-				// Some textuary stuff
-				20, ICON_TEXTURE, 20, 40,
-				// Create the button and tell it where to go
-				// For now it goes to the client option by default
-				(buttonWidget) -> Objects.requireNonNull(minecraft).setScreen(GetConfigScreen.getScreen(this)),
-				// Add a title to the utton
-                #if MC_VER < MC_1_19_2
-					new TranslatableComponent(ModInfo.ID + ".title")));
-                #else
-					Component.translatable(ModInfo.ID + ".title"));
-				#endif
-	}
+	//==============//
+	// constructors //
+	//==============//
 	
+	protected MixinOptionsScreen(Component title) { super(title); }
 	
-	
-	@Inject(at = @At("HEAD"), method = "init")
+	@Inject(at = @At("RETURN"), method = "init")
 	private void lodconfig$init(CallbackInfo ci)
 	{
 		if (Config.Client.optionsButton.get())
 		{
-			this. #if MC_VER < MC_1_17_1 addButton #else addRenderableWidget #endif
-					(this.optionsButton);
+			#if MC_VER < MC_1_17_1
+			this.addButton(this.getOptionsButton());
+			#elif MC_VER < MC_1_20_6
+			this.addRenderableWidget(this.getOptionsButton());
+			#else
 			
-			// TODO we need to add optionsButton to the UI via the layout instead so it centers correctly
-			//  This wasn't working on James' machine
-			this.layout.visitChildren((x) -> 
-			{
-				System.out.println(x);
-			});
+			// add the button so it's rendered 
+			this.addRenderableWidget(this.getOptionsButton());
 			
+			// add the button to the correct location in the UI
+			// TODO is there a better way to do this instead of using access transformers to inject into the exact UI elements?
+			// TODO is there a way we can put the button on the left side of the FOV bar like before?
+			LinearLayout layout = (LinearLayout) this.layout.headerFrame.children.get(0).child;
+			layout.wrapped.addChild(this.getOptionsButton(), 1, 2); 
+			layout.arrangeElements();
+			
+		    #endif
 		}
 	}
 	
 	
-	//@Inject(method = "Lnet/minecraft/client/gui/screens/Screen;render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V", at = @At(value = "INVOKE"))
-	//public void renderStuff(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci)
-	//{
-	//	int newWidth = this.width / 2 - 180;
-	//	if (this.optionsButton.getX() != newWidth)
-	//	{
-	//		this.optionsButton.setX(newWidth);
-	//	}
-	//}
+	
+	//================//
+	// helper methods //
+	//================//
+	
+	@Unique
+	public TexturedButtonWidget getOptionsButton()
+	{
+		if (this.optionsButton == null)
+		{
+			this.optionsButton
+					= new TexturedButtonWidget(
+					// Where the button is on the screen
+					this.width / 2 - 180, this.height / 6 - 12,
+					// Width and height of the button
+					20, 20,
+					// texture UV Offset
+					0, 0,
+					// Some textuary stuff
+					20, ICON_TEXTURE, 20, 40,
+					// Create the button and tell it where to go
+					// For now it goes to the client option by default
+					(buttonWidget) -> Objects.requireNonNull(this.minecraft).setScreen(GetConfigScreen.getScreen(this)),
+					// Add a title to the utton
+	                #if MC_VER < MC_1_19_2
+					new TranslatableComponent(ModInfo.ID + ".title")));
+	                #else
+					Component.translatable(ModInfo.ID + ".title"));
+					#endif
+		}
+		
+		return this.optionsButton;
+	}
 	
 }
