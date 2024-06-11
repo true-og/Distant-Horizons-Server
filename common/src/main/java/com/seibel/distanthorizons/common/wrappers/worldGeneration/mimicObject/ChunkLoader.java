@@ -100,138 +100,7 @@ public class ChunkLoader
 	private static final String FLUID_TICKS_TAG_PRE18 = "LiquidTicks";
 	private static final ConfigBasedLogger LOGGER = BatchGenerationEnvironment.LOAD_LOGGER;
 	
-	#if MC_VER >= MC_1_18_2
-	private static BlendingData readBlendingData(CompoundTag chunkData)
-	{
-		BlendingData blendingData = null;
-		if (chunkData.contains("blending_data", 10))
-		{
-			@SuppressWarnings({"unchecked", "rawtypes"})
-			Dynamic<CompoundTag> blendingDataTag = new Dynamic(NbtOps.INSTANCE, chunkData.getCompound("blending_data"));
-			blendingData = BlendingData.CODEC.parse(blendingDataTag).resultOrPartial(LOGGER::error).orElse(null);
-		}
-		return blendingData;
-	}
-	#endif
 	
-	private static LevelChunkSection[] readSections(LevelAccessor level, ChunkPos chunkPos, CompoundTag chunkData)
-	{
-		#if MC_VER >= MC_1_18_2
-		#if MC_VER < MC_1_19_4
-		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
-		#else
-		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registries.BIOME);
-		#endif
-			#if MC_VER < MC_1_18_2
-			Codec<PalettedContainer<Biome>> biomeCodec = PalettedContainer.codec(
-					biomes, biomes.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getOrThrow(Biomes.PLAINS));
-			#elif MC_VER < MC_1_19_2
-		Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codec(
-				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
-			#else
-		Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codecRW(
-				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
-			#endif
-		#endif
-		int i = #if MC_VER < MC_1_17_1 16; #else level.getSectionsCount(); #endif
-		LevelChunkSection[] chunkSections = new LevelChunkSection[i];
-		
-		boolean isLightOn = chunkData.getBoolean("isLightOn");
-		boolean hasSkyLight = level.dimensionType().hasSkyLight();
-		ListTag tagSections = chunkData.getList("Sections", 10);
-		if (tagSections.isEmpty()) tagSections = chunkData.getList("sections", 10);
-		
-		for (int j = 0; j < tagSections.size(); ++j)
-		{
-			CompoundTag tagSection = tagSections.getCompound(j);
-			int sectionYPos = tagSection.getByte("Y");
-
-			#if MC_VER < MC_1_18_2
-			if (tagSection.contains("Palette", 9) && tagSection.contains("BlockStates", 12))
-			{
-				LevelChunkSection levelChunkSection = new LevelChunkSection(sectionYPos << 4);
-				levelChunkSection.getStates().read(tagSection.getList("Palette", 10),
-						tagSection.getLongArray("BlockStates"));
-				levelChunkSection.recalcBlockCounts();
-				if (!levelChunkSection.isEmpty())
-					chunkSections[#if MC_VER < MC_1_17_1 sectionYPos #else level.getSectionIndexFromSectionY(sectionYPos) #endif ]
-							= levelChunkSection;
-			}
-			#else
-			int sectionId = level.getSectionIndexFromSectionY(sectionYPos);
-			if (sectionId >= 0 && sectionId < chunkSections.length)
-			{
-				PalettedContainer<BlockState> blockStateContainer;
-				#if MC_VER < MC_1_18_2
-				PalettedContainer<Biome> biomeContainer;
-				#else
-				PalettedContainer<Holder<Biome>> biomeContainer;
-				#endif
-				
-				blockStateContainer = tagSection.contains("block_states", 10)
-						? BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, tagSection.getCompound("block_states")).promotePartial(string -> logErrors(chunkPos, sectionYPos, string))
-							#if MC_VER < MC_1_20_6 .getOrThrow(false, LOGGER::error) #else .getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) #endif
-						: new PalettedContainer<BlockState>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
-
-				#if MC_VER < MC_1_18_2
-				biomeContainer = tagSection.contains("biomes", 10)
-						? biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logErrors(chunkPos, sectionYPos, string)).getOrThrow(false, LOGGER::error)
-						: new PalettedContainer<Biome>(biomes, biomes.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
-				#else
-				
-				biomeContainer = tagSection.contains("biomes", 10)
-						? biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logErrors(chunkPos, i, (String) string))
-							#if MC_VER < MC_1_20_6 .getOrThrow(false, LOGGER::error) #else .getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) #endif
-						: new PalettedContainer<Holder<Biome>>(biomes.asHolderIdMap(), biomes.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
-				#endif
-				
-				#if MC_VER < MC_1_20_1
-				chunkSections[sectionId] = new LevelChunkSection(sectionYPos, blockStateContainer, biomeContainer);
-				#else
-				chunkSections[sectionId] = new LevelChunkSection(blockStateContainer, biomeContainer);
-				#endif
-			}
-			#endif
-			
-		}
-		return chunkSections;
-	}
-	
-	private static void readHeightmaps(LevelChunk chunk, CompoundTag chunkData)
-	{
-		CompoundTag tagHeightmaps = chunkData.getCompound("Heightmaps");
-		for (Heightmap.Types type : ChunkStatus.FULL.heightmapsAfter())
-		{
-			String heightmap = type.getSerializationKey();
-			if (tagHeightmaps.contains(heightmap, 12))
-				chunk.setHeightmap(type, tagHeightmaps.getLongArray(heightmap));
-		}
-		Heightmap.primeHeightmaps(chunk, ChunkStatus.FULL.heightmapsAfter());
-	}
-	
-	private static void readPostPocessings(LevelChunk chunk, CompoundTag chunkData)
-	{
-		ListTag tagPostProcessings = chunkData.getList("PostProcessing", 9);
-		for (int n = 0; n < tagPostProcessings.size(); ++n)
-		{
-			ListTag listTag3 = tagPostProcessings.getList(n);
-			for (int o = 0; o < listTag3.size(); ++o)
-			{
-				chunk.addPackedPostProcess(listTag3.getShort(o), n);
-			}
-		}
-	}
-	
-	public static #if MC_VER < MC_1_20_6 ChunkStatus.ChunkType #else ChunkType #endif readChunkType(CompoundTag tagLevel)
-	{
-		ChunkStatus chunkStatus = ChunkStatus.byName(tagLevel.getString("Status"));
-		if (chunkStatus != null)
-		{
-			return chunkStatus.getChunkType();
-		}
-		
-		return #if MC_VER < MC_1_20_6 ChunkStatus.ChunkType.PROTOCHUNK; #else ChunkType.PROTOCHUNK; #endif
-	}
 	
 	public static LevelChunk read(WorldGenLevel level, ChunkPos chunkPos, CompoundTag chunkData)
 	{
@@ -348,6 +217,141 @@ public class ChunkLoader
 		readHeightmaps(chunk, chunkData);
 		readPostPocessings(chunk, chunkData);
 		return chunk;
+	}
+	private static LevelChunkSection[] readSections(LevelAccessor level, ChunkPos chunkPos, CompoundTag chunkData)
+	{
+		#if MC_VER >= MC_1_18_2
+		#if MC_VER < MC_1_19_4
+		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+		#else
+		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registries.BIOME);
+		#endif
+			#if MC_VER < MC_1_18_2
+			Codec<PalettedContainer<Biome>> biomeCodec = PalettedContainer.codec(
+					biomes, biomes.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getOrThrow(Biomes.PLAINS));
+			#elif MC_VER < MC_1_19_2
+		Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codec(
+				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
+			#else
+		Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codecRW(
+				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
+			#endif
+		#endif
+		int i = #if MC_VER < MC_1_17_1 16; #else level.getSectionsCount(); #endif
+		LevelChunkSection[] chunkSections = new LevelChunkSection[i];
+		
+		boolean isLightOn = chunkData.getBoolean("isLightOn");
+		boolean hasSkyLight = level.dimensionType().hasSkyLight();
+		ListTag tagSections = chunkData.getList("Sections", 10);
+		if (tagSections.isEmpty()) tagSections = chunkData.getList("sections", 10);
+		
+		for (int j = 0; j < tagSections.size(); ++j)
+		{
+			CompoundTag tagSection = tagSections.getCompound(j);
+			int sectionYPos = tagSection.getByte("Y");
+
+			#if MC_VER < MC_1_18_2
+			if (tagSection.contains("Palette", 9) && tagSection.contains("BlockStates", 12))
+			{
+				LevelChunkSection levelChunkSection = new LevelChunkSection(sectionYPos << 4);
+				levelChunkSection.getStates().read(tagSection.getList("Palette", 10),
+						tagSection.getLongArray("BlockStates"));
+				levelChunkSection.recalcBlockCounts();
+				if (!levelChunkSection.isEmpty())
+					chunkSections[#if MC_VER < MC_1_17_1 sectionYPos #else level.getSectionIndexFromSectionY(sectionYPos) #endif ]
+							= levelChunkSection;
+			}
+			#else
+			int sectionId = level.getSectionIndexFromSectionY(sectionYPos);
+			if (sectionId >= 0 && sectionId < chunkSections.length)
+			{
+				PalettedContainer<BlockState> blockStateContainer;
+				#if MC_VER < MC_1_18_2
+				PalettedContainer<Biome> biomeContainer;
+				#else
+				PalettedContainer<Holder<Biome>> biomeContainer;
+				#endif
+				
+				blockStateContainer = tagSection.contains("block_states", 10)
+						? BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, tagSection.getCompound("block_states")).promotePartial(string -> logErrors(chunkPos, sectionYPos, string))
+						#if MC_VER < MC_1_20_6 .getOrThrow(false, LOGGER::error) #else .getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) #endif
+						: new PalettedContainer<BlockState>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+
+				#if MC_VER < MC_1_18_2
+				biomeContainer = tagSection.contains("biomes", 10)
+						? biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logErrors(chunkPos, sectionYPos, string)).getOrThrow(false, LOGGER::error)
+						: new PalettedContainer<Biome>(biomes, biomes.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
+				#else
+				
+				biomeContainer = tagSection.contains("biomes", 10)
+						? biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logErrors(chunkPos, i, (String) string))
+						#if MC_VER < MC_1_20_6 .getOrThrow(false, LOGGER::error) #else .getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) #endif
+						: new PalettedContainer<Holder<Biome>>(biomes.asHolderIdMap(), biomes.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
+				#endif
+				
+				#if MC_VER < MC_1_20_1
+				chunkSections[sectionId] = new LevelChunkSection(sectionYPos, blockStateContainer, biomeContainer);
+				#else
+				chunkSections[sectionId] = new LevelChunkSection(blockStateContainer, biomeContainer);
+				#endif
+			}
+			#endif
+			
+		}
+		return chunkSections;
+	}
+	private static #if MC_VER < MC_1_20_6 ChunkStatus.ChunkType #else ChunkType #endif readChunkType(CompoundTag tagLevel)
+	{
+		ChunkStatus chunkStatus = ChunkStatus.byName(tagLevel.getString("Status"));
+		if (chunkStatus != null)
+		{
+			return chunkStatus.getChunkType();
+		}
+		
+		return #if MC_VER < MC_1_20_6 ChunkStatus.ChunkType.PROTOCHUNK; #else ChunkType.PROTOCHUNK; #endif
+	}
+	private static void readHeightmaps(LevelChunk chunk, CompoundTag chunkData)
+	{
+		CompoundTag tagHeightmaps = chunkData.getCompound("Heightmaps");
+		for (Heightmap.Types type : ChunkStatus.FULL.heightmapsAfter())
+		{
+			String heightmap = type.getSerializationKey();
+			if (tagHeightmaps.contains(heightmap, 12))
+				chunk.setHeightmap(type, tagHeightmaps.getLongArray(heightmap));
+		}
+		Heightmap.primeHeightmaps(chunk, ChunkStatus.FULL.heightmapsAfter());
+	}
+	private static void readPostPocessings(LevelChunk chunk, CompoundTag chunkData)
+	{
+		ListTag tagPostProcessings = chunkData.getList("PostProcessing", 9);
+		for (int n = 0; n < tagPostProcessings.size(); ++n)
+		{
+			ListTag listTag3 = tagPostProcessings.getList(n);
+			for (int o = 0; o < listTag3.size(); ++o)
+			{
+				chunk.addPackedPostProcess(listTag3.getShort(o), n);
+			}
+		}
+	}
+	#if MC_VER >= MC_1_18_2
+	private static BlendingData readBlendingData(CompoundTag chunkData)
+	{
+		BlendingData blendingData = null;
+		if (chunkData.contains("blending_data", 10))
+		{
+			@SuppressWarnings({"unchecked", "rawtypes"})
+			Dynamic<CompoundTag> blendingDataTag = new Dynamic(NbtOps.INSTANCE, chunkData.getCompound("blending_data"));
+			blendingData = BlendingData.CODEC.parse(blendingDataTag).resultOrPartial(LOGGER::error).orElse(null);
+		}
+		return blendingData;
+	}
+	#endif
+	
+	
+	
+	public static LevelChunk readLight(WorldGenLevel level, ChunkPos chunkPos, CompoundTag chunkData)
+	{
+		return null;
 	}
 	
 	private static void logErrors(ChunkPos chunkPos, int i, String string)
