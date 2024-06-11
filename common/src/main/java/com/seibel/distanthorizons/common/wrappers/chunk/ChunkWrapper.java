@@ -25,13 +25,12 @@ import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.Dh
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
-import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
+import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
-import com.seibel.distanthorizons.coreapi.ModInfo;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -82,9 +81,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 public class ChunkWrapper implements IChunkWrapper
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
-	
-	/** useful for debugging, but can slow down chunk operations quite a bit due to being called every time. */
-	private static final boolean RUN_RELATIVE_POS_INDEX_VALIDATION = ModInfo.IS_DEV_BUILD;
 	
 	/** can be used for interactions with the underlying chunk where creating new BlockPos objects could cause issues for the garbage collector. */
 	private static final ThreadLocal<BlockPos.MutableBlockPos> MUTABLE_BLOCK_POS_REF = ThreadLocal.withInitial(() -> new BlockPos.MutableBlockPos());
@@ -152,26 +148,30 @@ public class ChunkWrapper implements IChunkWrapper
 	//=========//
 	
 	@Override
-	public int getHeight()
+	public int getHeight() { return getHeight(this.chunk); }
+	public static int getHeight(ChunkAccess chunk)
 	{
 		#if MC_VER < MC_1_17_1
 		return 255;
 		#else
-		return this.chunk.getHeight();
+		return chunk.getHeight();
 		#endif
 	}
 	
 	@Override
-	public int getMinBuildHeight()
+	public int getMinBuildHeight() { return getMinBuildHeight(this.chunk); }
+	public static int getMinBuildHeight(ChunkAccess chunk)
 	{
 		#if MC_VER < MC_1_17_1
 		return 0;
 		#else
-		return this.chunk.getMinBuildHeight();
+		return chunk.getMinBuildHeight();
 		#endif
 	}
+	
 	@Override
-	public int getMaxBuildHeight() { return this.chunk.getMaxBuildHeight(); }
+	public int getMaxBuildHeight() { return getMaxBuildHeight(this.chunk); }
+	public static int getMaxBuildHeight(ChunkAccess chunk) { return chunk.getMaxBuildHeight(); }
 	
 	@Override
 	public int getMinNonEmptyHeight()
@@ -302,9 +302,6 @@ public class ChunkWrapper implements IChunkWrapper
 	public int getMinBlockZ() { return this.chunk.getPos().getMinBlockZ(); }
 	
 	@Override
-	public long getLongChunkPos() { return this.chunk.getPos().toLong(); }
-	
-	@Override
 	public void setIsDhLightCorrect(boolean isDhLightCorrect) { this.isDhLightCorrect = isDhLightCorrect; }
 	
 	@Override
@@ -364,13 +361,11 @@ public class ChunkWrapper implements IChunkWrapper
 	{
 		if (this.blockLightStorage == null)
 		{
-			this.blockLightStorage = new ChunkLightStorage(
-					this.getMinBuildHeight(), this.getMaxBuildHeight(), 
-					// positions above and below the handled area should be unlit
-					LodUtil.MIN_MC_LIGHT, LodUtil.MIN_MC_LIGHT);
+			this.blockLightStorage = ChunkLightStorage.createBlockLightStorage(this);
 		}
 		return this.blockLightStorage;
 	}
+	public void setBlockLightStorage(ChunkLightStorage lightStorage) { this.blockLightStorage = lightStorage; }
 	
 	
 	@Override
@@ -390,13 +385,11 @@ public class ChunkWrapper implements IChunkWrapper
 	{
 		if (this.skyLightStorage == null)
 		{
-			this.skyLightStorage = new ChunkLightStorage(
-					this.getMinBuildHeight(), this.getMaxBuildHeight(),
-					// positions above should be lit but positions below should be unlit
-					LodUtil.MAX_MC_LIGHT, LodUtil.MIN_MC_LIGHT);
+			this.skyLightStorage = ChunkLightStorage.createSkyLightStorage(this);
 		}
 		return this.skyLightStorage;
 	}
+	public void setSkyLightStorage(ChunkLightStorage lightStorage) { this.skyLightStorage = lightStorage; }
 	
 	
 	@Override
@@ -492,8 +485,6 @@ public class ChunkWrapper implements IChunkWrapper
 		return true;
 	}
 	
-	public LevelReader getColorResolver() { return this.lightSource; }
-	
 	@Override
 	public String toString() { return this.chunk.getClass().getSimpleName() + this.chunk.getPos(); }
 	
@@ -571,67 +562,6 @@ public class ChunkWrapper implements IChunkWrapper
 		return true;
 	}
 	#endif
-	
-	
-	
-	//================//
-	// helper methods //
-	//================//
-	
-	/** used to prevent accidentally attempting to get/set values outside this chunk's boundaries */
-	private void throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(int x, int y, int z) throws IndexOutOfBoundsException
-	{
-		if (!RUN_RELATIVE_POS_INDEX_VALIDATION)
-		{
-			return;
-		}
-		
-		
-		// FIXME +1 is to handle the fact that LodDataBuilder adds +1 to all block lighting calculations, also done in the constructor
-		int minHeight = this.getMinBuildHeight();
-		int maxHeight = this.getMaxBuildHeight() + 1;
-		
-		if (x < 0 || x >= LodUtil.CHUNK_WIDTH
-				|| z < 0 || z >= LodUtil.CHUNK_WIDTH
-				|| y < minHeight || y > maxHeight)
-		{
-			String errorMessage = "Relative position [" + x + "," + y + "," + z + "] out of bounds. \n" +
-					"X/Z must be between 0 and 15 (inclusive) \n" +
-					"Y must be between [" + minHeight + "] and [" + maxHeight + "] (inclusive).";
-			throw new IndexOutOfBoundsException(errorMessage);
-		}
-	}
-	
-	
-	/**
-	 * Converts a 3D position into a 1D array index. <br><br>
-	 *
-	 * Source: <br>
-	 * <a href="https://stackoverflow.com/questions/7367770/how-to-flatten-or-index-3d-array-in-1d-array">stackoverflow</a>
-	 */
-	public int relativeBlockPosToIndex(int xRel, int y, int zRel)
-	{
-		int yRel = y - this.getMinBuildHeight();
-		return (zRel * LodUtil.CHUNK_WIDTH * this.getHeight()) + (yRel * LodUtil.CHUNK_WIDTH) + xRel;
-	}
-	
-	/**
-	 * Converts a 3D position into a 1D array index. <br><br>
-	 *
-	 * Source: <br>
-	 * <a href="https://stackoverflow.com/questions/7367770/how-to-flatten-or-index-3d-array-in-1d-array">stackoverflow</a>
-	 */
-	public DhBlockPos indexToRelativeBlockPos(int index)
-	{
-		final int zRel = index / (LodUtil.CHUNK_WIDTH * this.getHeight());
-		index -= (zRel * LodUtil.CHUNK_WIDTH * this.getHeight());
-		
-		final int y = index / LodUtil.CHUNK_WIDTH;
-		final int yRel = y + this.getMinBuildHeight();
-		
-		final int xRel = index % LodUtil.CHUNK_WIDTH;
-		return new DhBlockPos(xRel, yRel, zRel);
-	}
 	
 	
 }
