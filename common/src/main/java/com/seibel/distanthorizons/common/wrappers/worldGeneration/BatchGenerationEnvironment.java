@@ -109,8 +109,6 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			new ConfigBasedLogger(LogManager.getLogger("LodWorldGen"),
 					() -> Config.Client.Advanced.Logging.logWorldGenLoadEvent.get());
 	
-	//TODO: Make actual proper support for StarLight
-	
 	public static class PerfCalculator
 	{
 		private static final String[] TIME_NAMES = {
@@ -294,6 +292,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	
 	
 	
+	//=================//
+	// synchronization //
+	//=================//
 	
 	public <T> T joinSync(CompletableFuture<T> future)
 	{
@@ -368,103 +369,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		}
 	}
 	
-	private static ProtoChunk EmptyChunk(ServerLevel level, ChunkPos chunkPos)
-	{
-		return new ProtoChunk(chunkPos, UpgradeData.EMPTY
-					#if MC_VER >= MC_1_17_1 , level #endif
-					#if MC_VER >= MC_1_18_2 , level.registryAccess().registryOrThrow(
-						#if MC_VER < MC_1_19_4
-				Registry.BIOME_REGISTRY
-						#else
-				Registries.BIOME
-						#endif
-		), null #endif
-		);
-		
-	}
 	
-	public ChunkAccess loadOrMakeChunk(ChunkPos chunkPos)
-	{
-		ServerLevel level = this.params.level;
-		
-		
-		
-		//====================//
-		// get the chunk data //
-		//====================//
-		
-		CompoundTag chunkData = null;
-		try
-		{
-			IOWorker ioWorker = level.getChunkSource().chunkMap.worker;
-			
-			#if MC_VER <= MC_1_18_2
-			chunkData = ioWorker.load(chunkPos);
-			#else
-			
-			// timeout should prevent locking up the thread if the ioWorker dies or has issues 
-			int maxGetTimeInSec = Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get();
-			CompletableFuture<Optional<CompoundTag>> future = ioWorker.loadAsync(chunkPos);
-			try
-			{
-				Optional<CompoundTag> data = future.get(maxGetTimeInSec, TimeUnit.SECONDS);
-				if (data.isPresent())
-				{
-					chunkData = data.get();
-				}
-			}
-			catch (Exception e)
-			{
-				LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInSec+"] milliseconds.", e);
-				future.cancel(true);
-			}
-			#endif
-		}
-		catch (Exception e)
-		{
-			LOAD_LOGGER.error("DistantHorizons: Couldn't load or make chunk " + chunkPos + ". Error: " + e.getMessage(), e);
-		}
-		
-		
-		
-		//========================//
-		// convert the chunk data //
-		//========================//
-		
-		if (chunkData == null)
-		{
-			return EmptyChunk(level, chunkPos);
-		}
-		else
-		{
-			try
-			{
-				LOAD_LOGGER.info("DistantHorizons: Loading chunk [" + chunkPos + "] from disk.");
-				return ChunkLoader.read(level, chunkPos, chunkData);
-			}
-			catch (Exception e)
-			{
-				LOAD_LOGGER.error(
-					"DistantHorizons: couldn't load or make chunk at ["+chunkPos+"]." +
-					"Please try optimizing your world to fix this issue. \n" +
-					"World optimization can be done from the singleplayer world selection screen.\n" +
-					"Error: ["+e.getMessage()+"]."
-					, e);
-				
-				return EmptyChunk(level, chunkPos);
-			}
-		}
-	}
 	
-	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, int border)
-	{
-		return new ArrayGridList<>(total, border, total.gridSize - border);
-	}
-	
-	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, EDhApiWorldGenerationStep step)
-	{
-		return GetCutoutFrom(total, MaxBorderNeeded - BorderNeeded.get(step));
-	}
+	//==================//
+	// world generation //
+	//==================//
 	
 	public void generateLodFromList(GenerationEvent genEvent) throws InterruptedException
 	{
@@ -487,7 +396,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			adaptor = new LightGetterAdaptor(this.params.level);
 			lightEngine = new DummyLightEngine(adaptor);
 			
-			EmptyChunkGenerator generator = (int x, int z) ->
+			IEmptyChunkGeneratorFunc emptyChunkGeneratorFunc = (int x, int z) ->
 			{
 				ChunkPos chunkPos = new ChunkPos(x, z);
 				ChunkAccess target = null;
@@ -509,12 +418,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				}
 				return target;
 			};
-			
-			totalChunks = new ArrayGridList<>(refSize, (x, z) -> generator.generate(x + refPosX, z + refPosZ));
+			totalChunks = new ArrayGridList<>(refSize, (x, z) -> emptyChunkGeneratorFunc.generate(x + refPosX, z + refPosZ));
 			
 			genEvent.refreshTimeout();
 			region = new DhLitWorldGenRegion(params.level, lightEngine, totalChunks,
-					ChunkStatus.STRUCTURE_STARTS, refSize / 2, generator);
+					ChunkStatus.STRUCTURE_STARTS, refSize / 2, emptyChunkGeneratorFunc);
 			adaptor.setRegion(region);
 			genEvent.threadedParam.makeStructFeat(region, params);
 			
@@ -593,6 +501,91 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			genEvent.threadedParam.perf.recordEvent(genEvent.timer);
 			PREF_LOGGER.infoInc("{}", genEvent.timer);
 		}
+	}
+	private ChunkAccess loadOrMakeChunk(ChunkPos chunkPos)
+	{
+		ServerLevel level = this.params.level;
+		
+		
+		
+		//====================//
+		// get the chunk data //
+		//====================//
+		
+		CompoundTag chunkData = null;
+		try
+		{
+			IOWorker ioWorker = level.getChunkSource().chunkMap.worker;
+			
+			#if MC_VER <= MC_1_18_2
+			chunkData = ioWorker.load(chunkPos);
+			#else
+			
+			// timeout should prevent locking up the thread if the ioWorker dies or has issues 
+			int maxGetTimeInSec = Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get();
+			CompletableFuture<Optional<CompoundTag>> future = ioWorker.loadAsync(chunkPos);
+			try
+			{
+				Optional<CompoundTag> data = future.get(maxGetTimeInSec, TimeUnit.SECONDS);
+				if (data.isPresent())
+				{
+					chunkData = data.get();
+				}
+			}
+			catch (Exception e)
+			{
+				LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInSec+"] milliseconds.", e);
+				future.cancel(true);
+			}
+			#endif
+		}
+		catch (Exception e)
+		{
+			LOAD_LOGGER.error("DistantHorizons: Couldn't load or make chunk " + chunkPos + ". Error: " + e.getMessage(), e);
+		}
+		
+		
+		
+		//========================//
+		// convert the chunk data //
+		//========================//
+		
+		if (chunkData == null)
+		{
+			return CreateEmptyChunk(level, chunkPos);
+		}
+		else
+		{
+			try
+			{
+				LOAD_LOGGER.info("DistantHorizons: Loading chunk [" + chunkPos + "] from disk.");
+				return ChunkLoader.read(level, chunkPos, chunkData);
+			}
+			catch (Exception e)
+			{
+				LOAD_LOGGER.error(
+						"DistantHorizons: couldn't load or make chunk at ["+chunkPos+"]." +
+								"Please try optimizing your world to fix this issue. \n" +
+								"World optimization can be done from the singleplayer world selection screen.\n" +
+								"Error: ["+e.getMessage()+"]."
+						, e);
+				
+				return CreateEmptyChunk(level, chunkPos);
+			}
+		}
+	}
+	private static ProtoChunk CreateEmptyChunk(ServerLevel level, ChunkPos chunkPos)
+	{
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY
+					#if MC_VER >= MC_1_17_1 , level #endif
+					#if MC_VER >= MC_1_18_2 , level.registryAccess().registryOrThrow(
+						#if MC_VER < MC_1_19_4
+				Registry.BIOME_REGISTRY
+						#else
+				Registries.BIOME
+						#endif
+		), null #endif
+		);
 	}
 	
 	public void generateDirect(
@@ -722,12 +715,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			genEvent.refreshTimeout();
 		}
 	}
+	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, int border) { return new ArrayGridList<>(total, border, total.gridSize - border); }
+	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, EDhApiWorldGenerationStep step) { return GetCutoutFrom(total, MaxBorderNeeded - BorderNeeded.get(step)); }
 	
-	public interface EmptyChunkGenerator
-	{
-		ChunkAccess generate(int x, int z);
-		
-	}
 	
 	@Override
 	public int getEventCount() { return this.generationEventList.size(); }
@@ -776,6 +766,12 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		return genEvent.future;
 	}
 	
+	
+	
+	//================//
+	// helper methods //
+	//================//
+	
 	/**
 	 * Called before code that may run for an extended period of time. <br>
 	 * This is necessary to allow canceling world gen since waiting
@@ -787,6 +783,18 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		{
 			throw new InterruptedException(FullDataToRenderDataTransformer.class.getSimpleName() + " task interrupted.");
 		}
+	}
+	
+	
+	
+	//================//
+	// helper classes //
+	//================//
+	
+	@FunctionalInterface
+	public interface IEmptyChunkGeneratorFunc
+	{
+		ChunkAccess generate(int x, int z);
 	}
 	
 }

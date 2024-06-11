@@ -71,7 +71,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	
 	
 	public final DummyLightEngine lightEngine;
-	public final BatchGenerationEnvironment.EmptyChunkGenerator generator;
+	public final BatchGenerationEnvironment.IEmptyChunkGeneratorFunc generator;
 	public final int writeRadius;
 	public final int size;
 	
@@ -114,7 +114,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	public DhLitWorldGenRegion(
 			ServerLevel serverLevel, DummyLightEngine lightEngine,
 			List<ChunkAccess> chunkList, ChunkStatus chunkStatus, int writeRadius,
-			BatchGenerationEnvironment.EmptyChunkGenerator generator)
+			BatchGenerationEnvironment.IEmptyChunkGeneratorFunc generator)
 	{
 		super(serverLevel, chunkList #if MC_VER >= MC_1_17_1 , chunkStatus, writeRadius #endif );
 		this.firstPos = chunkList.get(0).getPos();
