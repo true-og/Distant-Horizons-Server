@@ -22,9 +22,14 @@ package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
+import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGenerationEnvironment;
 
 import com.seibel.distanthorizons.core.logging.ConfigBasedLogger;
+import com.seibel.distanthorizons.core.util.LodUtil;
+import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
+import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
+import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
@@ -44,6 +49,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.*;
@@ -100,7 +106,13 @@ public class ChunkLoader
 	private static final String FLUID_TICKS_TAG_PRE18 = "LiquidTicks";
 	private static final ConfigBasedLogger LOGGER = BatchGenerationEnvironment.LOAD_LOGGER;
 	
+	private static boolean lightingSectionErrorLogged = false;
 	
+	
+	
+	//============//
+	// read chunk //
+	//============//
 	
 	public static LevelChunk read(WorldGenLevel level, ChunkPos chunkPos, CompoundTag chunkData)
 	{
@@ -349,14 +361,144 @@ public class ChunkLoader
 	
 	
 	
-	public static LevelChunk readLight(WorldGenLevel level, ChunkPos chunkPos, CompoundTag chunkData)
+	//=====================//
+	// read chunk lighting //
+	//=====================//
+	
+	/**
+	 * https://minecraft.wiki/w/Chunk_format
+	 */
+	public static CombinedChunkLightStorage readLight(ChunkAccess chunk, CompoundTag chunkData)
 	{
+		#if MC_VER <= MC_1_17_1
+		// MC 1.16 and 1.17 doesn't have the necessary NBT info
 		return null;
+		#else
+		
+		CombinedChunkLightStorage combinedStorage = new CombinedChunkLightStorage(ChunkWrapper.getMinBuildHeight(chunk), ChunkWrapper.getMaxBuildHeight(chunk));
+		ChunkLightStorage blockLightStorage = combinedStorage.blockLightStorage;
+		ChunkLightStorage skyLightStorage = combinedStorage.skyLightStorage;
+		
+		boolean foundSkyLight = false;
+		
+		
+		
+		//===================//
+		// get NBT tags info //
+		//===================//
+		
+		Tag chunkSectionTags = chunkData.get("sections");
+		if (chunkSectionTags == null)
+		{
+			if (!lightingSectionErrorLogged)
+			{
+				lightingSectionErrorLogged = true;
+				LOGGER.error("No sections found for chunk at pos ["+chunk.getPos()+"] chunk data may be out of date.");
+			}
+			return null;
+		}
+		else if (!(chunkSectionTags instanceof ListTag))
+		{
+			if (!lightingSectionErrorLogged)
+			{
+				lightingSectionErrorLogged = true;
+				LOGGER.error("Chunk section tag list have unexpected type ["+chunkSectionTags.getClass().getName()+"], expected ["+ListTag.class.getName()+"].");
+			}
+			return null;
+		}
+		ListTag chunkSectionListTag = (ListTag) chunkSectionTags;
+		
+		
+		
+		//===================//
+		// get lighting info //
+		//===================//
+		
+		for (int sectionIndex = 0; sectionIndex < chunkSectionListTag.size(); sectionIndex++)
+		{
+			Tag chunkSectionTag = chunkSectionListTag.get(sectionIndex);
+			if (!(chunkSectionTag instanceof CompoundTag))
+			{
+				if (!lightingSectionErrorLogged)
+				{
+					lightingSectionErrorLogged = true;
+					LOGGER.error("Chunk section tag has an unexpected type ["+chunkSectionTag.getClass().getName()+"], expected ["+CompoundTag.class.getName()+"].");
+				}
+				return null;
+			}
+			CompoundTag chunkSectionCompoundTag = (CompoundTag) chunkSectionTag;
+			
+			
+			// if null all lights = 0
+			byte[] blockLightNibbleArray = chunkSectionCompoundTag.getByteArray("BlockLight");
+			byte[] skyLightNibbleArray = chunkSectionCompoundTag.getByteArray("SkyLight");
+			
+			// if any sky light was found then all lights above will be max brightness
+			if (skyLightNibbleArray.length != 0)
+			{
+				foundSkyLight = true;
+			}
+			
+			for (int relX = 0; relX < LodUtil.CHUNK_WIDTH; relX++)
+			{
+				for (int relZ = 0; relZ < LodUtil.CHUNK_WIDTH; relZ++)
+				{
+					// chunk sections are also 16 blocks tall
+					for (int relY = 0; relY < LodUtil.CHUNK_WIDTH; relY++)
+					{
+						int blockPosIndex = relY*16*16 + relZ*16 + relX;
+						byte blockLight = (blockLightNibbleArray.length == 0) ? 0 : getNibbleAtIndex(blockLightNibbleArray, blockPosIndex);
+						byte skyLight = (skyLightNibbleArray.length == 0) ? 0 : getNibbleAtIndex(skyLightNibbleArray, blockPosIndex);
+						if (skyLightNibbleArray.length == 0 && foundSkyLight)
+						{
+							skyLight = LodUtil.MAX_MC_LIGHT;
+						}
+						
+						int y = relY + (sectionIndex * LodUtil.CHUNK_WIDTH) + ChunkWrapper.getMinBuildHeight(chunk);
+						blockLightStorage.set(relX, y, relZ, blockLight);
+						skyLightStorage.set(relX, y, relZ, skyLight);
+					}
+				}
+			}
+		}
+		
+		return combinedStorage;
+		#endif
+	}
+	/** source: https://minecraft.wiki/w/Chunk_format#Block_Format */
+	private static byte getNibbleAtIndex(byte[] arr, int index)
+	{
+		if (index % 2 == 0)
+		{
+			return (byte)(arr[index/2] & 0x0F);
+		}
+		else
+		{
+			return (byte)((arr[index/2]>>4) & 0x0F);
+		}
 	}
 	
 	private static void logErrors(ChunkPos chunkPos, int i, String string)
 	{
 		LOGGER.error("Distant Horizons: Recoverable errors when loading section [" + chunkPos.x + ", " + i + ", " + chunkPos.z + "]: " + string);
+	}
+	
+	
+	
+	//================//
+	// helper classes //
+	//================//
+	
+	public static class CombinedChunkLightStorage
+	{
+		public ChunkLightStorage blockLightStorage;
+		public ChunkLightStorage skyLightStorage;
+		
+		public CombinedChunkLightStorage(int minY, int maxY)
+		{
+			this.blockLightStorage = ChunkLightStorage.createBlockLightStorage(minY, maxY);
+			this.skyLightStorage = ChunkLightStorage.createSkyLightStorage(minY, maxY);
+		}
 	}
 	
 }

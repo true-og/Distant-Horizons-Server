@@ -35,6 +35,7 @@ import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.util.objects.EventTimer;
 import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.util.gridList.ArrayGridList;
+import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvironmentWrapper;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
@@ -381,7 +382,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		
 		ArrayGridList<ChunkWrapper> chunkWrapperList;
 		DhLitWorldGenRegion region;
-		DummyLightEngine lightEngine;
+		DummyLightEngine dummyLightEngine;
 		LightGetterAdaptor adaptor;
 		
 		int borderSize = MaxBorderNeeded;
@@ -394,38 +395,62 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			ArrayGridList<ChunkAccess> totalChunks;
 			
 			adaptor = new LightGetterAdaptor(this.params.level);
-			lightEngine = new DummyLightEngine(adaptor);
+			dummyLightEngine = new DummyLightEngine(adaptor);
 			
+			
+			
+			//=============================//
+			// try getting existing chunks //
+			//=============================//
+			
+			HashMap<DhChunkPos, ChunkLightStorage> chunkSkyLightingByDhPos = new HashMap<>();
+			HashMap<DhChunkPos, ChunkLightStorage> chunkBlockLightingByDhPos = new HashMap<>();
 			IEmptyChunkGeneratorFunc emptyChunkGeneratorFunc = (int x, int z) ->
 			{
 				ChunkPos chunkPos = new ChunkPos(x, z);
-				ChunkAccess target = null;
+				DhChunkPos dhChunkPos = new DhChunkPos(x, z);
+				ChunkAccess newChunk = null;
 				try
 				{
-					target = this.loadOrMakeChunk(chunkPos);
+					// get the chunk
+					CompoundTag chunkData = this.getChunkNbtData(chunkPos);
+					newChunk = this.loadOrMakeChunk(chunkPos, chunkData);
+					
+					// get chunk lighting
+					ChunkLoader.CombinedChunkLightStorage combinedLights = ChunkLoader.readLight(newChunk, chunkData);
+					if (combinedLights != null)
+					{
+						chunkSkyLightingByDhPos.put(dhChunkPos, combinedLights.skyLightStorage);
+						chunkBlockLightingByDhPos.put(dhChunkPos, combinedLights.blockLightStorage);
+					}
 				}
-				catch (RuntimeException e2)
+				catch (RuntimeException loadChunkError)
 				{
 					// Continue...
 				}
 				
-				if (target == null)
+				if (newChunk == null)
 				{
-					target = new ProtoChunk(chunkPos, UpgradeData.EMPTY
-							#if MC_VER >= MC_1_17_1 , params.level #endif
-							#if MC_VER >= MC_1_18_2 , params.biomes, null #endif
+					newChunk = new ProtoChunk(chunkPos, UpgradeData.EMPTY
+							#if MC_VER >= MC_1_17_1 , this.params.level #endif
+							#if MC_VER >= MC_1_18_2 , this.params.biomes, null #endif
 					);
 				}
-				return target;
+				return newChunk;
 			};
 			totalChunks = new ArrayGridList<>(refSize, (x, z) -> emptyChunkGeneratorFunc.generate(x + refPosX, z + refPosZ));
 			
 			genEvent.refreshTimeout();
-			region = new DhLitWorldGenRegion(params.level, lightEngine, totalChunks,
+			region = new DhLitWorldGenRegion(this.params.level, dummyLightEngine, totalChunks,
 					ChunkStatus.STRUCTURE_STARTS, refSize / 2, emptyChunkGeneratorFunc);
 			adaptor.setRegion(region);
-			genEvent.threadedParam.makeStructFeat(region, params);
+			genEvent.threadedParam.makeStructFeat(region, this.params);
 			
+			
+			
+			//=======================//
+			// create chunk wrappers //
+			//=======================//
 			
 			chunkWrapperList = new ArrayGridList<>(totalChunks.gridSize);
 			totalChunks.forEachPos((x, z) ->
@@ -433,9 +458,30 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				ChunkAccess chunk = totalChunks.get(x, z);
 				if (chunk != null)
 				{
-					chunkWrapperList.set(x, z, new ChunkWrapper(chunk, region, serverlevel.getLevelWrapper()));
+					// wrap the chunk
+					ChunkWrapper chunkWrapper = new ChunkWrapper(chunk, region, this.serverlevel.getLevelWrapper());
+					chunkWrapperList.set(x, z, chunkWrapper);
+					
+					// try getting the chunk lighting
+					if (chunkBlockLightingByDhPos.containsKey(chunkWrapper.getChunkPos()))
+					{
+						chunkWrapper.setBlockLightStorage(chunkBlockLightingByDhPos.get(chunkWrapper.getChunkPos()));
+						chunkWrapper.setSkyLightStorage(chunkSkyLightingByDhPos.get(chunkWrapper.getChunkPos()));
+						chunkWrapper.setUseDhLighting(true);
+						chunkWrapper.setIsDhLightCorrect(true);
+					}
+					else
+					{
+						int k = 0;
+					}
 				}
 			});
+			
+			
+			
+			//=================//
+			// generate chunks //
+			//=================//
 			
 			this.generateDirect(genEvent, chunkWrapperList, borderSize, genEvent.targetGenerationStep, region);
 			genEvent.timer.nextEvent("cleanup");
@@ -502,15 +548,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			PREF_LOGGER.infoInc("{}", genEvent.timer);
 		}
 	}
-	private ChunkAccess loadOrMakeChunk(ChunkPos chunkPos)
+	private CompoundTag getChunkNbtData(ChunkPos chunkPos)
 	{
 		ServerLevel level = this.params.level;
-		
-		
-		
-		//====================//
-		// get the chunk data //
-		//====================//
 		
 		CompoundTag chunkData = null;
 		try
@@ -544,11 +584,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			LOAD_LOGGER.error("DistantHorizons: Couldn't load or make chunk " + chunkPos + ". Error: " + e.getMessage(), e);
 		}
 		
-		
-		
-		//========================//
-		// convert the chunk data //
-		//========================//
+		return chunkData;
+	}
+	private ChunkAccess loadOrMakeChunk(ChunkPos chunkPos, CompoundTag chunkData)
+	{
+		ServerLevel level = this.params.level;
 		
 		if (chunkData == null)
 		{
@@ -708,8 +748,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				// if this isn't done everything else afterward may fail
 				Heightmap.primeHeightmaps(((ChunkWrapper)centerChunk).getChunk(), ChunkStatus.FEATURES.heightmapsAfter());
 				
-				// populate the lighting
-				DhLightingEngine.INSTANCE.lightChunk(centerChunk, iChunkWrapperList, maxSkyLight);
+				// pre-generated chunks should have lighting but new ones won't
+				if (!centerChunk.isLightCorrect())
+				{
+					DhLightingEngine.INSTANCE.lightChunk(centerChunk, iChunkWrapperList, maxSkyLight);
+				}
 			}
 			
 			genEvent.refreshTimeout();
