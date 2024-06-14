@@ -440,9 +440,18 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			};
 			totalChunks = new ArrayGridList<>(refSize, (x, z) -> emptyChunkGeneratorFunc.generate(x + refPosX, z + refPosZ));
 			
+			int radius = refSize / 2;
+			int centerX = refPosX + radius;
+			int centerZ = refPosZ + radius;
+			
+			ChunkAccess centerChunk = totalChunks.stream().filter(chunk -> chunk.getPos().x == centerX && chunk.getPos().z == centerZ).findFirst().get();
+			
 			genEvent.refreshTimeout();
-			region = new DhLitWorldGenRegion(this.params.level, dummyLightEngine, totalChunks,
-					ChunkStatus.STRUCTURE_STARTS, refSize / 2, emptyChunkGeneratorFunc);
+			region = new DhLitWorldGenRegion(
+					centerX, centerZ,
+					centerChunk,
+					this.params.level, dummyLightEngine, totalChunks,
+					ChunkStatus.STRUCTURE_STARTS, radius, emptyChunkGeneratorFunc);
 			adaptor.setRegion(region);
 			genEvent.threadedParam.makeStructFeat(region, this.params);
 			
@@ -513,7 +522,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					throw new RuntimeException("The generated chunk somehow has isLightCorrect() returning false");
 				}
 				
-				boolean isFull = target.getStatus() == ChunkStatus.FULL || target instanceof LevelChunk;
+				boolean isFull = ChunkWrapper.getStatus(target) == ChunkStatus.FULL || target instanceof LevelChunk;
 				#if MC_VER >= MC_1_18_2
 				boolean isPartial = target.isOldNoiseGeneration();
 				#endif
@@ -529,7 +538,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					genEvent.resultConsumer.accept(wrappedChunk);
 				}
 				#endif
-				else if (target.getStatus() == ChunkStatus.EMPTY)
+				else if (ChunkWrapper.getStatus(target) == ChunkStatus.EMPTY)
 				{
 					genEvent.resultConsumer.accept(wrappedChunk);
 				}
@@ -727,7 +736,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			for (int i = 0; i < chunksToGenerate.size(); i++) // regular for loop since enhanced for loops increase GC pressure slightly
 			{
 				ChunkWrapper chunkWrapper = chunksToGenerate.get(i);
-				if (chunkWrapper.getChunk().getStatus() != ChunkStatus.EMPTY)
+				if (chunkWrapper.getStatus() != ChunkStatus.EMPTY)
 				{
 					iChunkWrapperList.add(chunkWrapper);
 				}

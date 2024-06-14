@@ -20,14 +20,17 @@
 package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 
 import java.lang.invoke.MethodHandles;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGenerationEnvironment;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.util.LodUtil;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SpawnerBlock;
+import net.minecraft.world.level.chunk.status.*;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +62,12 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 #if MC_VER <= MC_1_20_4
 import net.minecraft.world.level.chunk.ChunkStatus;
 #else
-import net.minecraft.world.level.chunk.status.ChunkStatus;
+#endif
+
+#if MC_VER == MC_1_21
+import net.minecraft.util.StaticCache2D;
+import com.google.common.collect.ImmutableList;
+import net.minecraft.server.level.GenerationChunkHolder;
 #endif
 
 
@@ -112,11 +120,29 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	
 	
 	public DhLitWorldGenRegion(
+			int centerChunkX, int centerChunkZ,
+			ChunkAccess centerChunk,
 			ServerLevel serverLevel, DummyLightEngine lightEngine,
 			List<ChunkAccess> chunkList, ChunkStatus chunkStatus, int writeRadius,
 			BatchGenerationEnvironment.IEmptyChunkGeneratorFunc generator)
 	{
-		super(serverLevel, chunkList #if MC_VER >= MC_1_17_1 , chunkStatus, writeRadius #endif );
+		#if MC_VER == MC_1_16
+		super(serverLevel, chunkList);
+		#elif MC_VER < MC_1_21
+		super(serverLevel, chunkList, chunkStatus, writeRadius);
+		#else
+		super(serverLevel, 
+				StaticCache2D.create(
+					centerChunkX, centerChunkZ,
+					writeRadius * 2, (x,z) -> new DhGenerationChunkHolder(new ChunkPos(x, z))), 
+				new ChunkStep(chunkStatus,
+						// reverse is needed because MC uses the index of the chunkStatus to determine how many items are in the list instead of the actual list count
+						new ChunkDependencies(ImmutableList.copyOf(ChunkStatus.getStatusList()).reverse()),
+						new ChunkDependencies(ImmutableList.copyOf(ChunkStatus.getStatusList()).reverse()),
+						writeRadius, (WorldGenContext var1, ChunkStep var2, StaticCache2D<GenerationChunkHolder> var3, ChunkAccess var4) -> null),
+				centerChunk);
+		
+		#endif
 		this.firstPos = chunkList.get(0).getPos();
 		this.generator = generator;
 		this.lightEngine = lightEngine;
@@ -280,7 +306,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	private ChunkAccess getChunkAccess(int chunkX, int chunkZ, ChunkStatus chunkStatus, boolean returnNonNull)
 	{
 		ChunkAccess chunk = this.superHasChunk(chunkX, chunkZ) ? this.superGetChunk(chunkX, chunkZ) : null;
-		if (chunk != null && chunk.getStatus().isOrAfter(chunkStatus))
+		if (chunk != null && ChunkWrapper.getStatus(chunk).isOrAfter(chunkStatus))
 		{
 			return chunk;
 		}

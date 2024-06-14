@@ -292,6 +292,16 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	public ChunkAccess getChunk() { return this.chunk; }
 	
+	public ChunkStatus getStatus() { return getStatus(this.getChunk()); }
+	public static ChunkStatus getStatus(ChunkAccess chunk)
+	{
+		#if MC_VER < MC_1_21 
+		return chunk.getStatus();
+		#else
+		return chunk.getPersistedStatus(); 
+		#endif
+	}
+	
 	@Override
 	public int getMaxBlockX() { return this.chunk.getPos().getMaxBlockX(); }
 	@Override

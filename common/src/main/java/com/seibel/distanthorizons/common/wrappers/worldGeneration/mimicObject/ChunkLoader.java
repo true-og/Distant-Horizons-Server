@@ -85,6 +85,9 @@ import net.minecraft.world.level.material.Fluids;
 #if MC_VER == MC_1_20_6
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkType;
+#elif MC_VER == MC_1_21
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkType;
 #endif
 
 import net.minecraft.world.level.material.Fluid;
@@ -286,7 +289,11 @@ public class ChunkLoader
 				
 				blockStateContainer = tagSection.contains("block_states", 10)
 						? BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, tagSection.getCompound("block_states")).promotePartial(string -> logErrors(chunkPos, sectionYPos, string))
-						#if MC_VER < MC_1_20_6 .getOrThrow(false, LOGGER::error) #else .getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) #endif
+						#if MC_VER < MC_1_20_6 
+						.getOrThrow(false, LOGGER::error)
+						#else
+						.getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) 
+						#endif
 						: new PalettedContainer<BlockState>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
 
 				#if MC_VER < MC_1_18_2
@@ -297,7 +304,11 @@ public class ChunkLoader
 				
 				biomeContainer = tagSection.contains("biomes", 10)
 						? biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logErrors(chunkPos, i, (String) string))
-						#if MC_VER < MC_1_20_6 .getOrThrow(false, LOGGER::error) #else .getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null)) #endif
+						#if MC_VER < MC_1_20_6 
+						.getOrThrow(false, LOGGER::error)
+						#else
+						.getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null))
+						#endif
 						: new PalettedContainer<Holder<Biome>>(biomes.asHolderIdMap(), biomes.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
 				#endif
 				
@@ -312,7 +323,7 @@ public class ChunkLoader
 		}
 		return chunkSections;
 	}
-	private static #if MC_VER < MC_1_20_6 ChunkStatus.ChunkType #else ChunkType #endif readChunkType(CompoundTag tagLevel)
+	private static #if MC_VER < MC_1_21 ChunkType #else ChunkType #endif readChunkType(CompoundTag tagLevel)
 	{
 		ChunkStatus chunkStatus = ChunkStatus.byName(tagLevel.getString("Status"));
 		if (chunkStatus != null)

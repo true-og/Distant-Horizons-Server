@@ -215,7 +215,7 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 			#if MC_VER < MC_1_17_1
 			Vec3 colorValues = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getBlockPosition(), MC.getFrameTime());
 			#else
-			Vec3 colorValues = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getPosition(), MC.getFrameTime());
+			Vec3 colorValues = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getPosition(), MC.getTimer().getRealtimeDeltaTicks());
 			#endif
 			return new Color((float) colorValues.x, (float) colorValues.y, (float) colorValues.z);
 		}
