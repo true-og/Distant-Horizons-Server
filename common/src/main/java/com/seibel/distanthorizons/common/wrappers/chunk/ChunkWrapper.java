@@ -105,6 +105,8 @@ public class ChunkWrapper implements IChunkWrapper
 	private int minNonEmptyHeight = Integer.MIN_VALUE;
 	private int maxNonEmptyHeight = Integer.MAX_VALUE;
 	
+	private int blockBiomeHashCode = 0;
+	
 	/**
 	 * Due to vanilla `isClientLightReady()` not being designed for use by a non-render thread, it may return 'true'
 	 * before the light engine has ticked, (right after all light changes is marked by the engine to be processed).
@@ -144,7 +146,7 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	
 	//=========//
-	// methods //
+	// getters //
 	//=========//
 	
 	@Override
@@ -263,7 +265,6 @@ public class ChunkWrapper implements IChunkWrapper
 	public int getLightBlockingHeightMapValue(int xRel, int zRel) { return this.chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getFirstAvailable(xRel, zRel); }
 	
 	
-	
 	@Override
 	public IBiomeWrapper getBiome(int relX, int relY, int relZ)
 	{
@@ -285,6 +286,20 @@ public class ChunkWrapper implements IChunkWrapper
 				QuartPos.fromBlock(relX), QuartPos.fromBlock(relY), QuartPos.fromBlock(relZ)),
 				this.wrappedLevel);
 		#endif
+	}
+	
+	@Override
+	public IBlockStateWrapper getBlockState(int relX, int relY, int relZ)
+	{
+		this.throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(relX, relY, relZ);
+		
+		BlockPos.MutableBlockPos blockPos = MUTABLE_BLOCK_POS_REF.get();
+		
+		blockPos.setX(relX);
+		blockPos.setY(relY);
+		blockPos.setZ(relZ);
+		
+		return BlockStateWrapper.fromBlockState(this.chunk.getBlockState(blockPos), this.wrappedLevel);
 	}
 	
 	@Override
@@ -311,13 +326,17 @@ public class ChunkWrapper implements IChunkWrapper
 	@Override
 	public int getMinBlockZ() { return this.chunk.getPos().getMinBlockZ(); }
 	
+	
+	
+	//==========//
+	// lighting //
+	//==========//
+	
 	@Override
 	public void setIsDhLightCorrect(boolean isDhLightCorrect) { this.isDhLightCorrect = isDhLightCorrect; }
 	
 	@Override
 	public void setUseDhLighting(boolean useDhLighting) { this.useDhLighting = useDhLighting; }
-	
-	
 	
 	@Override
 	public boolean isLightCorrect()
@@ -469,53 +488,6 @@ public class ChunkWrapper implements IChunkWrapper
 		return this.blockLightPosList;
 	}
 	
-	@Override
-	public boolean doNearbyChunksExist()
-	{
-		if (this.lightSource instanceof DhLitWorldGenRegion)
-		{
-			return true;
-		}
-		
-		for (int dx = -1; dx <= 1; dx++)
-		{
-			for (int dz = -1; dz <= 1; dz++)
-			{
-				if (dx == 0 && dz == 0)
-				{
-					continue;
-				}
-				else if (this.lightSource.getChunk(dx + this.chunk.getPos().x, dz + this.chunk.getPos().z, ChunkStatus.BIOMES, false) == null)
-				{
-					return false;
-				}
-			}
-		}
-		
-		return true;
-	}
-	
-	@Override
-	public String toString() { return this.chunk.getClass().getSimpleName() + this.chunk.getPos(); }
-	
-	@Override
-	public IBlockStateWrapper getBlockState(int relX, int relY, int relZ)
-	{
-		this.throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(relX, relY, relZ);
-		
-		BlockPos.MutableBlockPos blockPos = MUTABLE_BLOCK_POS_REF.get();
-		
-		blockPos.setX(relX);
-		blockPos.setY(relY);
-		blockPos.setZ(relZ);
-		
-		return BlockStateWrapper.fromBlockState(this.chunk.getBlockState(blockPos), this.wrappedLevel);
-	}
-	
-	@Override
-	public boolean isStillValid() { return this.wrappedLevel.tryGetChunk(this.chunkPos) == this; }
-	
-	
 	public static void syncedUpdateClientLightStatus()
 	{
 		#if MC_VER < MC_1_18_2
@@ -573,5 +545,59 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	#endif
 	
+	
+	
+	//===============//
+	// other methods //
+	//===============//
+	
+	@Override
+	public boolean doNearbyChunksExist()
+	{
+		if (this.lightSource instanceof DhLitWorldGenRegion)
+		{
+			return true;
+		}
+		
+		for (int dx = -1; dx <= 1; dx++)
+		{
+			for (int dz = -1; dz <= 1; dz++)
+			{
+				if (dx == 0 && dz == 0)
+				{
+					continue;
+				}
+				else if (this.lightSource.getChunk(dx + this.chunk.getPos().x, dz + this.chunk.getPos().z, ChunkStatus.BIOMES, false) == null)
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	@Override
+	public boolean isStillValid() { return this.wrappedLevel.tryGetChunk(this.chunkPos) == this; }
+	
+	
+	
+	//================//
+	// base overrides //
+	//================//
+	
+	@Override
+	public String toString() { return this.chunk.getClass().getSimpleName() + this.chunk.getPos(); }
+	
+	//@Override 
+	//public int hashCode()
+	//{
+	//	if (this.blockBiomeHashCode == 0)
+	//	{
+	//		this.blockBiomeHashCode = this.getBlockBiomeHashCode();
+	//	}
+	//	
+	//	return this.blockBiomeHashCode;
+	//}
 	
 }
