@@ -323,7 +323,11 @@ public class ChunkLoader
 		}
 		return chunkSections;
 	}
-	private static #if MC_VER < MC_1_21 ChunkType #else ChunkType #endif readChunkType(CompoundTag tagLevel)
+	private static 
+		#if MC_VER < MC_1_20_6 ChunkStatus.ChunkType
+		#elif MC_VER < MC_1_21 ChunkType
+		#else ChunkType #endif 
+	readChunkType(CompoundTag tagLevel)
 	{
 		ChunkStatus chunkStatus = ChunkStatus.byName(tagLevel.getString("Status"));
 		if (chunkStatus != null)
@@ -331,7 +335,10 @@ public class ChunkLoader
 			return chunkStatus.getChunkType();
 		}
 		
-		return #if MC_VER < MC_1_20_6 ChunkStatus.ChunkType.PROTOCHUNK; #else ChunkType.PROTOCHUNK; #endif
+		return 
+				#if MC_VER <= MC_1_20_6 ChunkType.PROTOCHUNK;
+				#elif MC_VER < MC_1_21 ChunkStatus.ChunkType.PROTOCHUNK;
+				#else ChunkType.PROTOCHUNK; #endif
 	}
 	private static void readHeightmaps(LevelChunk chunk, CompoundTag chunkData)
 	{
