@@ -336,8 +336,7 @@ public class ChunkLoader
 		}
 		
 		return 
-				#if MC_VER <= MC_1_20_6 ChunkType.PROTOCHUNK;
-				#elif MC_VER < MC_1_21 ChunkStatus.ChunkType.PROTOCHUNK;
+				#if MC_VER <= MC_1_20_4 ChunkStatus.ChunkType.PROTOCHUNK;
 				#else ChunkType.PROTOCHUNK; #endif
 	}
 	private static void readHeightmaps(LevelChunk chunk, CompoundTag chunkData)

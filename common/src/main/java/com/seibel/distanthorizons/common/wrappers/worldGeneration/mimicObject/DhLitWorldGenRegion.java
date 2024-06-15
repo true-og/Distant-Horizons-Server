@@ -125,7 +125,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 			List<ChunkAccess> chunkList, ChunkStatus chunkStatus, int writeRadius,
 			BatchGenerationEnvironment.IEmptyChunkGeneratorFunc generator)
 	{
-		#if MC_VER == MC_1_16
+		#if MC_VER == MC_1_16_5
 		super(serverLevel, chunkList);
 		#elif MC_VER < MC_1_21
 		super(serverLevel, chunkList, chunkStatus, writeRadius);
