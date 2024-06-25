@@ -431,9 +431,11 @@ subprojects { p ->
     jar {
         from "LICENSE.txt"
         manifest {
-            attributes 'Implementation-Title': rootProject.mod_name,
-                    'Implementation-Version': rootProject.mod_version,
-                    'Main-Class': 'com.seibel.distanthorizons.core.jar.JarMain' // When changing the main of the jar change this line
+            attributes( 
+                'Implementation-Title': rootProject.mod_name,
+                'Implementation-Version': rootProject.mod_version,
+                'Main-Class': 'com.seibel.distanthorizons.core.jar.JarMain' // When changing the main of the jar change this line
+            )
         }
     }
 
