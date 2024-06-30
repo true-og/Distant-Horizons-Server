@@ -29,16 +29,13 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 
 import com.seibel.distanthorizons.core.api.internal.SharedApi;
-import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
-import com.seibel.distanthorizons.core.pos.DhBlockPos;
-import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
-import com.seibel.distanthorizons.coreapi.util.math.Mat4f;
+import com.seibel.distanthorizons.core.util.math.Mat4f;
 import com.seibel.distanthorizons.fabric.wrappers.modAccessor.SodiumAccessor;
 //import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;

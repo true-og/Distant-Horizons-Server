@@ -21,9 +21,7 @@ package com.seibel.distanthorizons.common.wrappers.minecraft;
 
 import java.awt.Color;
 import java.lang.invoke.MethodHandles;
-import java.nio.FloatBuffer;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -38,7 +36,6 @@ import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
-import com.seibel.distanthorizons.core.render.DhApiRenderProxy;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 
 #if MC_VER < MC_1_19_4
@@ -55,9 +52,9 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.AbstractOpt
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
-import com.seibel.distanthorizons.coreapi.util.math.Mat4f;
-import com.seibel.distanthorizons.coreapi.util.math.Vec3d;
-import com.seibel.distanthorizons.coreapi.util.math.Vec3f;
+import com.seibel.distanthorizons.core.util.math.Mat4f;
+import com.seibel.distanthorizons.core.util.math.Vec3d;
+import com.seibel.distanthorizons.core.util.math.Vec3f;
 import com.seibel.distanthorizons.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IOptifineAccessor;
@@ -81,7 +78,6 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.Logger;
-import org.joml.Matrix4f;
 
 
 /**
