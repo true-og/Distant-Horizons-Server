@@ -1,7 +1,7 @@
 package com.seibel.distanthorizons.common.wrappers.world;
 
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiLevelType;
-import com.seibel.distanthorizons.api.interfaces.world.IDhApiDimensionTypeWrapper;
+import com.seibel.distanthorizons.api.interfaces.render.IDhApiCustomRenderRegister;
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
@@ -9,6 +9,8 @@ import com.seibel.distanthorizons.common.wrappers.block.cache.ClientBlockDetailM
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftClientWrapper;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
+import com.seibel.distanthorizons.core.level.ClientLevelModule;
+import com.seibel.distanthorizons.core.level.DhClientLevel;
 import com.seibel.distanthorizons.core.level.IKeyedClientLevelManager;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhBlockPos;
@@ -49,6 +51,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	private BlockStateWrapper dirtBlockWrapper;
 	private BiomeWrapper plainsBiomeWrapper;
+	private DhClientLevel parentClientLevel;
 	
 	
 	
@@ -229,7 +232,49 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	public ClientLevel getWrappedMcObject() { return this.level; }
 	
 	@Override
-	public void onUnload() { LEVEL_WRAPPER_BY_CLIENT_LEVEL.remove(this.level); }
+	public void onUnload() 
+	{ 
+		LEVEL_WRAPPER_BY_CLIENT_LEVEL.remove(this.level);
+		this.parentClientLevel = null;
+	}
+	
+	
+	
+	//===================//
+	// generic rendering //
+	//===================//
+	
+	@Override
+	public void setParentClientLevel(DhClientLevel parentClientLevel) { this.parentClientLevel = parentClientLevel; }
+	
+	@Override 
+	public IDhApiCustomRenderRegister getRenderRegister()
+	{
+		if (this.parentClientLevel == null)
+		{
+			return null;
+		}
+		
+		ClientLevelModule clientLevelModule = this.parentClientLevel.clientside;
+		if (clientLevelModule == null)
+		{
+			return null;
+		}
+		
+		ClientLevelModule.ClientRenderState renderState = clientLevelModule.ClientRenderStateRef.get();
+		if (renderState == null)
+		{
+			return null;
+		}
+		
+		return renderState.genericRenderer;
+	}
+	
+	
+	
+	//================//
+	// base overrides //
+	//================//
 	
 	@Override
 	public String toString()

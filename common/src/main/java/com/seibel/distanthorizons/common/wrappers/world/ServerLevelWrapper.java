@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiLevelType;
+import com.seibel.distanthorizons.api.interfaces.render.IDhApiCustomRenderRegister;
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
@@ -141,6 +142,7 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 		return level.getMinBuildHeight();
         #endif
 	}
+	
 	@Override
 	public IChunkWrapper tryGetChunk(DhChunkPos pos)
 	{
@@ -180,9 +182,18 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	public void onUnload() { LEVEL_WRAPPER_BY_SERVER_LEVEL.remove(this.level); }
 	
 	@Override
-	public String toString()
+	public IDhApiCustomRenderRegister getRenderRegister()
 	{
-		return "Wrapped{" + level.toString() + "@" + getDimensionType().getDimensionName() + "}";
+		// custom rendering isn't supported on the server-side
+		return null;
 	}
+	
+	
+	//================//
+	// base overrides //
+	//================//
+	
+	@Override
+	public String toString() { return "Wrapped{" + this.level.toString() + "@" + this.getDimensionType().getDimensionName() + "}"; }
 	
 }
