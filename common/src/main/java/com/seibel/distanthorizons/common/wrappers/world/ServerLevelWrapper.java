@@ -30,6 +30,7 @@ import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.cache.ServerBlockDetailMap;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftClientWrapper;
+import com.seibel.distanthorizons.core.level.IDhLevel;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
@@ -60,8 +61,9 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	private static final ConcurrentHashMap<ServerLevel, ServerLevelWrapper> LEVEL_WRAPPER_BY_SERVER_LEVEL = new ConcurrentHashMap<>();
 	
-	final ServerLevel level;
-	ServerBlockDetailMap blockMap = new ServerBlockDetailMap(this);
+	private final ServerLevel level;
+	@Deprecated // TODO circular references are bad
+	private IDhLevel parentDhLevel;
 	
 	
 	
@@ -173,20 +175,26 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	}
 	
 	@Override
-	public ServerLevel getWrappedMcObject()
-	{
-		return level;
-	}
+	public ServerLevel getWrappedMcObject() { return this.level; }
 	
 	@Override
 	public void onUnload() { LEVEL_WRAPPER_BY_SERVER_LEVEL.remove(this.level); }
 	
+	
+	@Override
+	public void setParentLevel(IDhLevel parentLevel) { this.parentDhLevel = parentLevel; }
+	
 	@Override
 	public IDhApiCustomRenderRegister getRenderRegister()
 	{
-		// custom rendering isn't supported on the server-side
-		return null;
+		if (this.parentDhLevel == null)
+		{
+			return null;
+		}
+		
+		return this.parentDhLevel.getGenericRenderer();
 	}
+	
 	
 	
 	//================//

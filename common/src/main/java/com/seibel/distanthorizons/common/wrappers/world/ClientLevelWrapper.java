@@ -9,9 +9,7 @@ import com.seibel.distanthorizons.common.wrappers.block.cache.ClientBlockDetailM
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftClientWrapper;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
-import com.seibel.distanthorizons.core.level.ClientLevelModule;
-import com.seibel.distanthorizons.core.level.DhClientLevel;
-import com.seibel.distanthorizons.core.level.IKeyedClientLevelManager;
+import com.seibel.distanthorizons.core.level.*;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
@@ -22,9 +20,7 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapp
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IServerLevelWrapper;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +39,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 public class ClientLevelWrapper implements IClientLevelWrapper
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(ClientLevelWrapper.class.getSimpleName());
-	private static final ConcurrentHashMap<ClientLevel, ClientLevelWrapper> LEVEL_WRAPPER_BY_CLIENT_LEVEL = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<ClientLevel, ClientLevelWrapper> LEVEL_WRAPPER_BY_CLIENT_LEVEL = new ConcurrentHashMap<>(); // TODO can leak
 	private static final IKeyedClientLevelManager KEYED_CLIENT_LEVEL_MANAGER = SingletonInjector.INSTANCE.get(IKeyedClientLevelManager.class);
 	
 	private final ClientLevel level;
@@ -51,7 +47,8 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	private BlockStateWrapper dirtBlockWrapper;
 	private BiomeWrapper plainsBiomeWrapper;
-	private DhClientLevel parentClientLevel;
+	@Deprecated // TODO circular references are bad
+	private IDhLevel parentDhLevel;
 	
 	
 	
@@ -235,7 +232,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	public void onUnload() 
 	{ 
 		LEVEL_WRAPPER_BY_CLIENT_LEVEL.remove(this.level);
-		this.parentClientLevel = null;
+		this.parentDhLevel = null;
 	}
 	
 	
@@ -245,29 +242,17 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	//===================//
 	
 	@Override
-	public void setParentClientLevel(DhClientLevel parentClientLevel) { this.parentClientLevel = parentClientLevel; }
+	public void setParentLevel(IDhLevel parentLevel) { this.parentDhLevel = parentLevel; }
 	
 	@Override 
 	public IDhApiCustomRenderRegister getRenderRegister()
 	{
-		if (this.parentClientLevel == null)
+		if (this.parentDhLevel == null)
 		{
 			return null;
 		}
 		
-		ClientLevelModule clientLevelModule = this.parentClientLevel.clientside;
-		if (clientLevelModule == null)
-		{
-			return null;
-		}
-		
-		ClientLevelModule.ClientRenderState renderState = clientLevelModule.ClientRenderStateRef.get();
-		if (renderState == null)
-		{
-			return null;
-		}
-		
-		return renderState.genericRenderer;
+		return this.parentDhLevel.getGenericRenderer();
 	}
 	
 	
