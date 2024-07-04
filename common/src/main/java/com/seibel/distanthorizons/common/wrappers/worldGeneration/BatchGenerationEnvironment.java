@@ -346,8 +346,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			}
 			else if (event.hasTimeout(Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get(), TimeUnit.SECONDS))
 			{
-				EVENT_LOGGER.error("Batching World Generator: " + event + " timed out and terminated! Please lower your CPU load.");
-				EVENT_LOGGER.info("Dump PrefEvent: " + event.timer);
+				EVENT_LOGGER.warn(
+						"Batching World Generator: [" + event + "] timed out and terminated after ["+Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get()+"] seconds. " +
+								"\nYour computer might be overloaded or your world gen mods might be causing world gen to take longer than expected. " +
+								"\nEither increase DH's world gen timeout or reduce your computer's CPU load.");
+				EVENT_LOGGER.debug("Dump PrefEvent: " + event.timer);
 				try
 				{
 					if (!event.terminate())
