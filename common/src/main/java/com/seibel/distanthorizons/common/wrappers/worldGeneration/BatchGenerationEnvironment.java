@@ -416,12 +416,15 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					CompoundTag chunkData = this.getChunkNbtData(chunkPos);
 					newChunk = this.loadOrMakeChunk(chunkPos, chunkData);
 					
-					// get chunk lighting
-					ChunkLoader.CombinedChunkLightStorage combinedLights = ChunkLoader.readLight(newChunk, chunkData);
-					if (combinedLights != null)
+					if (Config.Client.Advanced.LodBuilding.pullLightingForPregeneratedChunks.get())
 					{
-						chunkSkyLightingByDhPos.put(dhChunkPos, combinedLights.skyLightStorage);
-						chunkBlockLightingByDhPos.put(dhChunkPos, combinedLights.blockLightStorage);
+						// attempt to get chunk lighting
+						ChunkLoader.CombinedChunkLightStorage combinedLights = ChunkLoader.readLight(newChunk, chunkData);
+						if (combinedLights != null)
+						{
+							chunkSkyLightingByDhPos.put(dhChunkPos, combinedLights.skyLightStorage);
+							chunkBlockLightingByDhPos.put(dhChunkPos, combinedLights.blockLightStorage);
+						}
 					}
 				}
 				catch (RuntimeException loadChunkError)
@@ -478,10 +481,6 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 						chunkWrapper.setSkyLightStorage(chunkSkyLightingByDhPos.get(chunkWrapper.getChunkPos()));
 						chunkWrapper.setUseDhLighting(true);
 						chunkWrapper.setIsDhLightCorrect(true);
-					}
-					else
-					{
-						int k = 0;
 					}
 				}
 			});
