@@ -84,19 +84,6 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	// methods //
 	//=========//
 	
-	@Nullable
-	@Override
-	public IClientLevelWrapper tryGetClientLevelWrapper()
-	{
-		MinecraftClientWrapper client = MinecraftClientWrapper.INSTANCE;
-		if (client.mc.level == null)
-		{
-			return null;
-		}
-		
-		return ClientLevelWrapper.getWrapper(client.mc.level);
-	}
-	
 	@Override
 	public File getSaveFolder()
 	{
