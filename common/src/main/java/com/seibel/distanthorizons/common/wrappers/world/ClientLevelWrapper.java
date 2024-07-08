@@ -180,7 +180,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	public boolean hasSkyLight() { return this.level.dimensionType().hasSkyLight(); }
 	
 	@Override
-	public int getHeight() { return this.level.getHeight(); }
+	public int getMaxHeight() { return this.level.getHeight(); }
 	
 	@Override
 	public int getMinHeight()

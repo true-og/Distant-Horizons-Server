@@ -117,7 +117,7 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	}
 	
 	@Override
-	public int getHeight()
+	public int getMaxHeight()
 	{
 		return level.getHeight();
 	}
