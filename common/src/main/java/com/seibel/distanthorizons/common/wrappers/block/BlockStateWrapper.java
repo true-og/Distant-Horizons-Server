@@ -21,6 +21,7 @@ package com.seibel.distanthorizons.common.wrappers.block;
 
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.util.ColorUtil;
+import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
@@ -92,7 +93,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	private final int hashCode;
 	/** 
 	 * Cached opacity value, -1 if not populated. <br>
-	 * Should be between {@link IBlockStateWrapper#FULLY_OPAQUE} and {@link IBlockStateWrapper#FULLY_OPAQUE}
+	 * Should be between {@link LodUtil#BLOCK_FULLY_OPAQUE} and {@link LodUtil#BLOCK_FULLY_OPAQUE}
 	 */
 	private int opacity = -1;
 	/** used by the Iris shader mod to determine how each LOD should be rendered */
@@ -138,9 +139,9 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		
 		String lowercaseSerial = this.serialString.toLowerCase();
 		boolean isBeaconBaseBlock = false;
-		for (int i = 0; i < IBlockStateWrapper.BEACON_BASE_BLOCK_NAME_LIST.size(); i++)
+		for (int i = 0; i < LodUtil.BEACON_BASE_BLOCK_NAME_LIST.size(); i++)
 		{
-			String baseBlockName = IBlockStateWrapper.BEACON_BASE_BLOCK_NAME_LIST.get(i);
+			String baseBlockName = LodUtil.BEACON_BASE_BLOCK_NAME_LIST.get(i);
 			if (lowercaseSerial.contains(baseBlockName))
 			{
 				isBeaconBaseBlock = true;
@@ -240,23 +241,23 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		int opacity;
 		if (this.isAir())
 		{
-			opacity = FULLY_TRANSPARENT;
+			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT;
 		}
 		else if (this.isLiquid() && !this.blockState.canOcclude())
 		{
 			// probably not a waterlogged block (which should block light entirely)
 			
 			// +1 to indicate that the block is translucent (in between transparent and opaque) 
-			opacity = FULLY_TRANSPARENT + 1;
+			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT + 1;
 		}
 		else if (this.blockState.propagatesSkylightDown(EmptyBlockGetter.INSTANCE, BlockPos.ZERO))
 		{
-			opacity = FULLY_TRANSPARENT;
+			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT;
 		}
 		else
 		{
 			// default for all other blocks
-			opacity = FULLY_OPAQUE;
+			opacity = LodUtil.BLOCK_FULLY_OPAQUE;
 		}
 		
 		
