@@ -20,6 +20,7 @@
 package com.seibel.distanthorizons.common.wrappers.block;
 
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
+import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
@@ -31,8 +32,10 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 #if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
@@ -95,6 +98,11 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	/** used by the Iris shader mod to determine how each LOD should be rendered */
 	private byte irisBlockMaterialId = 0;
 	
+	private final boolean isBeaconBlock; 
+	private final boolean isBeaconBaseBlock; 
+	private final boolean isGlassBlock; 
+	private final Color mapColor;
+	
 	
 	
 	//==============//
@@ -127,6 +135,36 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		this.serialString = this.serialize(levelWrapper);
 		this.hashCode = Objects.hash(this.serialString);
 		this.irisBlockMaterialId = this.calculateIrisBlockMaterialId();
+		
+		String lowercaseSerial = this.serialString.toLowerCase();
+		boolean isBeaconBaseBlock = false;
+		for (int i = 0; i < IBlockStateWrapper.BEACON_BASE_BLOCK_NAME_LIST.size(); i++)
+		{
+			String baseBlockName = IBlockStateWrapper.BEACON_BASE_BLOCK_NAME_LIST.get(i);
+			if (lowercaseSerial.contains(baseBlockName))
+			{
+				isBeaconBaseBlock = true;
+				break;
+			}
+		}
+		this.isBeaconBaseBlock = isBeaconBaseBlock;
+		this.isBeaconBlock = lowercaseSerial.contains("minecraft:beacon");
+		this.isGlassBlock = lowercaseSerial.contains("glass");
+		
+		int mcColor = 0;
+		if (this.blockState != null)
+		{
+			#if MC_VER < MC_1_20_1
+			mcColor = this.blockState.getMaterial().getColor();
+	        #else
+			mcColor = this.blockState.getMapColor(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).col;
+            #endif
+			this.mapColor = ColorUtil.toColorObjRGB(mcColor);
+		}
+		else
+		{
+			this.mapColor = new Color(0,0,0,0);
+		}
 		
 		//LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.irisBlockMaterialId+"]");
 	}
@@ -285,6 +323,16 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		return !this.blockState.getFluidState().isEmpty();
         #endif
 	}
+	
+	@Override
+	public boolean isBeaconBlock() { return this.isBeaconBlock; }
+	@Override
+	public boolean isBeaconBaseBlock() { return this.isBeaconBaseBlock; }
+	@Override
+	public boolean isGlassBlock() { return this.isGlassBlock; }
+	
+	@Override
+	public Color getMapColor() { return this.mapColor; }
 	
 	@Override
 	public byte getIrisBlockMaterialId() { return this.irisBlockMaterialId; }
