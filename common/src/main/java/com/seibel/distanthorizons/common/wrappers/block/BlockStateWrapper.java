@@ -156,7 +156,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		if (this.blockState != null)
 		{
 			#if MC_VER < MC_1_20_1
-			mcColor = this.blockState.getMaterial().getColor();
+			mcColor = this.blockState.getMaterial().getColor().col;
 	        #else
 			mcColor = this.blockState.getMapColor(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).col;
             #endif
