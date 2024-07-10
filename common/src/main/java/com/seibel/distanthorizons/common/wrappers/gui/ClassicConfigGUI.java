@@ -443,7 +443,9 @@ public class ClassicConfigGUI
 						String key = translationPrefix + (newInfo.category.isEmpty() ? "" : newInfo.category + ".") + newInfo.getName() + ".@tooltip";
 						
 						if (((EntryInfo) newInfo.guiValue).error != null && text.equals(name))
+						{
 							DhRenderTooltip(matrices, font, ((EntryInfo) newInfo.guiValue).error.getValue(), mouseX, mouseY);
+						}
 						else if (I18n.exists(key) && (text != null && text.equals(name)))
 						{
 							List<Component> list = new ArrayList<>();
