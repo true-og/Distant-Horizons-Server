@@ -411,7 +411,7 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 		// so this will have to do for now
 		IDimensionTypeWrapper dimensionType = level.getDimensionType();
 		
-		LightMapWrapper wrapper = this.lightmapByDimensionType.compute(dimensionType, (dimType, oldWrapper) -> new LightMapWrapper());
+		LightMapWrapper wrapper = this.lightmapByDimensionType.computeIfAbsent(dimensionType, (dimType) -> new LightMapWrapper());
 		wrapper.uploadLightmap(lightPixels);
 	}
 	
