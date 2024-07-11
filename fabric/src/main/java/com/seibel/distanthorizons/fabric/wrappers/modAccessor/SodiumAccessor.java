@@ -19,6 +19,9 @@
 
 package com.seibel.distanthorizons.fabric.wrappers.modAccessor;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -31,7 +34,9 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.ISodiumAcce
 
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
+#if MC_VER < MC_1_20_1
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
+#endif
 import net.minecraft.client.Minecraft;
 #if MC_VER < MC_1_17_1
 import net.minecraft.nbt.CompoundTag;
@@ -53,30 +58,86 @@ public class SodiumAccessor implements ISodiumAccessor
 	public Mat4f mcModelViewMatrix;
 	public Mat4f mcProjectionMatrix;
 	public float partialTicks;
-
+	
 	@Override
 	public String getModName()
 	{
 		return "Sodium-Fabric";
 	}
+	
+	private static boolean checkClass(String clazz)
+	{
+		try {
+			Class.forName(clazz);
+			return true;
+		}
+		catch (ClassNotFoundException e)
+		{
+			return false;
+		}
+	}
 
+	#if MC_VER >= MC_1_20_1
+	private static MethodHandle retrieveInstance;
+	private static MethodHandle isBoxVisible;
+	private static MethodHandle setFogOcclusion;
+	private static Object options;
+	
+	static
+	{
+		if (checkClass("net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer"))
+		{
+			try
+			{
+				Class<?> worldRenderer = Class.forName("net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer");
+				retrieveInstance = MethodHandles.lookup().findStatic(worldRenderer, "instance", MethodType.methodType(worldRenderer));
+				isBoxVisible = MethodHandles.lookup().findVirtual(worldRenderer, "isBoxVisible", MethodType.methodType(boolean.class, double.class, double.class, double.class, double.class, double.class, double.class));
+			}
+			catch (Throwable e)
+			{
+				throw new RuntimeException(e);
+			}
+		} else
+		{
+			try
+			{
+				Class<?> worldRenderer = Class.forName("me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer");
+				retrieveInstance = MethodHandles.lookup().findStatic(worldRenderer, "instance", MethodType.methodType(worldRenderer));
+				isBoxVisible = MethodHandles.lookup().findVirtual(worldRenderer, "isBoxVisible", MethodType.methodType(boolean.class, double.class, double.class, double.class, double.class, double.class, double.class));
+			}
+			catch (Throwable e)
+			{
+				throw new RuntimeException(e);
+			}	
+		}
+	}
+	
+	#endif
+	
 	#if MC_VER >= MC_1_17_1
 	@Override
 	public HashSet<DhChunkPos> getNormalRenderedChunks()
 	{
-		SodiumWorldRenderer renderer = SodiumWorldRenderer.instance();
 		LevelHeightAccessor height = Minecraft.getInstance().level;
 
 		#if MC_VER >= MC_1_20_1
 		// TODO: This is just a tmp solution, use a proper solution later
 		return MC_RENDER.getMaximumRenderedChunks().stream().filter((DhChunkPos chunk) -> {
-			return (renderer.isBoxVisible(
-					chunk.getMinBlockX() + 1, height.getMinBuildHeight() + 1, chunk.getMinBlockZ() + 1,
-					chunk.getMinBlockX() + 15, height.getMaxBuildHeight() - 1, chunk.getMinBlockZ() + 15));
+			try
+			{
+				Object renderer = retrieveInstance.invoke();
+				return (boolean) isBoxVisible.invokeExact(renderer,
+						chunk.getMinBlockX() + 1, height.getMinBuildHeight() + 1, chunk.getMinBlockZ() + 1,
+						chunk.getMinBlockX() + 15, height.getMaxBuildHeight() - 1, chunk.getMinBlockZ() + 15);
+			}
+			catch (Throwable e)
+			{
+				throw new RuntimeException(e);
+			}
 		}).collect(Collectors.toCollection(HashSet::new));
 		#elif MC_VER >= MC_1_18_2
 		// 0b11 = Lighted chunk & loaded chunk
-		return renderer.getChunkTracker().getChunks(0b00).filter(
+		return SodiumWorldRenderer.instance().getChunkTracker().getChunks(0b00).filter(
 				(long l) -> {
 					return true;
 				}).mapToObj(DhChunkPos::new).collect(Collectors.toCollection(HashSet::new));
@@ -135,7 +196,30 @@ public class SodiumAccessor implements ISodiumAccessor
 	public void setFogOcclusion(boolean b)
 	{
 		#if MC_VER >= MC_1_20_1
-		me.jellysquid.mods.sodium.client.SodiumClientMod.options().performance.useFogOcclusion = b;
+		try
+		{
+			if (options == null)
+			{
+				if (checkClass("net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer"))
+				{
+					Class<?> optClass = Class.forName("net.caffeinemc.mods.sodium.client.gui.SodiumGameOptions");
+					Object basicOpts = MethodHandles.lookup().findStatic(Class.forName("net.caffeinemc.mods.sodium.client.SodiumClientMod"), "options", MethodType.methodType(optClass)).invoke();
+					options = optClass.getDeclaredField("performance").get(basicOpts);
+					setFogOcclusion = MethodHandles.lookup().findSetter(Class.forName("net.caffeinemc.mods.sodium.client.gui.SodiumGameOptions$PerformanceSettings"), "useFogOcclusion", boolean.class);
+				} else
+				{
+					Class<?> optClass = Class.forName("me.jellysquid.mods.sodium.client.gui.SodiumGameOptions");
+					Object basicOpts = MethodHandles.lookup().findStatic(Class.forName("me.jellysquid.mods.sodium.client.SodiumClientMod"), "options", MethodType.methodType(optClass)).invoke();
+					options = optClass.getDeclaredField("performance").get(basicOpts);
+					setFogOcclusion = MethodHandles.lookup().findSetter(Class.forName("me.jellysquid.mods.sodium.client.gui.SodiumGameOptions$PerformanceSettings"), "useFogOcclusion", boolean.class);
+				}
+			}
+			setFogOcclusion.invoke(options, b);
+		}
+		catch (Throwable e)
+		{
+			throw new RuntimeException(e);
+		}
 		#endif
 	}
 
