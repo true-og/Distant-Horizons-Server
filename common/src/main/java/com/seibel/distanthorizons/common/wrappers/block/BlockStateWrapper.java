@@ -19,6 +19,7 @@
 
 package com.seibel.distanthorizons.common.wrappers.block;
 
+import com.seibel.distanthorizons.api.enums.rendering.EDhApiBlockMaterial;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.util.LodUtil;
@@ -97,7 +98,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	 */
 	private int opacity = -1;
 	/** used by the Iris shader mod to determine how each LOD should be rendered */
-	private byte irisBlockMaterialId = 0;
+	private byte blockMaterialId = 0;
 	
 	private final boolean isBeaconBlock; 
 	private final boolean isBeaconBaseBlock; 
@@ -135,7 +136,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		this.blockState = blockState;
 		this.serialString = this.serialize(levelWrapper);
 		this.hashCode = Objects.hash(this.serialString);
-		this.irisBlockMaterialId = this.calculateIrisBlockMaterialId();
+		this.blockMaterialId = this.calculateEDhApiBlockMaterialId().index;
 		
 		String lowercaseSerial = this.serialString.toLowerCase();
 		boolean isBeaconBaseBlock = false;
@@ -167,7 +168,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			this.mapColor = new Color(0,0,0,0);
 		}
 		
-		//LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.irisBlockMaterialId+"]");
+		//LOGGER.trace("Created BlockStateWrapper ["+this.serialString+"] for ["+blockState+"] with material ID ["+this.EDhApiBlockMaterialId+"]");
 	}
 	
 	
@@ -336,7 +337,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	public Color getMapColor() { return this.mapColor; }
 	
 	@Override
-	public byte getIrisBlockMaterialId() { return this.irisBlockMaterialId; }
+	public byte getMaterialId() { return this.blockMaterialId; }
 	
 	@Override
 	public String toString() { return this.getSerialString(); }
@@ -561,11 +562,11 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	// Iris methods //
 	//==============//
 	
-	private byte calculateIrisBlockMaterialId() 
+	private EDhApiBlockMaterial calculateEDhApiBlockMaterialId() 
 	{
 		if (this.blockState == null)
 		{
-			return IrisBlockMaterial.AIR;
+			return EDhApiBlockMaterial.AIR;
 		}
 		
 		
@@ -578,15 +579,15 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			|| serialString.contains("mushroom")
 			) 
 		{
-			return IrisBlockMaterial.LEAVES;
+			return EDhApiBlockMaterial.LEAVES;
 		}
 		else if (this.blockState.is(Blocks.LAVA))
 		{
-			return IrisBlockMaterial.LAVA;
+			return EDhApiBlockMaterial.LAVA;
 		}
 		else if (this.isLiquid() || this.blockState.is(Blocks.WATER))
 		{
-			return IrisBlockMaterial.WATER;
+			return EDhApiBlockMaterial.WATER;
 		}
 		else if (this.blockState.getSoundType() == SoundType.WOOD
 				|| serialString.contains("root")
@@ -595,7 +596,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				#endif
 				) 
 		{
-			return IrisBlockMaterial.WOOD;
+			return EDhApiBlockMaterial.WOOD;
 		}
 		else if (this.blockState.getSoundType() == SoundType.METAL
 				#if MC_VER >= MC_1_19_2
@@ -607,11 +608,11 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				#endif
 				) 
 		{
-			return IrisBlockMaterial.METAL;
+			return EDhApiBlockMaterial.METAL;
 		}
 		else if (serialString.contains("grass_block"))
 		{
-			return IrisBlockMaterial.GRASS;
+			return EDhApiBlockMaterial.GRASS;
 		}
 		else if (
 			serialString.contains("dirt")
@@ -621,7 +622,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			|| serialString.contains("mycelium")
 			)
 		{
-			return IrisBlockMaterial.DIRT;
+			return EDhApiBlockMaterial.DIRT;
 		}
 		#if MC_VER >= MC_1_17_1
 		else if (this.blockState.getSoundType() == SoundType.DEEPSLATE
@@ -630,37 +631,37 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				|| this.blockState.getSoundType() == SoundType.POLISHED_DEEPSLATE
 				|| serialString.contains("deepslate") ) 
 		{
-			return IrisBlockMaterial.DEEPSLATE;
+			return EDhApiBlockMaterial.DEEPSLATE;
 		} 
 		#endif
 		else if (this.serialString.contains("snow"))
 		{
-			return IrisBlockMaterial.SNOW;
+			return EDhApiBlockMaterial.SNOW;
 		} 
 		else if (serialString.contains("sand"))
 		{
-			return IrisBlockMaterial.SAND;
+			return EDhApiBlockMaterial.SAND;
 		}
 		else if (serialString.contains("terracotta"))
 		{
-			return IrisBlockMaterial.TERRACOTTA;
+			return EDhApiBlockMaterial.TERRACOTTA;
 		} 
 		else if (this.blockState.is(BlockTags.BASE_STONE_NETHER)) 
 		{
-			return IrisBlockMaterial.NETHER_STONE;
+			return EDhApiBlockMaterial.NETHER_STONE;
 		} 
 		else if (serialString.contains("stone")
 				|| serialString.contains("ore")) 
 		{
-			return IrisBlockMaterial.STONE;
+			return EDhApiBlockMaterial.STONE;
 		}
 		else if (this.blockState.getLightEmission() > 0) 
 		{
-			return IrisBlockMaterial.ILLUMINATED;
+			return EDhApiBlockMaterial.ILLUMINATED;
 		}
 		else
 		{
-			return IrisBlockMaterial.UNKOWN;
+			return EDhApiBlockMaterial.UNKOWN;
 		}
 	}
 	
