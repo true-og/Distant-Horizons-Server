@@ -477,7 +477,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					ChunkWrapper chunkWrapper = new ChunkWrapper(chunk, region, this.serverlevel.getLevelWrapper());
 					chunkWrapperList.set(x, z, chunkWrapper);
 					
-					// try getting the chunk lighting
+					// try setting the wrapper's lighting
 					if (chunkBlockLightingByDhPos.containsKey(chunkWrapper.getChunkPos()))
 					{
 						chunkWrapper.setBlockLightStorage(chunkBlockLightingByDhPos.get(chunkWrapper.getChunkPos()));
