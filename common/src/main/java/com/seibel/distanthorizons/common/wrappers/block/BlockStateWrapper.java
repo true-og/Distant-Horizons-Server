@@ -661,7 +661,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		}
 		else
 		{
-			return EDhApiBlockMaterial.UNKOWN;
+			return EDhApiBlockMaterial.UNKNOWN;
 		}
 	}
 	
