@@ -22,6 +22,10 @@ package com.seibel.distanthorizons.forge.mixins.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 #if MC_VER < MC_1_19_4
 import com.mojang.math.Matrix4f;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LightTexture;
 #else
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

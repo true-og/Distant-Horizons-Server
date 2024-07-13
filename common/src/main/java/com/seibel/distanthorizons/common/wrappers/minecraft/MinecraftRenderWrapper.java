@@ -39,6 +39,7 @@ import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 
 #if MC_VER < MC_1_19_4
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 #else
 import org.joml.Matrix4f;

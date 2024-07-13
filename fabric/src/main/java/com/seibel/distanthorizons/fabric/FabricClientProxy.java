@@ -53,6 +53,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import java.nio.FloatBuffer;
 #endif
 import java.util.HashSet;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.InteractionResult;
@@ -132,7 +133,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					// executor to prevent locking up the render/event thread
 					// if the getChunk() takes longer than expected 
 					// (which can be caused by certain mods) 
-					var executor = ThreadPoolUtil.getFileHandlerExecutor();
+					ThreadPoolExecutor executor = ThreadPoolUtil.getFileHandlerExecutor();
 					if (executor != null)
 					{
 						executor.execute(() ->
@@ -172,7 +173,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 						// executor to prevent locking up the render/event thread
 						// if the getChunk() takes longer than expected 
 						// (which can be caused by certain mods) 
-						var executor = ThreadPoolUtil.getFileHandlerExecutor();
+						ThreadPoolExecutor executor = ThreadPoolUtil.getFileHandlerExecutor();
 						if (executor != null)
 						{
 							executor.execute(() ->

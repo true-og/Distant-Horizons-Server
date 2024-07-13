@@ -22,6 +22,7 @@ package com.seibel.distanthorizons.fabric.mixins.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 #if MC_VER < MC_1_19_4
 import com.mojang.math.Matrix4f;
+import org.lwjgl.opengl.GL32;
 #else
 import org.joml.Matrix4f;
 #endif
@@ -93,7 +94,7 @@ public class MixinLevelRenderer
 		#if MC_VER == MC_1_16_5
 	    // get the matrices from the OpenGL fixed pipeline
 	    float[] mcProjMatrixRaw = new float[16];
-	    GL15.glGetFloatv(GL15.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
+	    GL32.glGetFloatv(GL32.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
 	    Mat4f mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
 	    mcProjectionMatrix.transpose();
 	    
