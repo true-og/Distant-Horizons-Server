@@ -250,15 +250,7 @@ public class ChunkWrapper implements IChunkWrapper
 		return section.hasOnlyAir();
 		#endif
 	}
-	private int getChunkSectionMinHeight(int index)
-	{
-		// convert from an index to a block coordinate
-		#if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
-		return this.chunk.getSections()[index].bottomBlockY();
-		#else
-		return this.chunk.getSectionYFromSectionIndex(index) * 16;
-		#endif
-	}
+	private int getChunkSectionMinHeight(int index) { return (index * 16) + this.getMinBuildHeight(); }
 	
 	
 	@Override
