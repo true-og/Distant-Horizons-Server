@@ -105,13 +105,14 @@ public class MixinLevelRenderer
 		Mat4f mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrixStack.last().pose());
 		Mat4f mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
 		#else
-	    // get the matrices directly from MC
+	    // MC combined the model view and projection matricies
 	    Mat4f mcModelViewMatrix = McObjectConverter.Convert(projectionMatrix);
 	    Mat4f mcProjectionMatrix = new Mat4f();
 	    mcProjectionMatrix.setIdentity();
 		#endif
 	    
-	    if (renderType.equals(RenderType.translucent())) {
+	    if (renderType.equals(RenderType.translucent())) 
+		{
 		    ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level),
 				    mcModelViewMatrix,
 				    mcProjectionMatrix,
