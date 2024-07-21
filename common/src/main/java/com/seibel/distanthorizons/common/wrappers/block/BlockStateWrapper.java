@@ -20,6 +20,8 @@
 package com.seibel.distanthorizons.common.wrappers.block;
 
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiBlockMaterial;
+import com.seibel.distanthorizons.core.config.Config;
+import com.seibel.distanthorizons.core.config.types.ConfigEntry;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.util.LodUtil;
@@ -77,9 +79,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	
 	public static final String DIRT_RESOURCE_LOCATION_STRING = "minecraft:dirt";
 	
-	// TODO: Make this changeable through the config
-	public static final String[] RENDERER_IGNORED_BLOCKS_RESOURCE_LOCATIONS = { AIR_STRING, "minecraft:barrier", "minecraft:structure_void", "minecraft:light", "minecraft:tripwire" };
 	public static HashSet<IBlockStateWrapper> rendererIgnoredBlocks = null;
+	public static HashSet<IBlockStateWrapper> rendererIgnoredCaveBlocks = null;
 	
 	/** keep track of broken blocks so we don't log every time */
 	private static final HashSet<ResourceLocation> BrokenResourceLocations = new HashSet<>();
@@ -173,9 +174,9 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	
 	
 	
-	//================//
-	// helper methods //
-	//================//
+	//====================//
+	// LodBuilder methods //
+	//====================//
 	
 	/** 
 	 * Requires a {@link ILevelWrapper} since {@link BlockStateWrapper#deserialize(String,ILevelWrapper)} also requires one. 
@@ -189,37 +190,104 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			return rendererIgnoredBlocks;
 		}
 		
+		HashSet<String> baseIgnoredBlock = new HashSet<>();
+		baseIgnoredBlock.add(AIR_STRING);
+		rendererIgnoredBlocks = getBlockWrappers(Config.Client.Advanced.LodBuilding.ignoredRenderBlockCsv, baseIgnoredBlock, levelWrapper);
+		return rendererIgnoredBlocks;
+	}
+	/**
+	 * Requires a {@link ILevelWrapper} since {@link BlockStateWrapper#deserialize(String,ILevelWrapper)} also requires one. 
+	 * This way the method won't accidentally be called before the deserialization can be completed.
+	 */
+	public static HashSet<IBlockStateWrapper> getRendererIgnoredCaveBlocks(ILevelWrapper levelWrapper)
+	{
+		// use the cached version if possible
+		if (rendererIgnoredCaveBlocks != null)
+		{
+			return rendererIgnoredCaveBlocks;
+		}
 		
+		HashSet<String> baseIgnoredBlock = new HashSet<>();
+		baseIgnoredBlock.add(AIR_STRING);
+		rendererIgnoredCaveBlocks = getBlockWrappers(Config.Client.Advanced.LodBuilding.ignoredRenderCaveBlockCsv, baseIgnoredBlock, levelWrapper);
+		return rendererIgnoredCaveBlocks;
+	}
+	
+	public static void clearRendererIgnoredBlocks() { rendererIgnoredBlocks = null; }
+	public static void clearRendererIgnoredCaveBlocks() { rendererIgnoredCaveBlocks = null; }
+	
+	
+	
+	// lod builder helpers //
+	
+	private static HashSet<IBlockStateWrapper> getBlockWrappers(ConfigEntry<String> config, HashSet<String> baseResourceLocations, ILevelWrapper levelWrapper)
+	{
+		// get the base blocks 
+		HashSet<String> blockStringList = new HashSet<>();
+		if (baseResourceLocations != null)
+		{
+			blockStringList.addAll(baseResourceLocations);	
+		}
+		
+		// get the config blocks
+		String ignoreBlockCsv = config.get();
+		if (ignoreBlockCsv != null)
+		{
+			blockStringList.addAll(List.of(ignoreBlockCsv.split(",")));
+		}
+		
+		return getBlockWrappers(blockStringList, levelWrapper);
+	}
+	private static HashSet<IBlockStateWrapper> getBlockWrappers(HashSet<String> blockResourceLocationSet, ILevelWrapper levelWrapper)
+	{
 		// deserialize each of the given resource locations
 		HashSet<IBlockStateWrapper> blockStateWrappers = new HashSet<>();
-		for (String blockResourceLocation : RENDERER_IGNORED_BLOCKS_RESOURCE_LOCATIONS)
+		for (String blockResourceLocation : blockResourceLocationSet)
 		{
 			try
 			{
-				BlockStateWrapper DefaultBlockStateToIgnore = (BlockStateWrapper) deserialize(blockResourceLocation, levelWrapper);
-				blockStateWrappers.add(DefaultBlockStateToIgnore);
-				
-				if (DefaultBlockStateToIgnore == AIR)
+				if (blockResourceLocation == null)
+				{
+					// shouldn't happen, but just in case
+					continue;
+				}
+				String cleanedResourceLocation = blockResourceLocation.trim();
+				if (cleanedResourceLocation.length() == 0)
 				{
 					continue;
 				}
 				
-				// add all possible blockstates (to account for light blocks with different light values and such)
-				List<BlockState> blockStatesToIgnore = DefaultBlockStateToIgnore.blockState.getBlock().getStateDefinition().getPossibleStates();
-				for (BlockState blockState : blockStatesToIgnore)
+				
+				BlockStateWrapper defaultBlockStateToIgnore = (BlockStateWrapper) deserialize(cleanedResourceLocation, levelWrapper);
+				blockStateWrappers.add(defaultBlockStateToIgnore);
+				
+				if (defaultBlockStateToIgnore != AIR)
 				{
-					BlockStateWrapper newBlockToIgnore = BlockStateWrapper.fromBlockState(blockState, levelWrapper);
-					blockStateWrappers.add(newBlockToIgnore);
+					// add all possible blockstates (to account for light blocks with different light values and such)
+					List<BlockState> blockStatesToIgnore = defaultBlockStateToIgnore.blockState.getBlock().getStateDefinition().getPossibleStates();
+					for (BlockState blockState : blockStatesToIgnore)
+					{
+						BlockStateWrapper newBlockToIgnore = BlockStateWrapper.fromBlockState(blockState, levelWrapper);
+						blockStateWrappers.add(newBlockToIgnore);
+					}
+				}
+				else
+				{
+					// air is a special case so it must be handled separately
+					blockStateWrappers.add(AIR);
 				}
 			}
 			catch (IOException e)
 			{
-				LOGGER.warn("Unable to deserialize rendererIgnoredBlock with the resource location: ["+blockResourceLocation+"]. Error: "+e.getMessage(), e);
+				LOGGER.warn("Unable to deserialize block with the resource location: ["+blockResourceLocation+"]. Error: "+e.getMessage(), e);
+			}
+			catch (Exception e)
+			{
+				LOGGER.warn("Unexpected error deserializing block with the resource location: ["+blockResourceLocation+"]. Error: "+e.getMessage(), e);
 			}
 		}
 		
-		rendererIgnoredBlocks = blockStateWrappers;
-		return rendererIgnoredBlocks;
+		return blockStateWrappers;
 	}
 	
 	

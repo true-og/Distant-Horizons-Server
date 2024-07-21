@@ -122,6 +122,13 @@ public class WrapperFactory implements IWrapperFactory
 	
 	@Override
 	public HashSet<IBlockStateWrapper> getRendererIgnoredBlocks(ILevelWrapper levelWrapper) { return BlockStateWrapper.getRendererIgnoredBlocks(levelWrapper); }
+	@Override
+	public HashSet<IBlockStateWrapper> getRendererIgnoredCaveBlocks(ILevelWrapper levelWrapper) { return BlockStateWrapper.getRendererIgnoredCaveBlocks(levelWrapper); }
+	
+	@Override
+	public void resetRendererIgnoredCaveBlocks() { BlockStateWrapper.clearRendererIgnoredCaveBlocks(); }
+	@Override
+	public void resetRendererIgnoredBlocksSet() { BlockStateWrapper.clearRendererIgnoredBlocks(); }
 	
 	
 	/**
