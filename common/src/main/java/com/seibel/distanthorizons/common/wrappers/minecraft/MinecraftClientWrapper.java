@@ -205,11 +205,6 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 		return new DhChunkPos(playerPos.x, playerPos.z);
 	}
 	
-	public ModelManager getModelManager()
-	{
-		return mc.getModelManager();
-	}
-	
 	@Nullable
 	@Override
 	public IClientLevelWrapper getWrappedClientLevel()
@@ -222,12 +217,6 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 		return ClientLevelWrapper.getWrapperIgnoringOverride(this.mc.level);
 	}
 	
-	/** Please move over to getInstallationDirectory() */
-	@Deprecated
-	@Override
-	public File getGameDirectory()
-	{
-		return getInstallationDirectory();
 	}
 	
 	@Override
