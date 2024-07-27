@@ -29,20 +29,29 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientBlockDetailMap
 {
 	private final ConcurrentHashMap<BlockState, ClientBlockStateCache> blockCache = new ConcurrentHashMap<>();
-	//private final ConcurrentHashMap<#if MC_VER < MC_1_18_2 Biome #else Holder<Biome> #endif, Biome> biomeMap = new ConcurrentHashMap<>();
 	private final ClientLevelWrapper level;
+	
+	
+	
+	//=============//
+	// constructor //
+	//=============//
+	
 	public ClientBlockDetailMap(ClientLevelWrapper level) { this.level = level; }
 	
-	public ClientBlockStateCache getBlockStateData(BlockState state, DhBlockPos pos)
-	{ //TODO: Allow a per pos unique setting
-		return blockCache.computeIfAbsent(state, (s) -> new ClientBlockStateCache(s, level, pos));
-	}
 	
-	public void clear() { blockCache.clear(); }
+	
+	//=========//
+	// methods //
+	//=========//
+	
+	public ClientBlockStateCache getBlockStateData(BlockState blockState)
+	{ return this.blockCache.computeIfAbsent(blockState, (block) -> new ClientBlockStateCache(block, this.level)); }
 	
 	public int getColor(BlockState state, BiomeWrapper biome, DhBlockPos pos)
-	{
-		return getBlockStateData(state, pos).getAndResolveFaceColor(biome, pos);
-	}
+	{ return this.getBlockStateData(state).getAndResolveFaceColor(biome, pos); }
+	
+	public void clear() { this.blockCache.clear(); }
+	
 	
 }
