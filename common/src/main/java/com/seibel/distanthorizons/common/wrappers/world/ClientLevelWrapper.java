@@ -7,11 +7,13 @@ import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.ClientBlockStateColorCache;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
+import com.seibel.distanthorizons.core.api.internal.ClientApi;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.level.*;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
+import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
@@ -151,6 +153,9 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 		
 		return this.getBlockColor(DhBlockPos.ZERO,BiomeWrapper.EMPTY_WRAPPER, this.dirtBlockWrapper);
 	}
+	
+	@Override 
+	public void clearBlockColorCache() { this.blockCache.clear(); }
 	
 	@Override
 	public IBiomeWrapper getPlainsBiomeWrapper()
