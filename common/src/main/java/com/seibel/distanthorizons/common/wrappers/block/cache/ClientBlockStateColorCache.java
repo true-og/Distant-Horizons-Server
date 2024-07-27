@@ -31,7 +31,6 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapp
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -50,11 +49,13 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * This keeps track of the color each block state should be for a given level.
+ * This stores and calculates the colors
+ * the given {@link BlockState} should have based
+ * on the given {@link IClientLevelWrapper}.
  * 
  * @see ColorUtil
  */
-public class ClientBlockStateCache
+public class ClientBlockStateColorCache
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
@@ -154,7 +155,7 @@ public class ClientBlockStateCache
 	// constructor //
 	//=============//
 	
-	public ClientBlockStateCache(BlockState blockState, IClientLevelWrapper samplingLevel)
+	public ClientBlockStateColorCache(BlockState blockState, IClientLevelWrapper samplingLevel)
 	{
 		this.blockState = blockState;
 		this.levelWrapper = samplingLevel;
@@ -371,7 +372,7 @@ public class ClientBlockStateCache
 	// public getter //
 	//===============//
 	
-	public int getAndResolveFaceColor(BiomeWrapper biome, DhBlockPos pos)
+	public int getColor(BiomeWrapper biome, DhBlockPos pos)
 	{
 		// only get the tint if the block needs to be tinted
 		if (!this.needPostTinting)
