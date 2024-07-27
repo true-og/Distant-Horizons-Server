@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.distanthorizons.common.wrappers.block.cache;
+package com.seibel.distanthorizons.common.wrappers.block;
 
 import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.TextureAtlasSpriteWrapper;

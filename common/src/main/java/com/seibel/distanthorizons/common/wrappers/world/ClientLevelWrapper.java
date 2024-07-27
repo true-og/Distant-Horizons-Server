@@ -5,7 +5,7 @@ import com.seibel.distanthorizons.api.interfaces.render.IDhApiCustomRenderRegist
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
-import com.seibel.distanthorizons.common.wrappers.block.cache.ClientBlockStateColorCache;
+import com.seibel.distanthorizons.common.wrappers.block.ClientBlockStateColorCache;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.level.*;

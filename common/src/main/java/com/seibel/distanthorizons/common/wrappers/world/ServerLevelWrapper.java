@@ -27,9 +27,7 @@ import com.seibel.distanthorizons.api.interfaces.render.IDhApiCustomRenderRegist
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
-import com.seibel.distanthorizons.common.wrappers.block.cache.ServerBlockDetailMap;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
-import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftClientWrapper;
 import com.seibel.distanthorizons.core.level.IDhLevel;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhBlockPos;
@@ -37,7 +35,6 @@ import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
-import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IServerLevelWrapper;
 import net.minecraft.server.level.ServerLevel;
