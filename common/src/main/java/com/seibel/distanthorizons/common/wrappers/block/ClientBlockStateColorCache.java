@@ -47,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This stores and calculates the colors
@@ -62,6 +63,17 @@ public class ClientBlockStateColorCache
 	private static final HashSet<BlockState> BLOCK_STATES_THAT_NEED_LEVEL = new HashSet<>();
 	private static final HashSet<BlockState> BROKEN_BLOCK_STATES = new HashSet<>();
 	
+	/** 
+	 * Methods using MC's "RandomSource" object aren't thread safe <br>
+	 * so we need to put locks around that logic. <br>
+	 * specifically:
+	 * <code>
+	 * getBlockModel(this.blockState).getQuads(this.blockState, direction, RANDOM)
+	 * </code>
+	 */
+	private static final ReentrantLock RESOLVE_LOCK = new ReentrantLock();
+	
+	
 	/** This is the order each direction on a block is processed when attempting to get the texture/color */
 	private static final Direction[] COLOR_RESOLUTION_DIRECTION_ORDER = { Direction.UP, Direction.NORTH, Direction.EAST, Direction.WEST, Direction.SOUTH, Direction.DOWN };
 	
@@ -70,9 +82,10 @@ public class ClientBlockStateColorCache
 	
 	
 	#if MC_VER < MC_1_19_2
-	private static final Random random = new Random(0);
+	private static final Random RANDOM = new Random(0);
 	#else
-	private static final RandomSource random = RandomSource.create();
+	/** Note: this object isn't thread safe and must be put in a lock */
+	private static final RandomSource RANDOM = RandomSource.create();
 	#endif
 	
 	private final IClientLevelWrapper levelWrapper;
@@ -176,65 +189,73 @@ public class ClientBlockStateColorCache
 			return;
 		}
 		
-		if (this.blockState.getFluidState().isEmpty())
+		try
 		{
-			// look for the first non-empty direction
-			List<BakedQuad> quads = null;
-			for (Direction direction : COLOR_RESOLUTION_DIRECTION_ORDER)
+			// getQuads() isn't thread safe so we need to put this logic in a lock
+			RESOLVE_LOCK.lock();
+			
+			if (this.blockState.getFluidState().isEmpty())
 			{
-				quads = Minecraft.getInstance().getModelManager().getBlockModelShaper().
-						// TODO getQuads sometimes throws a "makeThreadingException", is there anything we can do about that? 
-						//  Note: this isn't a critical issue, it just prints an ugly error and the render data will need to be regenerated.
-						getBlockModel(this.blockState).getQuads(this.blockState, direction, random);
-				
-				if (quads != null && !quads.isEmpty() 
-					&& !(
-							this.blockState.getBlock() instanceof RotatedPillarBlock 
-							&& direction == Direction.UP
-						)
-					)
+				// look for the first non-empty direction
+				List<BakedQuad> quads = null;
+				for (Direction direction : COLOR_RESOLUTION_DIRECTION_ORDER)
 				{
-					break;
+					quads = Minecraft.getInstance().getModelManager().getBlockModelShaper().
+							getBlockModel(this.blockState).getQuads(this.blockState, direction, RANDOM);
+					
+					if (quads != null && !quads.isEmpty()
+						&& !(
+							this.blockState.getBlock() instanceof RotatedPillarBlock
+							&& direction == Direction.UP
+							)
+						)
+					{
+						break;
+					}
+				}
+				
+				if (quads == null || quads.isEmpty())
+				{
+					quads = Minecraft.getInstance().getModelManager().getBlockModelShaper().
+							getBlockModel(this.blockState).getQuads(this.blockState, null, RANDOM);
+				}
+				
+				if (quads != null && !quads.isEmpty())
+				{
+					this.needPostTinting = quads.get(0).isTinted();
+					this.needShade = quads.get(0).isShade();
+					this.tintIndex = quads.get(0).getTintIndex();
+					this.baseColor = calculateColorFromTexture(
+	                        #if MC_VER < MC_1_17_1 quads.get(0).sprite,
+							#else quads.get(0).getSprite(), #endif
+							ColorMode.getColorMode(this.blockState.getBlock()));
+				}
+				else
+				{
+					// Backup method.
+					this.needPostTinting = false;
+					this.needShade = false;
+					this.tintIndex = 0;
+					this.baseColor = calculateColorFromTexture(Minecraft.getInstance().getModelManager().getBlockModelShaper().getParticleIcon(this.blockState),
+							ColorMode.getColorMode(this.blockState.getBlock()));
 				}
 			}
-			
-			if (quads == null || quads.isEmpty())
-			{
-				quads = Minecraft.getInstance().getModelManager().getBlockModelShaper().
-						getBlockModel(this.blockState).getQuads(this.blockState, null, random);
-			}
-			
-			if (quads != null && !quads.isEmpty())
-			{
-				this.needPostTinting = quads.get(0).isTinted();
-				this.needShade = quads.get(0).isShade();
-				this.tintIndex = quads.get(0).getTintIndex();
-				this.baseColor = calculateColorFromTexture(
-                        #if MC_VER < MC_1_17_1 quads.get(0).sprite,
-						#else quads.get(0).getSprite(), #endif
-						ColorMode.getColorMode(this.blockState.getBlock()));
-			}
 			else
-			{ 
-				// Backup method.
-				this.needPostTinting = false;
+			{
+				// Liquid Block
+				this.needPostTinting = true;
 				this.needShade = false;
 				this.tintIndex = 0;
 				this.baseColor = calculateColorFromTexture(Minecraft.getInstance().getModelManager().getBlockModelShaper().getParticleIcon(this.blockState),
 						ColorMode.getColorMode(this.blockState.getBlock()));
 			}
+			
+			this.isColorResolved = true;
 		}
-		else
-		{ 
-			// Liquid Block
-			this.needPostTinting = true;
-			this.needShade = false;
-			this.tintIndex = 0;
-			this.baseColor = calculateColorFromTexture(Minecraft.getInstance().getModelManager().getBlockModelShaper().getParticleIcon(this.blockState),
-					ColorMode.getColorMode(this.blockState.getBlock()));
+		finally
+		{
+			RESOLVE_LOCK.unlock();
 		}
-		
-		this.isColorResolved = true;
 	}
 	//TODO: Perhaps make this not just use the first frame?
 	private static int calculateColorFromTexture(TextureAtlasSprite texture, ColorMode colorMode)
