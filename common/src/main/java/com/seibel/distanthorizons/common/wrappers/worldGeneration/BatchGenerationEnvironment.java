@@ -254,7 +254,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		builder.put(EDhApiWorldGenerationStep.FEATURES, 0);
 		builder.put(EDhApiWorldGenerationStep.LIGHT, 0);
 		BorderNeeded = builder.build();
-		MaxBorderNeeded = BorderNeeded.values().stream().mapToInt(Integer::intValue).max().getAsInt();
+		MaxBorderNeeded = 0;
+		//MaxBorderNeeded = BorderNeeded.values().stream().mapToInt(Integer::intValue).max().getAsInt();
 	}
 	
 	public BatchGenerationEnvironment(IDhServerLevel serverlevel)
@@ -388,7 +389,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		DummyLightEngine dummyLightEngine;
 		LightGetterAdaptor adaptor;
 		
-		int borderSize = MaxBorderNeeded;
+		//int borderSize = MaxBorderNeeded; //
+		int borderSize = 0; //
 		int refSize = genEvent.size + borderSize * 2;
 		int refPosX = genEvent.minPos.x - borderSize;
 		int refPosZ = genEvent.minPos.z - borderSize;
@@ -770,7 +772,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		}
 	}
 	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, int border) { return new ArrayGridList<>(total, border, total.gridSize - border); }
-	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, EDhApiWorldGenerationStep step) { return GetCutoutFrom(total, MaxBorderNeeded - BorderNeeded.get(step)); }
+	//private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, EDhApiWorldGenerationStep step) { return GetCutoutFrom(total, MaxBorderNeeded - BorderNeeded.get(step)); }
+	private static <T> ArrayGridList<T> GetCutoutFrom(ArrayGridList<T> total, EDhApiWorldGenerationStep step) { return GetCutoutFrom(total, 0); }
 	
 	
 	@Override

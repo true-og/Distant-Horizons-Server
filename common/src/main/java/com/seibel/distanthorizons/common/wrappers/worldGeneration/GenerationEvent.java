@@ -73,10 +73,10 @@ public final class GenerationEvent
 			EDhApiWorldGenerationStep target, Consumer<IChunkWrapper> resultConsumer,
 			ExecutorService worldGeneratorThreadPool)
 	{
-		if (size % 2 == 0)
-		{
-			size += 1; // size must be odd for vanilla world gen regions to work
-		}
+		//if (size % 2 == 0)
+		//{
+		//	size += 1; // size must be odd for vanilla world gen regions to work
+		//}
 		
 		
 		GenerationEvent generationEvent = new GenerationEvent(minPos, size, genEnvironment, target, resultConsumer);
