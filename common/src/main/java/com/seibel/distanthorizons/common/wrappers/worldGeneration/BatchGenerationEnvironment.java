@@ -530,13 +530,13 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				#endif
 				if (isFull)
 				{
-					LOAD_LOGGER.info("Detected full existing chunk at {}", target.getPos());
+					LOAD_LOGGER.debug("Detected full existing chunk at {}", target.getPos());
 					genEvent.resultConsumer.accept(wrappedChunk);
 				}
 				#if MC_VER >= MC_1_18_2
 				else if (isPartial)
 				{
-					LOAD_LOGGER.info("Detected old existing chunk at {}", target.getPos());
+					LOAD_LOGGER.debug("Detected old existing chunk at {}", target.getPos());
 					genEvent.resultConsumer.accept(wrappedChunk);
 				}
 				#endif
@@ -556,7 +556,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		if (PREF_LOGGER.canMaybeLog())
 		{
 			genEvent.threadedParam.perf.recordEvent(genEvent.timer);
-			PREF_LOGGER.infoInc("{}", genEvent.timer);
+			PREF_LOGGER.debugInc("{}", genEvent.timer);
 		}
 	}
 	private CompoundTag getChunkNbtData(ChunkPos chunkPos)
@@ -609,7 +609,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		{
 			try
 			{
-				LOAD_LOGGER.info("DistantHorizons: Loading chunk [" + chunkPos + "] from disk.");
+				LOAD_LOGGER.debug("DistantHorizons: Loading chunk [" + chunkPos + "] from disk.");
 				return ChunkLoader.read(level, chunkPos, chunkData);
 			}
 			catch (Exception e)
