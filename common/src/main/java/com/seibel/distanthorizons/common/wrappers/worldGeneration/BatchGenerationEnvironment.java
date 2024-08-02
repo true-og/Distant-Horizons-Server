@@ -518,7 +518,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		// submit generated chunks //
 		//=========================//
 		
-		for (var dhChunkPos : chunkWrappersByDhPos.keySet())
+		for (DhChunkPos dhChunkPos : chunkWrappersByDhPos.keySet())
 		{
 			ChunkWrapper wrappedChunk = chunkWrappersByDhPos.get(dhChunkPos);
 			ChunkAccess target = wrappedChunk.getChunk();
