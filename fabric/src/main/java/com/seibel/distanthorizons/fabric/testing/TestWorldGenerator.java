@@ -9,6 +9,7 @@ import com.seibel.distanthorizons.api.interfaces.override.worldGenerator.Abstrac
 import com.seibel.distanthorizons.api.interfaces.world.IDhApiLevelWrapper;
 import com.seibel.distanthorizons.api.objects.data.DhApiChunk;
 import com.seibel.distanthorizons.api.objects.data.DhApiTerrainDataPoint;
+import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -45,10 +46,14 @@ public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 	@Override
 	public DhApiChunk generateApiChunk(int chunkPosX, int chunkPosZ, EDhApiDistantGeneratorMode generatorMode)
 	{
+		// this test is only validated for 1.18.2 and up 
+		// (and it is only needed when testing world gen overrides/API chunks, so it isn't normally needed)
+		#if MC_VER >= MC_1_18_2
 		ChunkAccess chunk = this.level.getChunk(chunkPosX, chunkPosZ);
+		ChunkWrapper chunkWrapper = new ChunkWrapper(chunk, null, null);
 		
-		int minBuildHeight = chunk.getMinBuildHeight();
-		int maxBuildHeight = chunk.getMaxBuildHeight();
+		int minBuildHeight = chunkWrapper.getMinBuildHeight();
+		int maxBuildHeight = chunkWrapper.getMaxBuildHeight();
 		
 		DhApiChunk apiChunk = DhApiChunk.create(chunkPosX, chunkPosZ, minBuildHeight, maxBuildHeight);
 		for (int x = 0; x < 16; x++)
@@ -71,6 +76,9 @@ public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 			}
 		}
 		return apiChunk;
+		#else
+		return null;
+		#endif
 	}
 	
 	@Override

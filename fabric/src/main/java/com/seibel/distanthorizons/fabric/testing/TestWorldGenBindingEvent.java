@@ -1,16 +1,16 @@
 package com.seibel.distanthorizons.fabric.testing;
 
-import com.mojang.logging.LogUtils;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.interfaces.override.worldGenerator.IDhApiWorldGenerator;
 import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiLevelLoadEvent;
 import com.seibel.distanthorizons.api.methods.events.sharedParameterObjects.DhApiEventParam;
-import com.seibel.distanthorizons.fabric.FabricServerProxy;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import net.minecraft.server.level.ServerLevel;
+import org.apache.logging.log4j.Logger;
 
 public class TestWorldGenBindingEvent extends DhApiLevelLoadEvent
 {
-	private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
 	@Override
 	public void onLevelLoad(DhApiEventParam<DhApiLevelLoadEvent.EventParam> event)
