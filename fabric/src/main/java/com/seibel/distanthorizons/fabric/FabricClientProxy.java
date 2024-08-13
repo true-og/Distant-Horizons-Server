@@ -236,7 +236,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		});
 
 		// TODO remove, just for testing
-		#if MC_VER == MC_1_17
+		#if MC_VER == MC_1_17_1
 		break compiling for test
 		#else
 		
