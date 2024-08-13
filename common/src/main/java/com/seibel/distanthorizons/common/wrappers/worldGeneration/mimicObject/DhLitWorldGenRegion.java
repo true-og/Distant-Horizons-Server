@@ -63,7 +63,7 @@ import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.status.*;
 #endif
 
-#if MC_VER == MC_1_21
+#if MC_VER >= MC_1_21
 import net.minecraft.util.StaticCache2D;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.server.level.GenerationChunkHolder;

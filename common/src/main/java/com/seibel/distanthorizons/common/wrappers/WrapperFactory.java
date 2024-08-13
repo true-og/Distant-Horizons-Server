@@ -155,7 +155,7 @@ public class WrapperFactory implements IWrapperFactory
 			}
 		}
 		
-		#if MC_VER <= MC_1_21
+		//#if MC_VER <= MC_1_XX_X
 		else if (objectArray.length == 2)
 		{
 			// correct number of parameters from the API
@@ -201,16 +201,7 @@ public class WrapperFactory implements IWrapperFactory
 		{
 			throw new ClassCastException(createChunkWrapperErrorMessage(objectArray));
 		}
-		#else
-			// Intentional compiler error to bring attention to the missing wrapper function.
-			// If you need to work on an unimplemented version but don't have the ability to implement this yet
-			// you can comment it out, but please don't commit it. Someone will have to implement it.
-
-			// After implementing the new version please read this method's javadocs for instructions
-			// on what other locations also need to be updated, the DhAPI specifically needs to
-			// be updated to state which objects this method accepts.
-			not implemented for this version of Minecraft!
-		#endif
+		//#endif
 	}
 	/**
 	 * Note: when this is updated for different MC versions,
@@ -220,16 +211,13 @@ public class WrapperFactory implements IWrapperFactory
 	{
 		String[] expectedClassNames;
 		
-		#if MC_VER <= MC_1_21
+		//#if MC_VER <= MC_1_XX_X
 		expectedClassNames = new String[] 
 		{
 			ChunkAccess.class.getName(),
 			ServerLevel.class.getName() + "] or [" + ClientLevel.class.getName()
 		};
-		#else
-			// See preprocessor comment in createChunkWrapper() for full documentation
-			not implemented for this version of Minecraft!
-		#endif
+		//#endif
 		
 		return createWrapperErrorMessage("Chunk wrapper", expectedClassNames, objectArray);
 	}
@@ -268,7 +256,7 @@ public class WrapperFactory implements IWrapperFactory
 		
 		Biome biome = (Biome) objectArray[0];
 		return BiomeWrapper.getBiomeWrapper(biome, coreLevelWrapper);
-		#elif MC_VER <= MC_1_21
+		#else
 		if (!(objectArray[0] instanceof Holder) || !(((Holder<?>) objectArray[0]).value() instanceof Biome))
 		{
 			throw new ClassCastException(createBiomeWrapperErrorMessage(objectArray));
@@ -276,9 +264,6 @@ public class WrapperFactory implements IWrapperFactory
 		
 		Holder<Biome> biomeHolder = (Holder<Biome>) objectArray[0];
 		return BiomeWrapper.getBiomeWrapper(biomeHolder, coreLevelWrapper);
-		#else
-		// See preprocessor comment in createChunkWrapper() for full documentation (not a typo, check createChunkWrapper()'s else statement for full documentation)
-		not implemented for this version of Minecraft!
 		#endif
 	}
 	/**
@@ -291,11 +276,8 @@ public class WrapperFactory implements IWrapperFactory
 		
 		#if MC_VER < MC_1_18_2
 		expectedClassNames = new String[] { Biome.class.getName() };
-		#elif MC_VER <= MC_1_21
-		expectedClassNames = new String[] { Holder.class.getName()+"<"+Biome.class.getName()+">" };
 		#else
-			// See preprocessor comment in createChunkWrapper() for full documentation
-			not implemented for this version of Minecraft!
+		expectedClassNames = new String[] { Holder.class.getName()+"<"+Biome.class.getName()+">" };
 		#endif
 		
 		return createWrapperErrorMessage("Biome wrapper", expectedClassNames, objectArray);
@@ -312,7 +294,7 @@ public class WrapperFactory implements IWrapperFactory
 		
 		
 		
-		#if MC_VER <= MC_1_21
+		//#if MC_VER <= MC_1_XX_X
 		if (objectArray.length != 1)
 		{
 			throw new ClassCastException(createBlockStateWrapperErrorMessage(objectArray));
@@ -324,10 +306,7 @@ public class WrapperFactory implements IWrapperFactory
 		
 		BlockState blockState = (BlockState) objectArray[0];
 		return BlockStateWrapper.fromBlockState(blockState, coreLevelWrapper);
-		#else
-		// See preprocessor comment in createChunkWrapper() for full documentation (not a typo, check createChunkWrapper()'s else statement for full documentation)
-		not implemented for this version of Minecraft!
-		#endif
+		//#endif
 	}
 	/**
 	 * Note: when this is updated for different MC versions,
@@ -339,11 +318,8 @@ public class WrapperFactory implements IWrapperFactory
 		
 		#if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
 		expectedClassNames = new String[] { Biome.class.getName() };
-		#elif MC_VER <= MC_1_21
-		expectedClassNames = new String[] { Holder.class.getName()+"<"+Biome.class.getName()+">" };
 		#else
-		// See preprocessor comment in createChunkWrapper() for full documentation
-		not implemented for this version of Minecraft!
+		expectedClassNames = new String[] { Holder.class.getName()+"<"+Biome.class.getName()+">" };
 		#endif
 		
 		return createWrapperErrorMessage("BlockState wrapper", expectedClassNames, objectArray);

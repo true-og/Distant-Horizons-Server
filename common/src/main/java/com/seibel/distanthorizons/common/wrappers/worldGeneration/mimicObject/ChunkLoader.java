@@ -85,7 +85,7 @@ import net.minecraft.world.level.material.Fluids;
 #if MC_VER == MC_1_20_6
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkType;
-#elif MC_VER == MC_1_21
+#elif MC_VER >= MC_1_21
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkType;
 #endif
