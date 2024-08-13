@@ -21,12 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 {
-	private static final int MAX_QUEUED_TASKS_PER_THREAD = 10;
-	
 	private final ServerLevel level;
 	private final IDhApiLevelWrapper levelWrapper;
-	
-	private final AtomicInteger genCountRef = new AtomicInteger(0);
 	
 	
 	
@@ -49,14 +45,6 @@ public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 	@Override
 	public EDhApiWorldGeneratorReturnType getReturnType() { return EDhApiWorldGeneratorReturnType.API_CHUNKS; }
 	
-	@Override
-	public boolean isBusy()
-	{
-		int worldGenThreadCount = Math.max(Config.Client.Advanced.MultiThreading.numberOfWorldGenerationThreads.get(), 1);
-		int maxWorldGenTaskCount = worldGenThreadCount * MAX_QUEUED_TASKS_PER_THREAD;
-		return this.genCountRef.get() > maxWorldGenTaskCount;
-	}
-	
 	@Override 
 	public boolean runApiChunkValidation() { return true; }
 	
@@ -76,49 +64,39 @@ public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 	@Override
 	public DhApiChunk generateApiChunk(int chunkPosX, int chunkPosZ, EDhApiDistantGeneratorMode generatorMode)
 	{
-		try
+		// this test is only validated for 1.18.2 and up 
+		// (and it is only needed when testing world gen overrides/API chunks, so it isn't normally needed)
+		#if MC_VER >= MC_1_18_2
+		ChunkAccess chunk = this.level.getChunk(chunkPosX, chunkPosZ);
+		
+		
+		int minBuildHeight = this.level.getMinBuildHeight();
+		int maxBuildHeight = this.level.getMaxBuildHeight();
+		
+		DhApiChunk apiChunk = DhApiChunk.create(chunkPosX, chunkPosZ, minBuildHeight, maxBuildHeight);
+		for (int x = 0; x < 16; x++)
 		{
-			this.genCountRef.incrementAndGet();
-			
-			
-			// this test is only validated for 1.18.2 and up 
-			// (and it is only needed when testing world gen overrides/API chunks, so it isn't normally needed)
-			#if MC_VER >= MC_1_18_2
-			ChunkAccess chunk = this.level.getChunk(chunkPosX, chunkPosZ);
-			
-			
-			int minBuildHeight = this.level.getMinBuildHeight();
-			int maxBuildHeight = this.level.getMaxBuildHeight();
-			
-			DhApiChunk apiChunk = DhApiChunk.create(chunkPosX, chunkPosZ, minBuildHeight, maxBuildHeight);
-			for (int x = 0; x < 16; x++)
+			for (int z = 0; z < 16; z++)
 			{
-				for (int z = 0; z < 16; z++)
+				ArrayList<DhApiTerrainDataPoint> dataPoints = new ArrayList<>();
+				
+				IDhApiBlockStateWrapper block = null;
+				IDhApiBiomeWrapper biome = null;
+				
+				for (int y = minBuildHeight; y < maxBuildHeight; y++)
 				{
-					ArrayList<DhApiTerrainDataPoint> dataPoints = new ArrayList<>();
-					
-					IDhApiBlockStateWrapper block = null;
-					IDhApiBiomeWrapper biome = null;
-					
-					for (int y = minBuildHeight; y < maxBuildHeight; y++)
-					{
-						block = DhApi.Delayed.wrapperFactory.getBlockStateWrapper(new Object[]{chunk.getBlockState(new BlockPos(x, y, z))}, this.levelWrapper);
-						biome = DhApi.Delayed.wrapperFactory.getBiomeWrapper(new Object[]{chunk.getNoiseBiome(x, y, z)}, this.levelWrapper);
-						dataPoints.add(DhApiTerrainDataPoint.create((byte) 0, 0, 15, y, y + 1, block, biome));
-					}
-					
-					apiChunk.setDataPoints(x, z, dataPoints);
+					block = DhApi.Delayed.wrapperFactory.getBlockStateWrapper(new Object[]{chunk.getBlockState(new BlockPos(x, y, z))}, this.levelWrapper);
+					biome = DhApi.Delayed.wrapperFactory.getBiomeWrapper(new Object[]{chunk.getNoiseBiome(x, y, z)}, this.levelWrapper);
+					dataPoints.add(DhApiTerrainDataPoint.create((byte) 0, 0, 15, y, y + 1, block, biome));
 				}
+				
+				apiChunk.setDataPoints(x, z, dataPoints);
 			}
-			return apiChunk;
-			#else
-			return null;
-			#endif
 		}
-		finally
-		{
-			this.genCountRef.decrementAndGet();
-		}
+		return apiChunk;
+		#else
+		return null;
+		#endif
 	}
 	
 	@Override
