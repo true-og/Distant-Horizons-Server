@@ -235,6 +235,11 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					);
 		});
 
+		// TODO remove, just for testing
+		#if MC_VER == MC_1_17
+		break compiling for test
+		#else
+		
 		// Debug keyboard event
 		// FIXME: Use better hooks so it doesn't trigger key press events in text boxes
 		ClientTickEvents.END_CLIENT_TICK.register(client -> 
