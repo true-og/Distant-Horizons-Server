@@ -305,7 +305,7 @@ public class ChunkWrapper implements IChunkWrapper
 	public ChunkStatus getStatus() { return getStatus(this.getChunk()); }
 	public static ChunkStatus getStatus(ChunkAccess chunk)
 	{
-		#if MC_VER < MC_1_21 
+		#if MC_VER < MC_1_21_1 
 		return chunk.getStatus();
 		#else
 		return chunk.getPersistedStatus(); 

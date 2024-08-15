@@ -227,7 +227,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 			this.clientApi.renderLods(ClientLevelWrapper.getWrapper(renderContext.world()),
 					modelViewMatrix,
 					projectionMatrix,
-					#if MC_VER < MC_1_21
+					#if MC_VER < MC_1_21_1
 					renderContext.tickDelta()
 					#else
 					renderContext.tickCounter().getGameTimeDeltaTicks()
