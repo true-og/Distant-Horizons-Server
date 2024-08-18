@@ -117,8 +117,11 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		// ClientChunkLoadEvent
 		ClientChunkEvents.CHUNK_LOAD.register((level, chunk) ->
 		{
-			IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper(level);
-			SharedApi.INSTANCE.chunkLoadEvent(new ChunkWrapper(chunk, level, wrappedLevel), wrappedLevel);
+			if (MC.clientConnectedToDedicatedServer())
+			{
+				IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper(level);
+				SharedApi.INSTANCE.chunkLoadEvent(new ChunkWrapper(chunk, level, wrappedLevel), wrappedLevel);
+			}
 		});
 		
 		// (kinda) block break event
@@ -197,14 +200,6 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 			
 			// don't stop the callback
 			return InteractionResult.PASS;
-		});
-		
-		
-		// Client Chunk Save
-		ClientChunkEvents.CHUNK_UNLOAD.register((level, chunk) ->
-		{
-			IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper(level);
-			SharedApi.INSTANCE.chunkUnloadEvent(new ChunkWrapper(chunk, level, wrappedLevel), wrappedLevel);
 		});
 		
 		

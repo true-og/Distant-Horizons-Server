@@ -1,9 +1,8 @@
-package com.seibel.distanthorizons.fabric.mixins.server;
+package com.seibel.distanthorizons.forge.mixins.server;
 
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper;
 import com.seibel.distanthorizons.core.api.internal.ServerApi;
-import com.seibel.distanthorizons.core.api.internal.SharedApi;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;

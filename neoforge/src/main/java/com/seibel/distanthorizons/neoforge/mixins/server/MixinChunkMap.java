@@ -1,4 +1,4 @@
-package com.seibel.distanthorizons.fabric.mixins.server;
+package com.seibel.distanthorizons.neoforge.mixins.server;
 
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper;
