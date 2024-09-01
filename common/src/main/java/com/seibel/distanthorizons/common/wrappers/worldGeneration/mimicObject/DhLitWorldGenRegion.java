@@ -20,13 +20,11 @@
 package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 
 import java.lang.invoke.MethodHandles;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGenerationEnvironment;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
-import com.seibel.distanthorizons.core.pos.DhBlockPos;
 import com.seibel.distanthorizons.core.util.LodUtil;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SpawnerBlock;

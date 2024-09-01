@@ -30,7 +30,7 @@ import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.core.level.IDhLevel;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
-import com.seibel.distanthorizons.core.pos.DhBlockPos;
+import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
@@ -48,7 +48,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 #endif
 
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @version 2022-9-16
@@ -132,8 +131,8 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	@Override
 	public IChunkWrapper tryGetChunk(DhChunkPos pos)
 	{
-		if (!level.hasChunk(pos.x, pos.z)) return null;
-		ChunkAccess chunk = level.getChunk(pos.x, pos.z, ChunkStatus.FULL, false);
+		if (!level.hasChunk(pos.getX(), pos.getZ())) return null;
+		ChunkAccess chunk = level.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FULL, false);
 		if (chunk == null) return null;
 		return new ChunkWrapper(chunk, level, this);
 	}

@@ -20,11 +20,9 @@
 package com.seibel.distanthorizons.common.wrappers;
 
 import java.nio.FloatBuffer;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import com.seibel.distanthorizons.core.enums.EDhDirection;
-import com.seibel.distanthorizons.core.pos.DhBlockPos;
+import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
 import com.seibel.distanthorizons.core.util.math.Mat4f;
 
@@ -138,7 +136,7 @@ public class McObjectConverter
 	}
 	
 	public static BlockPos Convert(DhBlockPos wrappedPos) { return new BlockPos(wrappedPos.getX(), wrappedPos.getY(), wrappedPos.getZ()); }
-	public static ChunkPos Convert(DhChunkPos wrappedPos) { return new ChunkPos(wrappedPos.x, wrappedPos.z); }
+	public static ChunkPos Convert(DhChunkPos wrappedPos) { return new ChunkPos(wrappedPos.getX(), wrappedPos.getZ()); }
 	
 	public static Direction Convert(EDhDirection lodDirection) { return directions[lodDirection.ordinal()]; }
 	public static EDhDirection Convert(Direction direction) { return lodDirections[direction.ordinal()]; }
