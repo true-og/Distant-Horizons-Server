@@ -32,6 +32,11 @@ import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 
+#if MC_VER > MC_1_17_1
+import net.minecraft.client.renderer.FogRenderer;
+import com.mojang.blaze3d.systems.RenderSystem;
+#endif
+
 #if MC_VER < MC_1_19_4
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
