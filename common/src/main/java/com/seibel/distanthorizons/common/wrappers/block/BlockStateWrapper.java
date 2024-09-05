@@ -134,6 +134,26 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		}
 	}
 	
+	/** 
+	 * Can be faster than {@link BlockStateWrapper#fromBlockState(BlockState, ILevelWrapper)} 
+	 * in cases where the same block state is expected to be referenced multiple times.
+	 */
+	public static BlockStateWrapper fromBlockState(BlockState blockState, ILevelWrapper levelWrapper, IBlockStateWrapper guess)
+	{
+		BlockState guessBlockState = (guess == null || guess.isAir()) ? null : (BlockState) guess.getWrappedMcObject();
+		BlockState inputBlockState = (blockState == null || blockState.isAir()) ? null : blockState;
+		
+		if (guess instanceof BlockStateWrapper guessWrapper
+				&& guessBlockState == inputBlockState)
+		{
+			return guessWrapper;
+		}
+		else
+		{
+			return fromBlockState(blockState, levelWrapper);
+		}
+	}
+	
 	private BlockStateWrapper(BlockState blockState, ILevelWrapper levelWrapper)
 	{
 		this.blockState = blockState;
