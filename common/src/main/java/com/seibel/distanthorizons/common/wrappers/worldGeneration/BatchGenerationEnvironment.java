@@ -488,8 +488,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 						{
 							chunkWrapper.setBlockLightStorage(chunkBlockLightingByDhPos.get(chunkWrapper.getChunkPos()));
 							chunkWrapper.setSkyLightStorage(chunkSkyLightingByDhPos.get(chunkWrapper.getChunkPos()));
-							chunkWrapper.setUseDhLighting(true);
-							chunkWrapper.setIsDhLightCorrect(true);
+							chunkWrapper.setIsDhBlockLightCorrect(true);
+							chunkWrapper.setIsDhSkyLightCorrect(true);
 						}
 						
 						chunkWrappersByDhPos.put(chunkPos, chunkWrapper);
@@ -529,11 +529,6 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				#else
 				((LevelChunk) target).loaded = true;
 				#endif
-			}
-			
-			if (!wrappedChunk.isLightCorrect())
-			{
-				throw new RuntimeException("The generated chunk somehow has isLightCorrect() returning false");
 			}
 			
 			boolean isFull = ChunkWrapper.getStatus(target) == ChunkStatus.FULL || target instanceof LevelChunk;
@@ -823,9 +818,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				Heightmap.primeHeightmaps(((ChunkWrapper)centerChunk).getChunk(), ChunkStatus.FEATURES.heightmapsAfter());
 				
 				// pre-generated chunks should have lighting but new ones won't
-				if (!centerChunk.isLightCorrect())
+				if (!centerChunk.isDhBlockLightingCorrect())
 				{
-					DhLightingEngine.INSTANCE.lightChunk(centerChunk, iChunkWrapperList, maxSkyLight);
+					DhLightingEngine.INSTANCE.bakeChunkBlockLighting(centerChunk, iChunkWrapperList, maxSkyLight);
 				}
 			}
 			

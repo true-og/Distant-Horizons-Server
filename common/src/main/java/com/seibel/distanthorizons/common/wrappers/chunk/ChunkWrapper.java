@@ -94,7 +94,8 @@ public class ChunkWrapper implements IChunkWrapper
 	private final LevelReader lightSource;
 	private final ILevelWrapper wrappedLevel;
 	
-	private boolean isDhLightCorrect = false;
+	private boolean isDhBlockLightCorrect = false;
+	private boolean isDhSkyLightCorrect = false;
 	/** only used when connected to a dedicated server */
 	private boolean isMcClientLightingCorrect = false;
 	
@@ -102,8 +103,6 @@ public class ChunkWrapper implements IChunkWrapper
 	private ChunkLightStorage skyLightStorage;
 	
 	private ArrayList<DhBlockPos> blockLightPosList = null;
-	
-	private boolean useDhLighting;
 	
 	private int minNonEmptyHeight = Integer.MIN_VALUE;
 	private int maxNonEmptyHeight = Integer.MAX_VALUE;
@@ -135,11 +134,6 @@ public class ChunkWrapper implements IChunkWrapper
 		this.lightSource = lightSource;
 		this.wrappedLevel = wrappedLevel;
 		this.chunkPos = new DhChunkPos(chunk.getPos().x, chunk.getPos().z);
-		
-		// TODO is this the best way to differentiate between when we are generating chunks and when MC gave us a chunk?
-		boolean isDhGeneratedChunk = (this.lightSource.getClass() == DhLitWorldGenRegion.class);
-		// MC loaded chunks should get their lighting from MC, DH generated chunks should get their lighting from DH
-		this.useDhLighting = isDhGeneratedChunk;
 		
 		// FIXME +1 is to handle the fact that LodDataBuilder adds +1 to all block lighting calculations, also done in the relative position validator
 
@@ -346,45 +340,15 @@ public class ChunkWrapper implements IChunkWrapper
 	// lighting //
 	//==========//
 	
-	@Override
-	public void setIsDhLightCorrect(boolean isDhLightCorrect) { this.isDhLightCorrect = isDhLightCorrect; }
+	@Override 
+	public void setIsDhSkyLightCorrect(boolean isDhLightCorrect) { this.isDhSkyLightCorrect = isDhLightCorrect; }
+	@Override 
+	public void setIsDhBlockLightCorrect(boolean isDhLightCorrect) { this.isDhBlockLightCorrect = isDhLightCorrect; }
 	
 	@Override
-	public void setUseDhLighting(boolean useDhLighting) { this.useDhLighting = useDhLighting; }
-	
+	public boolean isDhBlockLightingCorrect() { return this.isDhBlockLightCorrect; }
 	@Override
-	public boolean isLightCorrect()
-	{
-		if (this.useDhLighting)
-		{
-			return this.isDhLightCorrect;
-		}
-		
-		
-		#if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
-		return false; // MC's lighting engine doesn't work consistently enough to trust for 1.16 or 1.17
-		#else
-		if (this.chunk instanceof LevelChunk)
-		{
-			LevelChunk levelChunk = (LevelChunk) this.chunk;
-			if (levelChunk.getLevel() instanceof ClientLevel)
-			{
-				// connected to a server
-				return this.isMcClientLightingCorrect;
-			}
-			else
-			{
-				// in a single player world
-				return this.chunk.isLightCorrect() && levelChunk.loaded;	
-			}
-		}
-		else
-		{
-			// called when in a single player world and the chunk is a proto chunk (in world gen, and not active)
-			return this.chunk.isLightCorrect();
-		}
-		#endif
-	}
+	public boolean isDhSkyLightCorrect() { return this.isDhSkyLightCorrect; }
 	
 	
 	@Override
@@ -438,44 +402,6 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	public void setSkyLightStorage(ChunkLightStorage lightStorage) { this.skyLightStorage = lightStorage; }
 	
-	
-	@Override
-	public int getBlockLight(int relX, int y, int relZ)
-	{
-		this.throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(relX, y, relZ);
-		
-		// use the full lighting engine when the chunks are within render distance or the config requests it
-		if (this.useDhLighting)
-		{
-			// DH lighting method
-			return this.getBlockLightStorage().get(relX, y, relZ);
-		}
-		else
-		{
-			// note: this returns 0 if the chunk is unload
-			
-			// MC lighting method
-			return this.lightSource.getBrightness(LightLayer.BLOCK, new BlockPos(relX + this.getMinBlockX(), y, relZ + this.getMinBlockZ()));
-		}
-	}
-	
-	@Override
-	public int getSkyLight(int relX, int y, int relZ)
-	{
-		this.throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(relX, y, relZ);
-		
-		// use the full lighting engine when the chunks are within render distance or the config requests it
-		if (this.useDhLighting)
-		{
-			// DH lighting method
-			return this.getSkyLightStorage().get(relX, y, relZ);
-		}
-		else
-		{
-			// MC lighting method
-			return this.lightSource.getBrightness(LightLayer.SKY, new BlockPos(relX + this.getMinBlockX(), y, relZ + this.getMinBlockZ()));
-		}
-	}
 	
 	/** 
 	 * FIXME synchronized is necessary for a rare issue where this method is called from two separate threads at the same time
