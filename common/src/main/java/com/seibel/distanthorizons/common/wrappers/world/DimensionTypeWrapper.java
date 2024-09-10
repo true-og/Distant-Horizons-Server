@@ -44,7 +44,9 @@ public class DimensionTypeWrapper implements IDimensionTypeWrapper
 	{
 		//first we check if the biome has already been wrapped
 		if (dimensionTypeWrapperMap.containsKey(dimensionType) && dimensionTypeWrapperMap.get(dimensionType) != null)
+		{
 			return dimensionTypeWrapperMap.get(dimensionType);
+		}
 		
 		
 		//if it hasn't been created yet, we create it and save it in the map
@@ -70,13 +72,13 @@ public class DimensionTypeWrapper implements IDimensionTypeWrapper
 	@Override
 	public boolean hasCeiling()
 	{
-		return dimensionType.hasCeiling();
+		return this.dimensionType.hasCeiling();
 	}
 	
 	@Override
 	public boolean hasSkyLight()
 	{
-		return dimensionType.hasSkyLight();
+		return this.dimensionType.hasSkyLight();
 	}
 	
 	@Override

@@ -40,9 +40,10 @@ public class ServerPlayerWrapper implements IServerPlayerWrapper
 		#endif
 	}
 	
+	@Override
 	public Object getWrappedMcObject()
 	{
-		return serverPlayer;
+		return this.serverPlayer();
 	}
 	
 	@Override

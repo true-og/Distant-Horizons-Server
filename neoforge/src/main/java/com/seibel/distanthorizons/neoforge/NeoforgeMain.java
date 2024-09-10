@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 #if MC_VER < MC_1_20_6
 import net.neoforged.neoforge.client.ConfigScreenHandler;
 #else
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;	
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 #endif
 
 /**

@@ -19,8 +19,6 @@
 
 package com.seibel.distanthorizons.fabric;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.seibel.distanthorizons.common.AbstractModInitializer;
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
@@ -38,7 +36,6 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.ISodiumAcce
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
 import com.seibel.distanthorizons.core.util.math.Mat4f;
 import com.seibel.distanthorizons.fabric.wrappers.modAccessor.SodiumAccessor;
-//import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
@@ -60,7 +57,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.HitResult;
 import org.apache.logging.log4j.Logger;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -89,6 +85,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 	 * Registers Fabric Events
 	 * @author Ran
 	 */
+	@Override
 	public void registerEvents()
 	{
 		LOGGER.info("Registering Fabric Client Events");
@@ -285,14 +282,14 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		// Diff and trigger events
 		for (int keyCode : currentKeyDown)
 		{
-			if (!previouslyPressKeyCodes.contains(keyCode))
+			if (!this.previouslyPressKeyCodes.contains(keyCode))
 			{
 				ClientApi.INSTANCE.keyPressedEvent(keyCode);
 			}
 		}
 		
 		// Update the set
-		previouslyPressKeyCodes = currentKeyDown;
+		this.previouslyPressKeyCodes = currentKeyDown;
 	}
 	
 }
