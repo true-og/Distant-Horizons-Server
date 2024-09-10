@@ -23,9 +23,12 @@ import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.misc.MutableBlockPosWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.DhLitWorldGenRegion;
+import com.seibel.distanthorizons.core.api.internal.SharedApi;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
+import com.seibel.distanthorizons.core.util.LodUtil;
+import com.seibel.distanthorizons.core.world.EWorldEnvironment;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
@@ -107,21 +110,6 @@ public class ChunkWrapper implements IChunkWrapper
 	private int minNonEmptyHeight = Integer.MIN_VALUE;
 	private int maxNonEmptyHeight = Integer.MAX_VALUE;
 	
-	private int blockBiomeHashCode = 0;
-	
-	/**
-	 * Due to vanilla `isClientLightReady()` not being designed for use by a non-render thread, it may return 'true'
-	 * before the light engine has ticked, (right after all light changes is marked by the engine to be processed).
-	 * To fix this, on client-only mode, we mixin-redirect the `isClientLightReady()` so that after the call, it will
-	 * trigger a synchronous update of this flag here on all chunks that are wrapped. <br><br>
-	 *
-	 * Note: Using a static weak hash map to store the chunks that need to be updated, as instance of chunk wrapper
-	 * can be duplicated, with same chunk instance. And the data stored here are all temporary, and thus will not be
-	 * visible when a chunk is re-wrapped later. <br>
-	 * (Also, thread safety done via a reader writer lock)
-	 */
-	private static final ConcurrentLinkedQueue<ChunkWrapper> chunksNeedingClientLightUpdating = new ConcurrentLinkedQueue<>(); 
-	
 	
 	
 	//=============//
@@ -135,9 +123,6 @@ public class ChunkWrapper implements IChunkWrapper
 		this.wrappedLevel = wrappedLevel;
 		this.chunkPos = new DhChunkPos(chunk.getPos().x, chunk.getPos().z);
 		
-		// FIXME +1 is to handle the fact that LodDataBuilder adds +1 to all block lighting calculations, also done in the relative position validator
-
-		chunksNeedingClientLightUpdating.add(this);
 	}
 	
 	
@@ -437,63 +422,6 @@ public class ChunkWrapper implements IChunkWrapper
 		
 		return this.blockLightPosList;
 	}
-	
-	public static void syncedUpdateClientLightStatus()
-	{
-		#if MC_VER < MC_1_18_2
-		// TODO: Check what to do in 1.18.1 and older
-		
-		// since we don't currently handle this list,
-		// clear it to prevent memory leaks
-		chunksNeedingClientLightUpdating.clear();
-		
-		#else
-		
-		// update the chunks client lighting
-		ChunkWrapper chunkWrapper = chunksNeedingClientLightUpdating.poll();
-		while (chunkWrapper != null)
-		{
-			chunkWrapper.updateIsClientLightingCorrect();
-			chunkWrapper = chunksNeedingClientLightUpdating.poll();
-		}
-		
-		#endif
-	}
-	/** Should be called after client light updates are triggered. */
-	private void updateIsClientLightingCorrect()
-	{
-		if (this.chunk instanceof LevelChunk && ((LevelChunk) this.chunk).getLevel() instanceof ClientLevel)
-		{
-			LevelChunk levelChunk = (LevelChunk) this.chunk;
-			ClientChunkCache clientChunkCache = ((ClientLevel) levelChunk.getLevel()).getChunkSource();
-			this.isMcClientLightingCorrect = clientChunkCache.getChunkForLighting(this.chunk.getPos().x, this.chunk.getPos().z) != null &&
-					#if MC_VER <= MC_1_17_1
-					levelChunk.isLightCorrect();
-					#elif MC_VER < MC_1_20_1
-					levelChunk.isClientLightReady();
-					#else
-					checkLightSectionsOnChunk(levelChunk, levelChunk.getLevel().getLightEngine());
-					#endif
-		}
-	}
-	#if MC_VER >= MC_1_20_1
-	private static boolean checkLightSectionsOnChunk(LevelChunk chunk, LevelLightEngine engine)
-	{
-		LevelChunkSection[] sections = chunk.getSections();
-		int minY = chunk.getMinSection();
-		int maxY = chunk.getMaxSection();
-		for (int y = minY; y < maxY; ++y)
-		{
-			LevelChunkSection section = sections[chunk.getSectionIndexFromSectionY(y)];
-			if (section.hasOnlyAir()) continue;
-			if (!engine.lightOnInSection(SectionPos.of(chunk.getPos(), y)))
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-	#endif
 	
 	
 	
