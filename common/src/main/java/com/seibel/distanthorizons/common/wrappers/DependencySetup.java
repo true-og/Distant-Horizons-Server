@@ -22,7 +22,7 @@ package com.seibel.distanthorizons.common.wrappers;
 import com.seibel.distanthorizons.common.wrappers.gui.ClassicConfigGUI;
 import com.seibel.distanthorizons.common.wrappers.gui.LangWrapper;
 import com.seibel.distanthorizons.common.wrappers.level.KeyedClientLevelManager;
-import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftDedicatedServerWrapper;
+import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftServerWrapper;
 import com.seibel.distanthorizons.core.level.IKeyedClientLevelManager;
 import com.seibel.distanthorizons.core.wrapperInterfaces.config.IConfigGui;
 import com.seibel.distanthorizons.core.wrapperInterfaces.config.ILangWrapper;
@@ -60,7 +60,7 @@ public class DependencySetup
 	//@Environment(EnvType.SERVER)
 	public static void createServerBindings()
 	{
-		SingletonInjector.INSTANCE.bind(IMinecraftSharedWrapper.class, MinecraftDedicatedServerWrapper.INSTANCE);
+		SingletonInjector.INSTANCE.bind(IMinecraftSharedWrapper.class, MinecraftServerWrapper.INSTANCE);
 	}
 	
 	//@Environment(EnvType.CLIENT)

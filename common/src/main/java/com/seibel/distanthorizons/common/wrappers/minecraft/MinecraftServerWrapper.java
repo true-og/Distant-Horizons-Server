@@ -6,19 +6,34 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import java.io.File;
 
 //@Environment(EnvType.SERVER)
-public class MinecraftDedicatedServerWrapper implements IMinecraftSharedWrapper
+public class MinecraftServerWrapper implements IMinecraftSharedWrapper
 {
-	public static final MinecraftDedicatedServerWrapper INSTANCE = new MinecraftDedicatedServerWrapper();
-	private MinecraftDedicatedServerWrapper() { }
+	public static final MinecraftServerWrapper INSTANCE = new MinecraftServerWrapper();
+	
 	public DedicatedServer dedicatedServer = null;
+	
+	
+	//=============//
+	// constructor //
+	//=============//
+	
+	private MinecraftServerWrapper() { }
+	
+	
+	
+	//=========//
+	// methods //
+	//=========//
+	
 	@Override
 	public boolean isDedicatedServer() { return true; }
+	
 	@Override
 	public File getInstallationDirectory()
 	{
 		if (this.dedicatedServer == null)
 		{
-			throw new IllegalStateException("Trying to get Installation Direction before Dedicated server complete initialization!");
+			throw new IllegalStateException("Trying to get Installation Direction before Dedicated server completed initialization!");
 		}
 		
 		#if MC_VER < MC_1_21_1
@@ -27,5 +42,9 @@ public class MinecraftDedicatedServerWrapper implements IMinecraftSharedWrapper
 		return this.dedicatedServer.getServerDirectory().toFile();
 		#endif
 	}
+	
+	@Override
+	public boolean isWorldInitialized() 
+	{ return this.dedicatedServer.getWorldData().overworldData().isInitialized(); }
 	
 }
