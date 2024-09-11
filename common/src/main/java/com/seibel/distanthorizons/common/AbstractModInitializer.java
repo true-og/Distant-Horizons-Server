@@ -67,7 +67,7 @@ public abstract class AbstractModInitializer
 		ApiEventInjector.INSTANCE.fireAllEvents(DhApiBeforeDhInitEvent.class, null);
 		
 		this.startup();
-		this.printModInfo(true);
+		this.logBuildInfo();
 		
 		this.createClientProxy().registerEvents();
 		this.createServerProxy(false).registerEvents();
@@ -91,7 +91,7 @@ public abstract class AbstractModInitializer
 		ApiEventInjector.INSTANCE.fireAllEvents(DhApiBeforeDhInitEvent.class, null);
 		
 		this.startup();
-		this.printModInfo(false);
+		this.logBuildInfo();
 		
 		// This prevents returning uninitialized Config values,
 		// resulting from a circular reference mid-initialization in a static class
@@ -130,13 +130,13 @@ public abstract class AbstractModInitializer
 		this.createInitialBindings();
 	}
 	
-	private void printModInfo(boolean printGitInfo)
+	private void logBuildInfo()
 	{
 		LOGGER.info(ModInfo.READABLE_NAME + ", Version: " + ModInfo.VERSION);
 		
-		if (printGitInfo)
+		// if the build is stable the branch/commit/etc shouldn't be needed
+		if (ModInfo.IS_DEV_BUILD)
 		{
-			// Useful for dev builds
 			LOGGER.info("DH Branch: " + ModJarInfo.Git_Branch);
 			LOGGER.info("DH Commit: " + ModJarInfo.Git_Commit);
 			LOGGER.info("DH Jar Build Source: " + ModJarInfo.Build_Source);
