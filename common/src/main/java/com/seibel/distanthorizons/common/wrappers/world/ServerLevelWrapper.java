@@ -84,10 +84,10 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	public File getSaveFolder() { return this.level.getChunkSource().getDataStorage().dataFolder; }
 	
 	@Override
-	public DimensionTypeWrapper getDimensionType()
-	{
-		return DimensionTypeWrapper.getDimensionTypeWrapper(level.dimensionType());
-	}
+	public DimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
+
+	@Override
+	public String getDimensionName() { return this.level.dimension().location().toString(); }
 	
 	@Override
 	public EDhApiLevelType getLevelType() { return EDhApiLevelType.SERVER_LEVEL; }
@@ -170,6 +170,6 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	//================//
 	
 	@Override
-	public String toString() { return "Wrapped{" + this.level.toString() + "@" + this.getDimensionType().getDimensionName() + "}"; }
+	public String toString() { return "Wrapped{" + this.level.toString() + "@" + this.getDimensionName() + "}"; }
 	
 }

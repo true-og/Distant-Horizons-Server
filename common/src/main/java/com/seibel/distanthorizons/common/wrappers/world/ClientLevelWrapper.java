@@ -179,6 +179,10 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	@Override
 	public IDimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
+
+	
+	@Override
+	public String getDimensionName() { return this.level.dimension().location().toString(); }
 	
 	@Override
 	public EDhApiLevelType getLevelType() { return EDhApiLevelType.CLIENT_LEVEL; }
@@ -288,7 +292,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 			return "Wrapped{null}";
 		}
 		
-		return "Wrapped{" + this.level.toString() + "@" + this.getDimensionType().getDimensionName() + "}";
+		return "Wrapped{" + this.level.toString() + "@" + this.getDimensionName() + "}";
 	}
 	
 }
