@@ -29,15 +29,17 @@ loom {
         client {
             client()
             setConfigName("NeoForge Client")
-            ideConfigGenerated(true)
-            runDir("../run")
-            //vmArgs("-XX:-OmitStackTraceInFastThrow", minecraftMemoryJavaArg)
+            ideConfigGenerated(false) // When true a run configuration file will be generated for IDE's. By default only set to true for the root project.
+            runDir("../run/client")
+            vmArgs("-Dio.netty.leakDetection.level=advanced") // https://netty.io/wiki/reference-counted-objects.html#leak-detection-levels
+            programArgs("--username", "Dev")
         }
         server {
             server()
             setConfigName("NeoForge Server")
-            ideConfigGenerated(true)
-            runDir("../run")
+            ideConfigGenerated(false)
+            runDir("../run/server")
+            vmArgs("-Dio.netty.leakDetection.level=advanced")
         }
     }
 }
