@@ -24,7 +24,9 @@ import com.seibel.distanthorizons.common.AbstractModInitializer;
 import com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;
 import com.seibel.distanthorizons.core.config.Config;
+import com.seibel.distanthorizons.core.api.internal.ServerApi;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
+import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IPluginPacketSender;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModChecker;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IOptifineAccessor;
 import com.seibel.distanthorizons.coreapi.ModInfo;
@@ -32,6 +34,7 @@ import com.seibel.distanthorizons.neoforge.wrappers.modAccessor.ModChecker;
 import com.seibel.distanthorizons.neoforge.wrappers.modAccessor.OptifineAccessor;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
@@ -40,6 +43,7 @@ import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.function.Consumer;
 
@@ -55,19 +59,42 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
  * check out the ClientProxy.
  */
 @Mod(ModInfo.ID)
+@SuppressWarnings("unused")
 public class NeoforgeMain extends AbstractModInitializer
 {
 	public NeoforgeMain(IEventBus eventBus)
 	{
-		eventBus.addListener((FMLClientSetupEvent e) -> this.onInitializeClient());
-		eventBus.addListener((FMLDedicatedServerSetupEvent e) -> this.onInitializeServer());
+		eventBus.addListener((FMLClientSetupEvent e) -> {
+			this.onInitializeClient();
+			eventBus.addListener(this::registerNetworkingClient);
+		});
+		eventBus.addListener((FMLDedicatedServerSetupEvent e) -> {
+			this.onInitializeServer();
+			eventBus.addListener(this::registerNetworkingServer);
+		});
 	}
+	
+	
+	
+	//============//
+	// networking //
+	//============//
+	public void registerNetworkingClient(RegisterPayloadHandlersEvent event)
+	{ NeoforgePluginPacketSender.setPacketHandler(event, ClientApi.INSTANCE::pluginMessageReceived); }
+	public void registerNetworkingServer(RegisterPayloadHandlersEvent event)
+	{ NeoforgePluginPacketSender.setPacketHandler(event, ServerApi.INSTANCE::pluginMessageReceived); }
+	
+	
 	
 	@Override
 	protected IEventProxy createServerProxy(boolean isDedicated) { return new NeoforgeServerProxy(isDedicated); }
 	
 	@Override
-	protected void createInitialBindings() { SingletonInjector.INSTANCE.bind(IModChecker.class, ModChecker.INSTANCE); }
+	protected void createInitialBindings()
+	{
+		SingletonInjector.INSTANCE.bind(IModChecker.class, ModChecker.INSTANCE);
+		SingletonInjector.INSTANCE.bind(IPluginPacketSender.class, new NeoforgePluginPacketSender());
+	}
 	
 	@Override
 	protected IEventProxy createClientProxy() { return new NeoforgeClientProxy(); }
@@ -116,7 +143,7 @@ public class NeoforgeMain extends AbstractModInitializer
 	@Override
 	protected void subscribeServerStartingEvent(Consumer<MinecraftServer> eventHandler)
 	{
-		NeoForge.EVENT_BUS.addListener((ServerStartingEvent e) -> { eventHandler.accept(e.getServer()); });
+		NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, (ServerStartingEvent e) -> { eventHandler.accept(e.getServer()); });
 	}
 	
 	@Override

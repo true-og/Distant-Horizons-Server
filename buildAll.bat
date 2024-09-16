@@ -5,6 +5,7 @@
 
 echo ==================== Note: All build jars will be in the folder called 'buildAllJars' ====================
 mkdir buildAllJars
+del buildAllJars/*
 
 @rem Loop trough everything in the version properties folder
 for %%f in (versionProperties\*) do (
@@ -13,11 +14,11 @@ for %%f in (versionProperties\*) do (
 
     @rem Clean out the folders, build it, and merge it
     echo ==================== Cleaning workspace to build !version! ====================
-    call .\gradlew.bat clean -PmcVer="!version!" --no-daemon
+    call .\gradlew.bat clean -PmcVer="!version!"
     echo ==================== Building !version! ====================
-    call .\gradlew.bat build -PmcVer="!version!" --no-daemon
+    call .\gradlew.bat build -PmcVer="!version!"
     echo ==================== Merging !version! ====================
-    call .\gradlew.bat mergeJars -PmcVer="!version!" --no-daemon
+    call .\gradlew.bat mergeJars -PmcVer="!version!"
     echo ==================== Moving jar ====================
     move Merged\*.jar buildAllJars\
 )

@@ -116,10 +116,18 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	@Override
 	public IChunkWrapper tryGetChunk(DhChunkPos pos)
 	{
-		if (!level.hasChunk(pos.getX(), pos.getZ())) return null;
-		ChunkAccess chunk = level.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FULL, false);
-		if (chunk == null) return null;
-		return new ChunkWrapper(chunk, level, this);
+		if (!this.level.hasChunk(pos.getX(), pos.getZ()))
+		{
+			return null;
+		}
+		
+		ChunkAccess chunk = this.level.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FULL, false);
+		if (chunk == null)
+		{
+			return null;
+		}
+		
+		return new ChunkWrapper(chunk, this.level, this);
 	}
 	
 	@Override

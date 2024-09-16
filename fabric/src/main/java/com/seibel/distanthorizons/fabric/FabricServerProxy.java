@@ -13,17 +13,27 @@ import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
 import com.seibel.distanthorizons.fabric.testing.TestWorldGenBindingEvent;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.Logger;
+
+#if MC_VER >= MC_1_20_6
+import com.seibel.distanthorizons.common.CommonPacketPayload;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+#else
+import com.seibel.distanthorizons.core.network.messages.NetworkMessage;
+import com.seibel.distanthorizons.common.AbstractPluginPacketSender;
+#endif
 
 import java.util.function.Supplier;
 
@@ -40,21 +50,26 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 	private static final ServerApi SERVER_API = ServerApi.INSTANCE;
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
-	private final boolean isDedicated;
+	private final boolean isDedicatedServer;
 	public static Supplier<Boolean> isGenerationThreadChecker = null;
 	
 	
 	
-	public FabricServerProxy(boolean isDedicated)
+	//=============//
+	// constructor //
+	//=============//
+	
+	public FabricServerProxy(boolean isDedicatedServer)
 	{
-		this.isDedicated = isDedicated;
+		this.isDedicatedServer = isDedicatedServer;
 	}
 	
 	
 	
+	// TODO rename
 	private boolean isValidTime()
 	{
-		if (isDedicated)
+		if (this.isDedicatedServer)
 		{
 			return true;
 		}
@@ -68,6 +83,7 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 	private ServerPlayerWrapper getServerPlayerWrapper(ServerPlayer player) { return ServerPlayerWrapper.getWrapper(player); }
 	
 	/** Registers Fabric Events */
+	@Override
 	public void registerEvents()
 	{
 		LOGGER.info("Registering Fabric Server Events");
@@ -90,15 +106,15 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 		//TODO: Check if both of these use the correct timed events. (i.e. is it 'ed' or 'ing' one?)
 		ServerLifecycleEvents.SERVER_STARTING.register((server) ->
 		{
-			if (isValidTime())
+			if (this.isValidTime())
 			{
-				ServerApi.INSTANCE.serverLoadEvent(isDedicated);
+				ServerApi.INSTANCE.serverLoadEvent(this.isDedicatedServer);
 			}
 		});
 		// ServerWorldUnloadEvent
 		ServerLifecycleEvents.SERVER_STOPPED.register((server) ->
 		{
-			if (isValidTime())
+			if (this.isValidTime())
 			{
 				ServerApi.INSTANCE.serverUnloadEvent();
 			}
@@ -107,25 +123,25 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 		// ServerLevelLoadEvent
 		ServerWorldEvents.LOAD.register((server, level) ->
 		{
-			if (isValidTime())
+			if (this.isValidTime())
 			{
-				ServerApi.INSTANCE.serverLevelLoadEvent(getServerLevelWrapper(level));
+				ServerApi.INSTANCE.serverLevelLoadEvent(this.getServerLevelWrapper(level));
 			}
 		});
 		// ServerLevelUnloadEvent
 		ServerWorldEvents.UNLOAD.register((server, level) ->
 		{
-			if (isValidTime())
+			if (this.isValidTime())
 			{
-				ServerApi.INSTANCE.serverLevelUnloadEvent(getServerLevelWrapper(level));
+				ServerApi.INSTANCE.serverLevelUnloadEvent(this.getServerLevelWrapper(level));
 			}
 		});
 		
 		// ServerChunkLoadEvent
 		ServerChunkEvents.CHUNK_LOAD.register((server, chunk) ->
 		{
-			ILevelWrapper level = getServerLevelWrapper((ServerLevel) chunk.getLevel());
-			if (isValidTime())
+			ILevelWrapper level = this.getServerLevelWrapper((ServerLevel) chunk.getLevel());
+			if (this.isValidTime())
 			{
 				ServerApi.INSTANCE.serverChunkLoadEvent(
 						new ChunkWrapper(chunk, chunk.getLevel(), level),
@@ -136,18 +152,56 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 		
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 		{
-			if (isValidTime())
+			if (this.isValidTime())
 			{
-				ServerApi.INSTANCE.serverPlayerJoinEvent(getServerPlayerWrapper(handler.player));
+				ServerApi.INSTANCE.serverPlayerJoinEvent(this.getServerPlayerWrapper(handler.player));
 			}
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
 		{
-			if (isValidTime())
+			if (this.isValidTime())
 			{
-				ServerApi.INSTANCE.serverPlayerDisconnectEvent(getServerPlayerWrapper(handler.player));
+				ServerApi.INSTANCE.serverPlayerDisconnectEvent(this.getServerPlayerWrapper(handler.player));
 			}
 		});
+		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, originLevel, destinationLevel) ->
+		{
+			if (this.isValidTime())
+			{
+				ServerApi.INSTANCE.serverPlayerLevelChangeEvent(
+						this.getServerPlayerWrapper(player),
+						this.getServerLevelWrapper(originLevel),
+						this.getServerLevelWrapper(destinationLevel)
+				);
+			}
+		});
+		
+		if (this.isDedicatedServer)
+		{
+			#if MC_VER >= MC_1_20_6
+			PayloadTypeRegistry.playC2S().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
+			PayloadTypeRegistry.playS2C().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
+			ServerPlayNetworking.registerGlobalReceiver(CommonPacketPayload.TYPE, (payload, context) ->
+			{
+				if (payload.message() == null)
+				{
+					return;
+				}
+				ServerApi.INSTANCE.pluginMessageReceived(ServerPlayerWrapper.getWrapper(context.player()), payload.message());
+			});
+			#else
+			ServerPlayNetworking.registerGlobalReceiver(AbstractPluginPacketSender.WRAPPER_PACKET_RESOURCE, (server, serverPlayer, handler, buffer, packetSender) ->
+			{
+				// Forge packet ID
+				buffer.readByte();
+				NetworkMessage message = AbstractPluginPacketSender.decodeMessage(buffer);
+				if (message != null)
+				{
+					ServerApi.INSTANCE.pluginMessageReceived(ServerPlayerWrapper.getWrapper(serverPlayer), message);
+				}
+			});
+			#endif
+		}
 	}
 	
 }

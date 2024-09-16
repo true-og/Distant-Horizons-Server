@@ -9,6 +9,7 @@ import com.seibel.distanthorizons.common.wrappers.block.ClientBlockStateColorCac
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.level.*;
+import com.seibel.distanthorizons.core.level.IServerKeyedClientLevel;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
@@ -69,23 +70,28 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	// wrapper logic //
 	//===============//
 	
+	public static IClientLevelWrapper getWrapper(@NotNull ClientLevel level) { return getWrapper(level, false); }
+	
 	@Nullable
-	public static IClientLevelWrapper getWrapper(@Nullable ClientLevel level)
+	public static IClientLevelWrapper getWrapper(@Nullable ClientLevel level, boolean bypassLevelKeyManager)
 	{
-		if (level == null)
+		if (!bypassLevelKeyManager)
 		{
-			return null;
+			if (level == null)
+			{
+				return null;
+			}
+			
+			// used if the client is connected to a server that defines the currently loaded level
+			IServerKeyedClientLevel overrideLevel = KEYED_CLIENT_LEVEL_MANAGER.getServerKeyedLevel();
+			if (overrideLevel != null)
+			{
+				return overrideLevel;
+			}
 		}
 		
-		// used if the client is connected to a server that defines the currently loaded level
-		if (KEYED_CLIENT_LEVEL_MANAGER.getUseOverrideWrapper())
-		{
-			return KEYED_CLIENT_LEVEL_MANAGER.getOverrideWrapper();
-		}
-		
-		return getWrapperIgnoringOverride(level);
+		return LEVEL_WRAPPER_BY_CLIENT_LEVEL.computeIfAbsent(level, ClientLevelWrapper::new);
 	}
-	public static IClientLevelWrapper getWrapperIgnoringOverride(@NotNull ClientLevel level) { return LEVEL_WRAPPER_BY_CLIENT_LEVEL.computeIfAbsent(level, ClientLevelWrapper::new); }
 	
 	@Nullable
 	@Override
@@ -117,8 +123,6 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 			return null;
 		}
 	}
-	
-	
 	
 	//====================//
 	// base level methods //

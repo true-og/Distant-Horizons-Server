@@ -54,7 +54,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.EmptyBlockGetter;
 #else
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -562,9 +561,8 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			{
 				
 				#if MC_VER > MC_1_17_1
-				// use the given level if possible, otherwise try using the currently loaded one 
-				Level level = (levelWrapper != null ? (Level) levelWrapper.getWrappedMcObject() : null);
-				level = (level == null ? Minecraft.getInstance().level : level);
+				LodUtil.assertTrue(levelWrapper != null && levelWrapper.getWrappedMcObject() != null);
+				Level level = (Level)levelWrapper.getWrappedMcObject();
 				#endif
 				
 				Block block;

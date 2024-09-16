@@ -63,10 +63,14 @@ public class DimensionTypeWrapper implements IDimensionTypeWrapper
 	}
 	
 	
-	@Override
-	public String getDimensionName()
+	private String getDimensionName()
 	{
-		return dimensionType.effectsLocation().getPath();
+		#if MC_VER <= MC_1_16_5
+		// effectsLocation() is marked as client only, so using the backing field directly
+		return dimensionType.effectsLocation.getPath();
+		#else
+		return this.dimensionType.effectsLocation().getPath();
+		#endif
 	}
 	
 	@Override
@@ -87,7 +91,9 @@ public class DimensionTypeWrapper implements IDimensionTypeWrapper
 		return this.dimensionType;
 	}
 	
-	
+	// there's definitely a better way of doing this, but it should work well enough for now
+	@Override
+	public boolean isTheEnd() { return this.getDimensionName().equalsIgnoreCase("the_end"); }
 	
 	@Override
 	public boolean equals(Object obj)

@@ -44,6 +44,7 @@ import com.seibel.distanthorizons.core.pos.DhChunkPos;
 
 import net.minecraft.CrashReport;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -220,14 +221,19 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	
 	@Nullable
 	@Override
-	public IClientLevelWrapper getWrappedClientLevel()
+	public IClientLevelWrapper getWrappedClientLevel() { return this.getWrappedClientLevel(false); }
+	
+	@Override
+	@Nullable
+	public IClientLevelWrapper getWrappedClientLevel(boolean bypassLevelKeyManager)
 	{
-		if (MINECRAFT.level == null)
+		ClientLevel level = MINECRAFT.level;
+		if (level == null)
 		{
 			return null;
 		}
 		
-		return ClientLevelWrapper.getWrapperIgnoringOverride(MINECRAFT.level);
+		return ClientLevelWrapper.getWrapper(level, bypassLevelKeyManager);
 	}
 	
 	@Override
@@ -266,7 +272,10 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	public void sendChatMessage(String string)
 	{
 		LocalPlayer player = this.getPlayer();
-		if (player == null) return;
+		if (player == null)
+		{
+			return;
+		}
         #if MC_VER < MC_1_19_2
 		player.sendMessage(new TextComponent(string), getPlayer().getUUID());
         #else
@@ -305,5 +314,8 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	
 	@Override
 	public void executeOnRenderThread(Runnable runnable) { MINECRAFT.execute(runnable); }
+	
+	@Override
+	public boolean isWorldNew() { throw new UnsupportedOperationException("Not Implemented"); }
 	
 }

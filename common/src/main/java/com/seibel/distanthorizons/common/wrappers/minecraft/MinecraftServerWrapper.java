@@ -44,7 +44,7 @@ public class MinecraftServerWrapper implements IMinecraftSharedWrapper
 	}
 	
 	@Override
-	public boolean isWorldInitialized() 
+	public boolean isWorldNew() 
 	{ return this.dedicatedServer.getWorldData().overworldData().isInitialized(); }
 	
 }

@@ -27,6 +27,7 @@ import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IPluginPacketSender;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.*;
 import com.seibel.distanthorizons.coreapi.ModInfo;
 import com.seibel.distanthorizons.fabric.wrappers.modAccessor.*;
@@ -40,6 +41,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 
+#if MC_VER >= MC_1_19_2
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+#else // < 1.19.2
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+#endif
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
@@ -51,14 +58,22 @@ import java.util.function.Consumer;
  */
 public class FabricMain extends AbstractModInitializer implements ClientModInitializer, DedicatedServerModInitializer
 {
-	private static final ResourceLocation INITIAL_PHASE = ResourceLocation.tryParse("distanthorizons:dedicated_server_initial");
+	#if MC_VER >= MC_1_21_1
+	private static final ResourceLocation INITIAL_PHASE = ResourceLocation.fromNamespaceAndPath(ModInfo.RESOURCE_NAMESPACE, ModInfo.DEDICATED_SERVER_INITIAL_PATH);
+	#else
+	private static final ResourceLocation INITIAL_PHASE = new ResourceLocation(ModInfo.RESOURCE_NAMESPACE, ModInfo.DEDICATED_SERVER_INITIAL_PATH);
+	#endif
 	
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
 	
 	
 	@Override
-	protected void createInitialBindings() { SingletonInjector.INSTANCE.bind(IModChecker.class, ModChecker.INSTANCE); }
+	protected void createInitialBindings()
+	{
+		SingletonInjector.INSTANCE.bind(IModChecker.class, ModChecker.INSTANCE);
+		SingletonInjector.INSTANCE.bind(IPluginPacketSender.class, new FabricPluginPacketSender());
+	}
 	
 	@Override
 	protected IEventProxy createClientProxy() { return new FabricClientProxy(); }
@@ -102,7 +117,15 @@ public class FabricMain extends AbstractModInitializer implements ClientModIniti
 	}
 	
 	@Override
-	protected void subscribeRegisterCommandsEvent(Consumer<CommandDispatcher<CommandSourceStack>> eventHandler) { }
+	protected void subscribeRegisterCommandsEvent(Consumer<CommandDispatcher<CommandSourceStack>> eventHandler)
+	{
+		CommandRegistrationCallback.EVENT.register(
+			(dispatcher, registryAccess #if MC_VER >= MC_1_19_2 , environment #endif ) -> 
+			{
+				eventHandler.accept(dispatcher);
+			}
+		);
+	}
 	
 	@Override
 	protected void subscribeClientStartedEvent(Runnable eventHandler) { ClientLifecycleEvents.CLIENT_STARTED.register((mc) -> eventHandler.run()); }

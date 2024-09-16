@@ -1,3 +1,11 @@
+// TODO can this be removed?
+//buildscript {
+//    configurations.configureEach {
+//        resolutionStrategy {
+//            force 'org.spongepowered:vanillagradle:0.2.1-20240507.024226-82'
+//        }
+//    }
+//}
 
 // temporary fix for broken spongepowered version
 buildscript {

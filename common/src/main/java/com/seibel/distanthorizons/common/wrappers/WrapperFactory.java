@@ -179,19 +179,9 @@ public class WrapperFactory implements IWrapperFactory
 			
 			
 			// level wrapper
-			ILevelWrapper levelWrapper;
-			if (level instanceof ServerLevel)
-			{
-				levelWrapper = ServerLevelWrapper.getWrapper((ServerLevel)level);
-			}
-			else if (level instanceof ClientLevel)
-			{
-				levelWrapper = ClientLevelWrapper.getWrapper((ClientLevel)level);
-			}
-			else
-			{
-				throw new ClassCastException(createChunkWrapperErrorMessage(objectArray));
-			}
+			ILevelWrapper levelWrapper = level.isClientSide()
+					? ClientLevelWrapper.getWrapper((ClientLevel)level)
+					: ServerLevelWrapper.getWrapper((ServerLevel)level);
 			
 			
 			return new ChunkWrapper(chunk, lightSource, levelWrapper);
@@ -215,7 +205,7 @@ public class WrapperFactory implements IWrapperFactory
 		expectedClassNames = new String[] 
 		{
 			ChunkAccess.class.getName(),
-			ServerLevel.class.getName() + "] or [" + ClientLevel.class.getName()
+			"[ServerLevel] or [ClientLevel]" // Classes are not referenced by names to avoid exception when one of them is missing
 		};
 		//#endif
 		

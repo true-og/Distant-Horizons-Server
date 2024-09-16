@@ -20,6 +20,7 @@
 package com.seibel.distanthorizons.fabric;
 
 import com.seibel.distanthorizons.common.AbstractModInitializer;
+import com.seibel.distanthorizons.common.AbstractPluginPacketSender;
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;
@@ -40,11 +41,19 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
+
+#if MC_VER >= MC_1_20_6
+import com.seibel.distanthorizons.common.CommonPacketPayload;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+#else
+import com.seibel.distanthorizons.core.network.messages.NetworkMessage;
+#endif
 
 #if MC_VER < MC_1_19_4
 import java.nio.FloatBuffer;
@@ -243,17 +252,29 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		// networking event //
 		//==================//
 		
-//		ClientPlayNetworking.registerGlobalReceiver(new ResourceLocation(ModInfo.NETWORKING_RESOURCE_NAMESPACE, ModInfo.MULTIVERSE_PLUGIN_NAMESPACE),
-//			(Minecraft client, ClientPacketListener handler, FriendlyByteBuf friendlyByteBuf, PacketSender responseSender) ->
-//			{
-//				// converting to a ByteBuf is necessary otherwise Fabric will complain when the game boots
-//				ByteBuf nettyByteBuf = friendlyByteBuf.asByteBuf();
-//				
-//				// remove the Bukkit/Forge packet ID byte
-//				nettyByteBuf.readByte();
-//				
-//				ClientApi.INSTANCE.serverMessageReceived(nettyByteBuf);
-//			});
+		#if MC_VER >= MC_1_20_6
+		PayloadTypeRegistry.playC2S().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
+		PayloadTypeRegistry.playS2C().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
+		ClientPlayNetworking.registerGlobalReceiver(CommonPacketPayload.TYPE, (payload, context) ->
+		{
+			if (payload.message() == null)
+			{
+				return;
+			}
+			ClientApi.INSTANCE.pluginMessageReceived(payload.message());
+		});
+		#else
+		ClientPlayNetworking.registerGlobalReceiver(AbstractPluginPacketSender.WRAPPER_PACKET_RESOURCE, (client, handler, buffer, packetSender) ->
+		{
+			// Forge packet ID
+			buffer.readByte();
+			NetworkMessage message = AbstractPluginPacketSender.decodeMessage(buffer);
+			if (message != null)
+			{
+				ClientApi.INSTANCE.pluginMessageReceived(message);
+			}
+		});
+		#endif
 	}
 	
 	public void onKeyInput()
