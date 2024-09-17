@@ -45,6 +45,12 @@ public class MixinServerPlayer implements IMixinServerPlayer
 	public ServerLevel distantHorizons$getDimensionChangeDestination()
 	{ return this.distantHorizons$dimensionChangeDestination; }
 	
+	#if MC_VER == MC_1_16_5
+	@Override
+	public void distantHorizons$setDimensionChangeDestination(ServerLevel dimensionChangeDestination)
+	{ this.distantHorizons$dimensionChangeDestination = dimensionChangeDestination; }
+	#endif
+	
 	@Inject(at = @At("HEAD"), method = "changeDimension", remap = false)
 	public void changeDimension(ServerLevel destination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir)
 	{ this.distantHorizons$dimensionChangeDestination = destination; }
@@ -52,10 +58,11 @@ public class MixinServerPlayer implements IMixinServerPlayer
 	#if MC_VER >= MC_1_20_1
 	@Inject(at = @At("RETURN"), method = "setServerLevel")
 	public void setServerLevel(ServerLevel level, CallbackInfo ci)
-	#else
+	{ this.distantHorizons$dimensionChangeDestination = null; }
+	#elif MC_VER >= MC_1_17_1
 	@Inject(at = @At("RETURN"), method = "setLevel")
 	public void setLevel(ServerLevel level, CallbackInfo ci)
-	#endif
 	{ this.distantHorizons$dimensionChangeDestination = null; }
+	#endif
 	
 }
