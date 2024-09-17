@@ -53,7 +53,7 @@ public class ServerPlayerWrapper implements IServerPlayerWrapper
 		if (level == null)
 		{
 			#if MC_VER < MC_1_20_1
-			level = this.serverPlayer().getLevel();
+			level = this.getServerPlayer().getLevel();
 			#else
 			level = this.getServerPlayer().serverLevel();
 			#endif
@@ -78,7 +78,7 @@ public class ServerPlayerWrapper implements IServerPlayerWrapper
 		#if MC_VER >= MC_1_19_4
 		return this.getServerPlayer().connection.getRemoteAddress();
 		#else // < 1.19.4
-		return this.serverPlayer().connection.connection.getRemoteAddress();
+		return this.getServerPlayer().connection.connection.getRemoteAddress();
 		#endif
 	}
 	

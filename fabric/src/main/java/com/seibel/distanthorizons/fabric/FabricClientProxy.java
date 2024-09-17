@@ -52,7 +52,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import com.seibel.distanthorizons.common.CommonPacketPayload;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 #else
-import com.seibel.distanthorizons.core.network.messages.NetworkMessage;
+import com.seibel.distanthorizons.core.network.messages.AbstractNetworkMessage;
 #endif
 
 #if MC_VER < MC_1_19_4
@@ -268,7 +268,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		{
 			// Forge packet ID
 			buffer.readByte();
-			NetworkMessage message = AbstractPluginPacketSender.decodeMessage(buffer);
+			AbstractNetworkMessage message = AbstractPluginPacketSender.decodeMessage(buffer);
 			if (message != null)
 			{
 				ClientApi.INSTANCE.pluginMessageReceived(message);

@@ -2,7 +2,7 @@ package com.seibel.distanthorizons.forge;
 
 import com.seibel.distanthorizons.common.AbstractPluginPacketSender;
 import com.seibel.distanthorizons.common.wrappers.misc.ServerPlayerWrapper;
-import com.seibel.distanthorizons.core.network.messages.NetworkMessage;
+import com.seibel.distanthorizons.core.network.messages.AbstractNetworkMessage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IServerPlayerWrapper;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -45,11 +45,11 @@ public class ForgePluginPacketSender extends AbstractPluginPacketSender
 			);
 			#endif
 	
-	public static void setPacketHandler(Consumer<NetworkMessage> consumer)
+	public static void setPacketHandler(Consumer<AbstractNetworkMessage> consumer)
 	{
 		setPacketHandler((player, message) -> consumer.accept(message));
 	}
-	public static void setPacketHandler(BiConsumer<IServerPlayerWrapper, NetworkMessage> consumer)
+	public static void setPacketHandler(BiConsumer<IServerPlayerWrapper, AbstractNetworkMessage> consumer)
 	{
 		#if MC_VER >= MC_1_20_2
 		PLUGIN_CHANNEL.messageBuilder(MessageWrapper.class, 0)
@@ -95,7 +95,7 @@ public class ForgePluginPacketSender extends AbstractPluginPacketSender
 	}
 	
 	@Override
-	public void sendPluginPacketClient(NetworkMessage message)
+	public void sendPluginClientPacket(AbstractNetworkMessage message)
 	{
 		#if MC_VER >= MC_1_20_2
 		PLUGIN_CHANNEL.send(new MessageWrapper(message), PacketDistributor.SERVER.noArg());
@@ -105,7 +105,7 @@ public class ForgePluginPacketSender extends AbstractPluginPacketSender
 	}
 	
 	@Override
-	public void sendPluginPacketServer(ServerPlayer serverPlayer, NetworkMessage message)
+	public void sendPluginPacketServer(ServerPlayer serverPlayer, AbstractNetworkMessage message)
 	{
 		#if MC_VER >= MC_1_20_2
 		PLUGIN_CHANNEL.send(new MessageWrapper(message), PacketDistributor.PLAYER.with(serverPlayer));
@@ -118,12 +118,9 @@ public class ForgePluginPacketSender extends AbstractPluginPacketSender
 	@SuppressWarnings({"ClassCanBeRecord", "RedundantSuppression"})
 	public static class MessageWrapper
 	{
-		public final NetworkMessage message;
+		public final AbstractNetworkMessage message;
 		
-		public MessageWrapper(NetworkMessage message)
-		{
-			this.message = message;
-		}
+		public MessageWrapper(AbstractNetworkMessage message) { this.message = message; }
 		
 	}
 	
