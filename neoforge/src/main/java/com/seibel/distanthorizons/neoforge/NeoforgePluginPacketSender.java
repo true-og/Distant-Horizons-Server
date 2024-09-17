@@ -40,11 +40,11 @@ public class NeoforgePluginPacketSender extends AbstractPluginPacketSender
 	}
 	
 	@Override
-	public void sendPluginClientPacket(AbstractNetworkMessage message)
+	public void sendToServer(AbstractNetworkMessage message)
 	{ PacketDistributor.sendToServer(new CommonPacketPayload(message)); }
 	
 	@Override
-	public void sendPluginPacketServer(ServerPlayer serverPlayer, AbstractNetworkMessage message)
+	public void sendToClient(ServerPlayer serverPlayer, AbstractNetworkMessage message)
 	{ PacketDistributor.sendToPlayer(serverPlayer, new CommonPacketPayload(message)); }
 	
 }

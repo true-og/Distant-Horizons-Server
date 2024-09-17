@@ -16,7 +16,7 @@ import net.minecraft.network.FriendlyByteBuf;
 public class FabricPluginPacketSender extends AbstractPluginPacketSender
 {
 	@Override
-	public void sendPluginClientPacket(AbstractNetworkMessage message)
+	public void sendToServer(AbstractNetworkMessage message)
 	{
 		#if MC_VER >= MC_1_20_6
 		ClientPlayNetworking.send(new CommonPacketPayload(message));
@@ -30,7 +30,7 @@ public class FabricPluginPacketSender extends AbstractPluginPacketSender
 	}
 	
 	@Override
-	public void sendPluginPacketServer(ServerPlayer serverPlayer, AbstractNetworkMessage message)
+	public void sendToClient(ServerPlayer serverPlayer, AbstractNetworkMessage message)
 	{
 		#if MC_VER >= MC_1_20_6
 		ServerPlayNetworking.send(serverPlayer, new CommonPacketPayload(message));

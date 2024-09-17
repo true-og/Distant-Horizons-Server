@@ -33,16 +33,15 @@ public abstract class AbstractPluginPacketSender implements IPluginPacketSender
 	
 	
 	@Override
-	public final void sendPluginServerPacket(IServerPlayerWrapper serverPlayer, AbstractNetworkMessage message)
+	public final void sendToClient(IServerPlayerWrapper serverPlayer, AbstractNetworkMessage message)
 	{
-		this.sendPluginPacketServer((ServerPlayer) serverPlayer.getWrappedMcObject(), message);
+		this.sendToClient((ServerPlayer) serverPlayer.getWrappedMcObject(), message);
 	}
+	public abstract void sendToClient(ServerPlayer serverPlayer, AbstractNetworkMessage message);
 	
 	@Override
-	public abstract void sendPluginClientPacket(AbstractNetworkMessage message);
-	public abstract void sendPluginPacketServer(ServerPlayer serverPlayer, AbstractNetworkMessage message);
+	public abstract void sendToServer(AbstractNetworkMessage message);
 	
-	@Nullable
 	public static AbstractNetworkMessage decodeMessage(FriendlyByteBuf in)
 	{
 		AbstractNetworkMessage message = null;

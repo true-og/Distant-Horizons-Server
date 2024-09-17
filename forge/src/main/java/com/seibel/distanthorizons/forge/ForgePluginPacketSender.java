@@ -95,7 +95,7 @@ public class ForgePluginPacketSender extends AbstractPluginPacketSender
 	}
 	
 	@Override
-	public void sendPluginClientPacket(AbstractNetworkMessage message)
+	public void sendToServer(AbstractNetworkMessage message)
 	{
 		#if MC_VER >= MC_1_20_2
 		PLUGIN_CHANNEL.send(new MessageWrapper(message), PacketDistributor.SERVER.noArg());
@@ -105,7 +105,7 @@ public class ForgePluginPacketSender extends AbstractPluginPacketSender
 	}
 	
 	@Override
-	public void sendPluginPacketServer(ServerPlayer serverPlayer, AbstractNetworkMessage message)
+	public void sendToClient(ServerPlayer serverPlayer, AbstractNetworkMessage message)
 	{
 		#if MC_VER >= MC_1_20_2
 		PLUGIN_CHANNEL.send(new MessageWrapper(message), PacketDistributor.PLAYER.with(serverPlayer));
