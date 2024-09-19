@@ -36,3 +36,10 @@ issueTrackerURL = "${issues}"
     versionRange = "${compatible_forgemc_versions}" # Where we set what version of mc it is avalible for
     ordering = "AFTER"
     side = "BOTH"
+
+[[dependencies.distanthorizons]]
+modId = "oculus"
+mandatory = false
+versionRange = "[1.8.0,)" # Iris/Oculus 1.8.0 added support for DH API 3+, so anything below that won't work
+ordering = "AFTER"
+side = "CLIENT"
