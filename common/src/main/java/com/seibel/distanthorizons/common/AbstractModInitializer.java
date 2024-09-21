@@ -300,7 +300,7 @@ public abstract class AbstractModInitializer
 					.then(literal("encode")
 							.executes(c -> {
 								assert SharedApi.getIDhServerWorld() != null;
-								((DhServerWorld) SharedApi.getIDhServerWorld()).remotePlayerConnectionHandler
+								((DhServerWorld) SharedApi.getIDhServerWorld()).getServerPlayerStateManager()
 										#if MC_VER >= MC_1_19_2
 										.getConnectedPlayer(ServerPlayerWrapper.getWrapper(Objects.requireNonNull(c.getSource().getPlayer())))
 										#else
@@ -312,7 +312,7 @@ public abstract class AbstractModInitializer
 					.then(literal("decode")
 							.executes(c -> {
 								assert SharedApi.getIDhServerWorld() != null;
-								((DhServerWorld) SharedApi.getIDhServerWorld()).remotePlayerConnectionHandler
+								((DhServerWorld) SharedApi.getIDhServerWorld()).getServerPlayerStateManager()
 										#if MC_VER >= MC_1_19_2
 										.getConnectedPlayer(ServerPlayerWrapper.getWrapper(Objects.requireNonNull(c.getSource().getPlayer())))
 										#else

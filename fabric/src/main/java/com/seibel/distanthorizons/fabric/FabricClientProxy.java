@@ -253,7 +253,6 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		//==================//
 		
 		#if MC_VER >= MC_1_20_6
-		PayloadTypeRegistry.playC2S().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
 		PayloadTypeRegistry.playS2C().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
 		ClientPlayNetworking.registerGlobalReceiver(CommonPacketPayload.TYPE, (payload, context) ->
 		{
