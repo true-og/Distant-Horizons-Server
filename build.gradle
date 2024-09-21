@@ -294,9 +294,26 @@ subprojects { p ->
         // Logging
         relocate "org.slf4j", "${librariesLocation}.slf4j"
         
-        // Sqlite Database
-        //At the moment, there is a bug in this library which doesnt allow it to be relocated
-//        relocate "org.sqlite", "${librariesLocation}.sqlite"
+//        // Sqlite Database
+//        // James can't determine how to relocate the library correctly so this is commented out
+//        relocate ("org.sqlite", "${librariesLocation}.sqlite") {
+//            exclude("org/sqlite/core/NativeDB/**")
+//
+//            exclude("org/sqlite/native/FreeBSD/**")
+//            exclude("org/sqlite/native/Linux-Android/**")
+//            exclude("org/sqlite/native/Linux-Musl/**")
+//            exclude("org/sqlite/native/Linux/arm/**")
+//            exclude("org/sqlite/native/Linux/aarch64/**")
+//            exclude("org/sqlite/native/Linux/armv6/**")
+//            exclude("org/sqlite/native/Linux/x86/**")
+//            exclude("org/sqlite/native/Linux/armv7/**")
+//            exclude("org/sqlite/native/Linux/ppc64/**")
+//            exclude("org/sqlite/native/Linux/riscv64/**")
+//            exclude("org/sqlite/native/Windows/armv7/**")
+//            exclude("org/sqlite/native/Windows/aarch64/**")
+//            exclude("org/sqlite/native/Windows/armv7/**")
+//        }
+        
         
         // JOML
         if (project.hasProperty("embed_joml") && embed_joml == "true")
