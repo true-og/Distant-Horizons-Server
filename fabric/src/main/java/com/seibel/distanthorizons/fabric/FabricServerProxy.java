@@ -176,32 +176,33 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 			}
 		});
 		
+		#if MC_VER >= MC_1_20_6
+		PayloadTypeRegistry.playC2S().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
 		if (this.isDedicatedServer)
 		{
-			#if MC_VER >= MC_1_20_6
-			PayloadTypeRegistry.playC2S().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
 			PayloadTypeRegistry.playS2C().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
-			ServerPlayNetworking.registerGlobalReceiver(CommonPacketPayload.TYPE, (payload, context) ->
-			{
-				if (payload.message() == null)
-				{
-					return;
-				}
-				ServerApi.INSTANCE.pluginMessageReceived(ServerPlayerWrapper.getWrapper(context.player()), payload.message());
-			});
-			#else
-			ServerPlayNetworking.registerGlobalReceiver(AbstractPluginPacketSender.WRAPPER_PACKET_RESOURCE, (server, serverPlayer, handler, buffer, packetSender) ->
-			{
-				// Forge packet ID
-				buffer.readByte();
-				AbstractNetworkMessage message = AbstractPluginPacketSender.decodeMessage(buffer);
-				if (message != null)
-				{
-					ServerApi.INSTANCE.pluginMessageReceived(ServerPlayerWrapper.getWrapper(serverPlayer), message);
-				}
-			});
-			#endif
 		}
+		
+		ServerPlayNetworking.registerGlobalReceiver(CommonPacketPayload.TYPE, (payload, context) ->
+		{
+			if (payload.message() == null)
+			{
+				return;
+			}
+			ServerApi.INSTANCE.pluginMessageReceived(ServerPlayerWrapper.getWrapper(context.player()), payload.message());
+		});
+		#else
+		ServerPlayNetworking.registerGlobalReceiver(AbstractPluginPacketSender.WRAPPER_PACKET_RESOURCE, (server, serverPlayer, handler, buffer, packetSender) ->
+		{
+			// Forge packet ID
+			buffer.readByte();
+			AbstractNetworkMessage message = AbstractPluginPacketSender.decodeMessage(buffer);
+			if (message != null)
+			{
+				ServerApi.INSTANCE.pluginMessageReceived(ServerPlayerWrapper.getWrapper(serverPlayer), message);
+			}
+		});
+		#endif
 	}
 	
 }

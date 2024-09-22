@@ -84,7 +84,7 @@ public class SodiumAccessor implements ISodiumAccessor
 					sodiumPerformanceOptions = optionsClass.getDeclaredField("performance").get(basicOptions);
 					setFogOcclusionMethod = MethodHandles.lookup()
 							.findSetter(Class.forName(
-									"me.jellysquid.mods.sodium.client.gui.SodiumGameOptions$PerformanceSettings"), 
+											"me.jellysquid.mods.sodium.client.gui.SodiumGameOptions\$PerformanceSettings"),
 									"useFogOcclusion", boolean.class);
 					
 					// alternate option if referencing Sodium 0.5 directly
@@ -101,7 +101,7 @@ public class SodiumAccessor implements ISodiumAccessor
 					sodiumPerformanceOptions = optionsClass.getDeclaredField("performance").get(basicOptions);
 					setFogOcclusionMethod = MethodHandles.lookup()
 							.findSetter(Class.forName(
-									"net.caffeinemc.mods.sodium.client.gui.SodiumGameOptions$PerformanceSettings"), 
+											"net.caffeinemc.mods.sodium.client.gui.SodiumGameOptions\$PerformanceSettings"),
 									"useFogOcclusion", boolean.class);
 				}
 			}

@@ -179,6 +179,8 @@ subprojects { p ->
         if (isMinecraftSubProject) {
             annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
         }
+
+        annotationProcessor("systems.manifold:manifold-strings:${rootProject.manifold_version}")
         
         // Log4j
         // TODO: Change to shadowMe later to work in the standalone jar
@@ -637,11 +639,11 @@ allprojects { p ->
     tasks.withType(JavaCompile) {
         if (isMinecraftSubProject) {
             options.release = rootProject.java_version as Integer
-            options.compilerArgs += ["-Xplugin:Manifold"]
         } else {
             options.release = 8; // Core & Api should use Java 8 no matter what
             //options.release = rootProject.java_version as Integer // But if you want to test some stuff, then this can be enabled
         }
+        options.compilerArgs += ["-Xplugin:Manifold"]
         options.encoding = "UTF-8"
     }
 
