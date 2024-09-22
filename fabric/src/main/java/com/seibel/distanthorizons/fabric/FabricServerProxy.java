@@ -178,6 +178,11 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 		
 		#if MC_VER >= MC_1_20_6
 		PayloadTypeRegistry.playC2S().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
+		if (this.isDedicatedServer)
+		{
+			PayloadTypeRegistry.playS2C().register(CommonPacketPayload.TYPE, new CommonPacketPayload.Codec());
+		}
+		
 		ServerPlayNetworking.registerGlobalReceiver(CommonPacketPayload.TYPE, (payload, context) ->
 		{
 			if (payload.message() == null)
