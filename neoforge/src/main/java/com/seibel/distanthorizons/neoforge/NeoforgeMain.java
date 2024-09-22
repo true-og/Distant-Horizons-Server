@@ -113,19 +113,6 @@ public class NeoforgeMain extends AbstractModInitializer
 				() -> (client, parent) -> GetConfigScreen.getScreen(parent));
 		#endif
 		
-		
-		if (Config.Client.Advanced.Logging.showModCompatibilityWarningsOnStartup.get())
-		{
-			IModChecker modChecker = SingletonInjector.INSTANCE.get(IModChecker.class);
-			if (modChecker.isModLoaded("alexscaves"))
-			{
-				String message =
-						// orange text
-						"\u00A76" + "Distant Horizons: Alex's Cave detected." + "\u00A7r\n" +
-						"You may have to change Alex's config for DH to render. ";
-				ClientApi.INSTANCE.showChatMessageNextFrame(message);
-			}
-		}
 	}
 	
 	@Override
