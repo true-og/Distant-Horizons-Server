@@ -1,4 +1,4 @@
-![Distant-Horizons-Logo.svg](coreSubProjects%2F_Misc%20Files%2Flogo%20files%2Fnew%2FSVG%2FDistant-Horizons-Logo.svg)
+# <img src="https://gitlab.com/jeseibel/distant-horizons-core/-/raw/main/_Misc%20Files%2Flogo%20files%2Fnew%2FSVG%2FDistant-Horizons-Logo.svg" height="128px"> 
 _See farther without turning your game into a slide show._
 
 <br>
