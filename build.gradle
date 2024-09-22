@@ -181,6 +181,7 @@ subprojects { p ->
         }
 
         annotationProcessor("systems.manifold:manifold-strings:${rootProject.manifold_version}")
+        testAnnotationProcessor("systems.manifold:manifold-strings:${rootProject.manifold_version}")
         
         // Log4j
         // TODO: Change to shadowMe later to work in the standalone jar
