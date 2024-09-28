@@ -49,9 +49,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 import org.apache.logging.log4j.Logger;
 
-/**
- * @version 2022-9-16
- */
 public class ServerLevelWrapper implements IServerLevelWrapper
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
@@ -67,12 +64,10 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	// constructors //
 	//==============//
 	
-	public static ServerLevelWrapper getWrapper(ServerLevel level) { return LEVEL_WRAPPER_BY_SERVER_LEVEL.computeIfAbsent(level, ServerLevelWrapper::new); }
+	public static ServerLevelWrapper getWrapper(ServerLevel level) 
+	{ return LEVEL_WRAPPER_BY_SERVER_LEVEL.computeIfAbsent(level, ServerLevelWrapper::new); }
 	
-	public ServerLevelWrapper(ServerLevel level)
-	{
-		this.level = level;
-	}
+	public ServerLevelWrapper(ServerLevel level) { this.level = level; }
 	
 	
 	

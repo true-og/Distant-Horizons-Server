@@ -124,6 +124,8 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 		}
 	}
 	
+	
+	
 	//====================//
 	// base level methods //
 	//====================//
@@ -238,9 +240,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	@Override
 	public IBlockStateWrapper getBlockState(DhBlockPos pos)
-	{
-		return BlockStateWrapper.fromBlockState(this.level.getBlockState(McObjectConverter.Convert(pos)), this);
-	}
+	{ return BlockStateWrapper.fromBlockState(this.level.getBlockState(McObjectConverter.Convert(pos)), this); }
 	
 	@Override
 	public IBiomeWrapper getBiome(DhBlockPos pos) { return BiomeWrapper.getBiomeWrapper(this.level.getBiome(McObjectConverter.Convert(pos)), this); }
