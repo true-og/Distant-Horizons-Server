@@ -236,6 +236,30 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					);
 		});
 		
+		// TODO add to forge and neo
+		WorldRenderEvents.LAST.register((renderContext) ->
+		{
+			Mat4f projectionMatrix = McObjectConverter.Convert(renderContext.projectionMatrix());
+			
+			Mat4f modelViewMatrix;
+			#if MC_VER < MC_1_20_6
+			modelViewMatrix = McObjectConverter.Convert(renderContext.matrixStack().last().pose());
+			#else
+			modelViewMatrix = McObjectConverter.Convert(renderContext.positionMatrix());
+			#endif
+			
+			this.clientApi.renderFade(
+					modelViewMatrix,
+					projectionMatrix,
+					#if MC_VER < MC_1_21_1
+					renderContext.tickDelta()
+					#else
+					renderContext.tickCounter().getGameTimeDeltaTicks()
+					#endif
+			);
+		});
+		
+		
 		// Debug keyboard event
 		// FIXME: Use better hooks so it doesn't trigger key press events in text boxes
 		ClientTickEvents.END_CLIENT_TICK.register(client -> 
