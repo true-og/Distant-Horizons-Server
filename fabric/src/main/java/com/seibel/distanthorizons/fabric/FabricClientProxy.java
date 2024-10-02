@@ -236,6 +236,31 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					);
 		});
 		
+		
+		// TODO add to forge and neo
+		WorldRenderEvents.AFTER_ENTITIES.register((renderContext) ->
+		{
+			Mat4f projectionMatrix = McObjectConverter.Convert(renderContext.projectionMatrix());
+			
+			Mat4f modelViewMatrix;
+			#if MC_VER < MC_1_20_6
+			modelViewMatrix = McObjectConverter.Convert(renderContext.matrixStack().last().pose());
+			#else
+			modelViewMatrix = McObjectConverter.Convert(renderContext.positionMatrix());
+			#endif
+			
+			this.clientApi.renderFadeOpaque(
+					modelViewMatrix,
+					projectionMatrix,
+					#if MC_VER < MC_1_21_1
+					renderContext.tickDelta()
+					#else
+					renderContext.tickCounter().getGameTimeDeltaTicks(),
+					#endif
+					ClientLevelWrapper.getWrapper(renderContext.world())
+			);
+		});
+		
 		// TODO add to forge and neo
 		WorldRenderEvents.LAST.register((renderContext) ->
 		{
@@ -254,8 +279,9 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					#if MC_VER < MC_1_21_1
 					renderContext.tickDelta()
 					#else
-					renderContext.tickCounter().getGameTimeDeltaTicks()
+					renderContext.tickCounter().getGameTimeDeltaTicks(),
 					#endif
+					ClientLevelWrapper.getWrapper(renderContext.world())
 			);
 		});
 		
