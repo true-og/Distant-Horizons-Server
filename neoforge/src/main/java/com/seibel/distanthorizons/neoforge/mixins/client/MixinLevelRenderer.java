@@ -126,7 +126,8 @@ public class MixinLevelRenderer
 		frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
 		#endif
 		
-		// only render before solid blocks
+		
+		// render LODs
 		if (renderType.equals(RenderType.solid()))
 		{
 			ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(this.level), mcModelViewMatrix, mcProjectionMatrix, frameTime);
@@ -134,6 +135,29 @@ public class MixinLevelRenderer
 		else if (renderType.equals(RenderType.translucent())) 
 		{
 			ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level), mcModelViewMatrix, mcProjectionMatrix, frameTime);
+		}
+		
+		// render fade
+		// fade rendering needs to happen AFTER_ENTITIES and AFTER_TRANSLUCENT respectively (fabric names)
+		// however since this method intjects at the beginning of the rendertype,
+		// we need to trigger for the renderType after those passes are done
+		if (renderType.equals(RenderType.cutout()))
+		{
+			ClientApi.INSTANCE.renderFadeOpaque(
+					mcModelViewMatrix,
+					mcProjectionMatrix,
+					frameTime,
+					ClientLevelWrapper.getWrapper(this.level)
+			);
+		}
+		else if (renderType.equals(RenderType.tripwire()))
+		{
+			ClientApi.INSTANCE.renderFade(
+					mcModelViewMatrix,
+					mcProjectionMatrix,
+					frameTime,
+					ClientLevelWrapper.getWrapper(this.level)
+			);
 		}
 		
 		if (Config.Client.Advanced.Debugging.lodOnlyMode.get())

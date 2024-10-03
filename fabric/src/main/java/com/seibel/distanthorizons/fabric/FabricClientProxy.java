@@ -253,7 +253,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					modelViewMatrix,
 					projectionMatrix,
 					#if MC_VER < MC_1_21_1
-					renderContext.tickDelta()
+					renderContext.tickDelta(),
 					#else
 					renderContext.tickCounter().getGameTimeDeltaTicks(),
 					#endif
@@ -262,7 +262,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 		});
 		
 		// TODO add to forge and neo
-		WorldRenderEvents.LAST.register((renderContext) ->
+		WorldRenderEvents.AFTER_TRANSLUCENT.register((renderContext) ->
 		{
 			Mat4f projectionMatrix = McObjectConverter.Convert(renderContext.projectionMatrix());
 			
@@ -277,7 +277,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 					modelViewMatrix,
 					projectionMatrix,
 					#if MC_VER < MC_1_21_1
-					renderContext.tickDelta()
+					renderContext.tickDelta(),
 					#else
 					renderContext.tickCounter().getGameTimeDeltaTicks(),
 					#endif
