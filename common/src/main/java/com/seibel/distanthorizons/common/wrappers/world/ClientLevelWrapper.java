@@ -31,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -254,6 +255,18 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 		LEVEL_WRAPPER_BY_CLIENT_LEVEL.remove(this.level);
 		this.parentDhLevel = null;
 	}
+	
+	@Override
+	public File getDhSaveFolder()
+	{
+		if (this.parentDhLevel == null)
+		{
+			return null;
+		}
+		
+		return this.parentDhLevel.getSaveStructure().getSaveFolder(this);
+	}
+	
 	
 	
 	

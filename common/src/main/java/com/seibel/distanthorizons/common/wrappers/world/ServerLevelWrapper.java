@@ -76,7 +76,7 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	//=========//
 	
 	@Override
-	public File getSaveFolder() { return this.level.getChunkSource().getDataStorage().dataFolder; }
+	public File getMcSaveFolder() { return this.level.getChunkSource().getDataStorage().dataFolder; }
 	
 	@Override
 	public DimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
@@ -165,6 +165,18 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 		
 		return this.parentDhLevel.getGenericRenderer();
 	}
+	
+	@Override
+	public File getDhSaveFolder()
+	{
+		if (this.parentDhLevel == null)
+		{
+			return null;
+		}
+		
+		return this.parentDhLevel.getSaveStructure().getSaveFolder(this);
+	}
+	
 	
 	
 	
