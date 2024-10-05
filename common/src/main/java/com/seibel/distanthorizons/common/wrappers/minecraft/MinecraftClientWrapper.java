@@ -202,6 +202,9 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	public UUID getPlayerUUID() { return this.getPlayer().getUUID(); }
 	
 	@Override
+	public String getUsername() { return MINECRAFT.getUser().getName(); }
+	
+	@Override
 	public DhBlockPos getPlayerBlockPos()
 	{
 		BlockPos playerPos = this.getPlayer().blockPosition();
