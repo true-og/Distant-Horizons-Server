@@ -66,18 +66,16 @@ public class FastOverworldBuilder extends LodBuilder
                 // Actual Y of top-most block.
                 int topLayer = this.worldInterface.getHighestYAt(worldX, worldZ);
 
-                if (topLayer + 1 < maxY) {
-                    outer: while (true) {
-                        String topSample = this.worldInterface.getMaterialAt(worldX, topLayer + 1, worldZ);
+                outer: while (topLayer + 1 < maxY) {
+                    String topSample = this.worldInterface.getMaterialAt(worldX, topLayer + 1, worldZ);
 
-                        switch (topSample) {
-                            case "minecraft:air":
-                            case "minecraft:void_air":
-                                break outer;
-                        }
-
-                        topLayer++;
+                    switch (topSample) {
+                        case "minecraft:air":
+                        case "minecraft:void_air":
+                            break outer;
                     }
+
+                    topLayer++;
                 }
 
                 // Distance from bottom to top-most block.
