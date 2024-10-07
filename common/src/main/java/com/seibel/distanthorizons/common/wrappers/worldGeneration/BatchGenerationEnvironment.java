@@ -894,7 +894,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	{
 		if (Thread.interrupted())
 		{
-			throw new InterruptedException(FullDataToRenderDataTransformer.class.getSimpleName() + " task interrupted.");
+			throw new InterruptedException(BatchGenerationEnvironment.class.getSimpleName() + " task interrupted.");
 		}
 	}
 	
