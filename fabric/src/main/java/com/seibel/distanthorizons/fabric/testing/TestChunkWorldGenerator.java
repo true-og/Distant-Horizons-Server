@@ -9,17 +9,16 @@ import com.seibel.distanthorizons.api.interfaces.override.worldGenerator.Abstrac
 import com.seibel.distanthorizons.api.interfaces.world.IDhApiLevelWrapper;
 import com.seibel.distanthorizons.api.objects.data.DhApiChunk;
 import com.seibel.distanthorizons.api.objects.data.DhApiTerrainDataPoint;
-import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper;
-import com.seibel.distanthorizons.core.config.Config;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
+public class TestChunkWorldGenerator extends AbstractDhApiChunkWorldGenerator
 {
 	private final ServerLevel level;
 	private final IDhApiLevelWrapper levelWrapper;
@@ -30,7 +29,7 @@ public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 	// constructor //
 	//=============//
 	
-	public TestWorldGenerator(ServerLevel level)
+	public TestChunkWorldGenerator(ServerLevel level)
 	{
 		this.level = level;
 		this.levelWrapper = ServerLevelWrapper.getWrapper(level);
@@ -46,7 +45,7 @@ public class TestWorldGenerator extends AbstractDhApiChunkWorldGenerator
 	public EDhApiWorldGeneratorReturnType getReturnType() { return EDhApiWorldGeneratorReturnType.API_CHUNKS; }
 	
 	@Override 
-	public boolean runApiChunkValidation() { return true; }
+	public boolean runApiValidation() { return true; }
 	
 	
 	
