@@ -512,6 +512,9 @@ allprojects { p ->
 
 
     repositories {
+        // Mojang overrides (added to fix downloading the wrong LWJGL libs on M1 Mac's and potentially other arm64 based machines)
+        maven { url "https://libraries.minecraft.net/" }
+
         // The central repo
         mavenCentral()
 
