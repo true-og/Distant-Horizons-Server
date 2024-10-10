@@ -184,10 +184,19 @@ subprojects { p ->
         testAnnotationProcessor("systems.manifold:manifold-strings:${rootProject.manifold_version}")
         
         // Log4j
-        // TODO: Change to shadowMe later to work in the standalone jar
-        // We cannot do this now as it would break Quilt
-        implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
-        implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
+        if (p == project(":core"))
+        {
+            // the standalone core jar needs logging shaded otherwise it won't run
+            forgeShadowMe("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
+            forgeShadowMe("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")   
+        }
+        else
+        {
+            // When running in MC, MC already includes logging
+            implementation("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
+            implementation("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
+        }
+        
 
         // JOML
         if (project.hasProperty("embed_joml") && embed_joml == "true")
@@ -457,6 +466,7 @@ subprojects { p ->
             attributes( 
                 'Implementation-Title': rootProject.mod_name,
                 'Implementation-Version': rootProject.mod_version,
+                'Multi-Release': true, // needed for logging in the standalone core jar
                 'Main-Class': 'com.seibel.distanthorizons.core.jar.JarMain' // When changing the main of the jar change this line
             )
         }
