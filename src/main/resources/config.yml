@@ -59,6 +59,12 @@ worlds:
     # Use builder that is optimized for overworld.
     builder_type: FastOverworldBuilder
 
+    # When using the FastOverworldBuilder, should LODs always contain data down to at least sea level?
+    # Enable if your world has floating islands or mountains/structures with large overhangs above sea level.
+    # Optional.
+    # Default: false
+    #scan_to_sea_level: true
+
     # Limit LOD generation to within this area.
     # Optional.
     #border_center: 0,0

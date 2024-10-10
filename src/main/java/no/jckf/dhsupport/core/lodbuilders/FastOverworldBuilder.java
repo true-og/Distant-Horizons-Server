@@ -53,6 +53,8 @@ public class FastOverworldBuilder extends LodBuilder
 
         int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
 
+        boolean scanToSeaLevel = this.worldInterface.getConfig().getBool(DhsConfig.SCAN_TO_SEA_LEVEL, false);
+
         List<IdMapping> idMappings = new ArrayList<>();
         Map<String, Integer> mapMap = new HashMap<>();
 
@@ -109,7 +111,7 @@ public class FastOverworldBuilder extends LodBuilder
                         material += "_block";
                     }
 
-                    if (solidGround == null) {
+                    if (solidGround == null && (!scanToSeaLevel || worldY <= seaLevel)) {
                         switch (material) {
                             case "minecraft:stone":
                             case "minecraft:grass":
