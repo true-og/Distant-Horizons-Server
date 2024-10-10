@@ -168,7 +168,6 @@ public class TestGenericWorldGenerator implements IDhApiWorldGenerator
 			resultConsumer.accept(pooledFullDataSource);
 			
 			#else
-			return null;
 			#endif
 		}, worldGeneratorThreadPool);
 	}
