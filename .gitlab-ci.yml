@@ -1,0 +1,144 @@
+variables:
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=.m2/repository
+    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true  
+
+default:
+  image: maven:3.9-eclipse-temurin-21-alpine
+
+  cache:
+    key: maven-repo-$CI_COMMIT_REF_SLUG
+    unprotect: true
+    paths:
+      - .m2/repository
+
+DHS-1.16.5:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.16.5.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.17.1:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.17.1.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.18.2:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.18.2.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.19.2:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.19.2.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.19.4:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.19.4.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.20.1:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.20.1.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.20.2:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.20.2.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.20.4:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.20.4.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+    
+    paths:
+      - "jars/*"
+
+DHS-1.20.6:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.20.6.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
+
+DHS-1.21.1:
+  stage: build
+
+  script:
+    - mvn package --projects pom-1.21.1.xml $MAVEN_CLI_OPTS
+
+  artifacts:
+    name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_JOB_STARTED_AT
+
+    paths:
+      - "jars/*"
