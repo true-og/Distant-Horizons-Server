@@ -68,6 +68,10 @@ public class FastOverworldBuilder extends LodBuilder
                 // Actual Y of top-most block.
                 int topLayer = this.worldInterface.getHighestYAt(worldX, worldZ);
 
+                // Copies of the original values.
+                int hardTopLayer = topLayer;
+                int hardStep = yStep;
+
                 outer: while (topLayer + 1 < maxY) {
                     String topSample = this.worldInterface.getMaterialAt(worldX, topLayer + 1, worldZ);
 
@@ -78,6 +82,11 @@ public class FastOverworldBuilder extends LodBuilder
                     }
 
                     topLayer++;
+                }
+
+                // If these differ, the top layer is non-colliding and likely requires yStep=1.
+                if (topLayer != hardTopLayer) {
+                    yStep = 1;
                 }
 
                 // Distance from bottom to top-most block.
@@ -105,11 +114,12 @@ public class FastOverworldBuilder extends LodBuilder
 
                     int worldY = minY + relativeY + thisStep - 1;
 
-                    String material = this.worldInterface.getMaterialAt(worldX, worldY, worldZ);
-
-                    if (material.equals("minecraft:snow") && thisStep > 1) {
-                        material += "_block";
+                    // We've reached the top-most colliding block. Restore yStep.
+                    if (worldY == hardTopLayer) {
+                        yStep = hardStep;
                     }
+
+                    String material = this.worldInterface.getMaterialAt(worldX, worldY, worldZ);
 
                     if (solidGround == null && (!scanToSeaLevel || worldY <= seaLevel)) {
                         switch (material) {
