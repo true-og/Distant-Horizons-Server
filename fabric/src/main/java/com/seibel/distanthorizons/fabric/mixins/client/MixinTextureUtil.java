@@ -19,7 +19,7 @@ public class MixinTextureUtil
 			at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;_texParameter(IIF)V", #if MC_VER == MC_1_16_5 remap = true #else remap = false #endif))
 	private static void setLodBias(int target, int pname, float param)
 	{
-		float biasValue = Config.Client.Advanced.Graphics.AdvancedGraphics.lodBias.get().floatValue();
+		float biasValue = Config.Client.Advanced.Graphics.Quality.lodBias.get().floatValue();
 		if (biasValue != 0)
 		{
 			// The target is GL11.GL_TEXTURE_2D

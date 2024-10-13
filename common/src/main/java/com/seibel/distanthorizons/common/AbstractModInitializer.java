@@ -185,7 +185,7 @@ public abstract class AbstractModInitializer
 	
 	private void initConfig()
 	{
-		ConfigBase.INSTANCE = new ConfigBase(ModInfo.ID, ModInfo.NAME, Config.class, 2);
+		ConfigBase.INSTANCE = new ConfigBase(ModInfo.ID, ModInfo.NAME, Config.class, ModInfo.CONFIG_FILE_VERSION);
 		Config.completeDelayedSetup();
 	}
 	
@@ -341,7 +341,7 @@ public abstract class AbstractModInitializer
 	 */
 	private static void logModIncompatibilityWarnings()
 	{
-		boolean showChatWarnings = Config.Client.Advanced.Logging.showModCompatibilityWarningsOnStartup.get();
+		boolean showChatWarnings = Config.Common.Logging.Warning.showModCompatibilityWarningsOnStartup.get();
 		IModChecker modChecker = SingletonInjector.INSTANCE.get(IModChecker.class);
 		
 		String startingString = "Partially Incompatible Distant Horizons mod detected: ";

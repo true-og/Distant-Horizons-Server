@@ -69,7 +69,7 @@ public class MixinFogRenderer
 		boolean isSpecialFog = (entity instanceof LivingEntity) && ((LivingEntity) entity).hasEffect(MobEffects.BLINDNESS);
 		if (!isSpecialFog && cameraNotInFluid && fogMode == FogMode.FOG_TERRAIN
 				&& !SingletonInjector.INSTANCE.get(IMinecraftRenderWrapper.class).isFogStateSpecial()
-				&& Config.Client.Advanced.Graphics.Fog.disableVanillaFog.get())
+				&& !Config.Client.Advanced.Graphics.Fog.enableVanillaFog.get())
 		{
 			#if MC_VER < MC_1_17_1
 			RenderSystem.fogStart(A_REALLY_REALLY_BIG_VALUE);

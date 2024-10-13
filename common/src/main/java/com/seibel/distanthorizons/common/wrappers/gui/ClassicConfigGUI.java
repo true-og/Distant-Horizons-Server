@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 // Logger (for debug stuff)
 
 import com.seibel.distanthorizons.api.enums.config.DisallowSelectingViaConfigGui;
-import com.seibel.distanthorizons.api.enums.config.EDhApiUpdateBranch;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.config.ConfigBase;
 import com.seibel.distanthorizons.core.config.types.*;
@@ -387,9 +386,9 @@ public class ClassicConfigGUI
 				this.list.addButton(null, null, null, name);
 				return;
 			}
-			if (ConfigLinkedEntry.class.isAssignableFrom(info.getClass()))
+			if (ConfigUiLinkedEntry.class.isAssignableFrom(info.getClass()))
 			{
-				this.addMenuItem(((ConfigLinkedEntry) info).get());
+				this.addMenuItem(((ConfigUiLinkedEntry) info).get());
 				return;
 			}
 			
@@ -438,8 +437,8 @@ public class ClassicConfigGUI
 						}
 						
 						// A quick fix for tooltips on linked entries
-						AbstractConfigType newInfo = ConfigLinkedEntry.class.isAssignableFrom(info.getClass()) ?
-								((ConfigLinkedEntry) info).get() :
+						AbstractConfigType newInfo = ConfigUiLinkedEntry.class.isAssignableFrom(info.getClass()) ?
+								((ConfigUiLinkedEntry) info).get() :
 								info;
 						
 						Component name = Translatable(this.translationPrefix + (info.category.isEmpty() ? "" : info.category + ".") + info.getName());

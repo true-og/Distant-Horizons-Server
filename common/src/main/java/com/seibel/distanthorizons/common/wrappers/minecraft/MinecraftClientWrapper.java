@@ -111,7 +111,7 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	@Override
 	public float getShade(EDhDirection lodDirection)
 	{
-		EDhApiLodShading lodShading = Config.Client.Advanced.Graphics.AdvancedGraphics.lodShading.get();
+		EDhApiLodShading lodShading = Config.Client.Advanced.Graphics.Quality.lodShading.get();
 		switch (lodShading)
 		{
 			default:

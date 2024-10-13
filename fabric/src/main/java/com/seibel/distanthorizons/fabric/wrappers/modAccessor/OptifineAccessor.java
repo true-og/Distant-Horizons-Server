@@ -33,11 +33,4 @@ public class OptifineAccessor extends AbstractOptifineAccessor
 		return "Optifine-Fabric-1.18.X";
 	}
 	
-	@Override
-	public HashSet<DhChunkPos> getNormalRenderedChunks()
-	{
-		// TODO: Impl proper methods here
-		return null;
-	}
-	
 }

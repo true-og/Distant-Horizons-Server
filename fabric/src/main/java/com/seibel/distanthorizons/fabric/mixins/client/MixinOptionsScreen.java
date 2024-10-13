@@ -91,7 +91,7 @@ public class MixinOptionsScreen extends Screen
 	@Inject(at = @At("RETURN"), method = "init")
 	private void lodconfig$init(CallbackInfo ci)
 	{
-		if (Config.Client.optionsButton.get())
+		if (Config.Client.showDhOptionsButtonInMinecraftUi.get())
 		{
 			#if MC_VER < MC_1_17_1
 			this.addButton(this.getOptionsButton());

@@ -235,7 +235,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		
 		HashSet<String> baseIgnoredBlock = new HashSet<>();
 		baseIgnoredBlock.add(AIR_STRING);
-		rendererIgnoredBlocks = getBlockWrappers(Config.Client.Advanced.LodBuilding.ignoredRenderBlockCsv, baseIgnoredBlock, levelWrapper);
+		rendererIgnoredBlocks = getBlockWrappers(Config.Client.Advanced.Graphics.Culling.ignoredRenderBlockCsv, baseIgnoredBlock, levelWrapper);
 		return rendererIgnoredBlocks;
 	}
 	/**
@@ -252,7 +252,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		
 		HashSet<String> baseIgnoredBlock = new HashSet<>();
 		baseIgnoredBlock.add(AIR_STRING);
-		rendererIgnoredCaveBlocks = getBlockWrappers(Config.Client.Advanced.LodBuilding.ignoredRenderCaveBlockCsv, baseIgnoredBlock, levelWrapper);
+		rendererIgnoredCaveBlocks = getBlockWrappers(Config.Client.Advanced.Graphics.Culling.ignoredRenderCaveBlockCsv, baseIgnoredBlock, levelWrapper);
 		return rendererIgnoredCaveBlocks;
 	}
 	

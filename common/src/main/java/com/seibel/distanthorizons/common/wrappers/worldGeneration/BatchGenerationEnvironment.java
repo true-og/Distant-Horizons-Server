@@ -25,7 +25,6 @@ import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiDistantGenerat
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiWorldGenerationStep;
 import com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.*;
-import com.seibel.distanthorizons.core.dataObjects.transformers.FullDataToRenderDataTransformer;
 import com.seibel.distanthorizons.core.generation.DhLightingEngine;
 import com.seibel.distanthorizons.core.level.IDhServerLevel;
 import com.seibel.distanthorizons.core.config.Config;
@@ -102,13 +101,13 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 {
 	public static final ConfigBasedSpamLogger PREF_LOGGER =
 			new ConfigBasedSpamLogger(LogManager.getLogger("LodWorldGen"),
-					() -> Config.Client.Advanced.Logging.logWorldGenPerformance.get(), 1);
+					() -> Config.Common.Logging.logWorldGenPerformance.get(), 1);
 	public static final ConfigBasedLogger EVENT_LOGGER =
 			new ConfigBasedLogger(LogManager.getLogger("LodWorldGen"),
-					() -> Config.Client.Advanced.Logging.logWorldGenEvent.get());
+					() -> Config.Common.Logging.logWorldGenEvent.get());
 	public static final ConfigBasedLogger LOAD_LOGGER =
 			new ConfigBasedLogger(LogManager.getLogger("LodWorldGen"),
-					() -> Config.Client.Advanced.Logging.logWorldGenLoadEvent.get());
+					() -> Config.Common.Logging.logWorldGenLoadEvent.get());
 	
 	public static class PerfCalculator
 	{
@@ -349,10 +348,10 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				
 				iter.remove();
 			}
-			else if (event.hasTimeout(Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get(), TimeUnit.SECONDS))
+			else if (event.hasTimeout(Config.Common.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get(), TimeUnit.SECONDS))
 			{
 				EVENT_LOGGER.warn(
-						"Batching World Generator: [" + event + "] timed out and terminated after ["+Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get()+"] seconds. " +
+						"Batching World Generator: [" + event + "] timed out and terminated after ["+Config.Common.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get()+"] seconds. " +
 								"\nYour computer might be overloaded or your world gen mods might be causing world gen to take longer than expected. " +
 								"\nEither increase DH's world gen timeout or reduce your computer's CPU load.");
 				EVENT_LOGGER.debug("Dump PrefEvent: " + event.timer);
@@ -374,7 +373,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		{
 			EVENT_LOGGER.error("Too many exceptions in Batching World Generator! Disabling the generator.");
 			this.unknownExceptionCount = 0;
-			Config.Client.Advanced.WorldGenerator.enableDistantGeneration.set(false);
+			Config.Common.WorldGenerator.enableDistantGeneration.set(false);
 		}
 	}
 	
@@ -587,7 +586,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			CompoundTag chunkData = this.getChunkNbtData(chunkPos);
 			newChunk = this.loadOrMakeChunk(chunkPos, chunkData);
 			
-			if (Config.Client.Advanced.LodBuilding.pullLightingForPregeneratedChunks.get())
+			if (Config.Common.LodBuilding.pullLightingForPregeneratedChunks.get())
 			{
 				// attempt to get chunk lighting
 				ChunkLoader.CombinedChunkLightStorage combinedLights = ChunkLoader.readLight(newChunk, chunkData);
@@ -628,7 +627,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			#else
 			
 			// timeout should prevent locking up the thread if the ioWorker dies or has issues 
-			int maxGetTimeInSec = Config.Client.Advanced.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get();
+			int maxGetTimeInSec = Config.Common.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get();
 			CompletableFuture<Optional<CompoundTag>> future = ioWorker.loadAsync(chunkPos);
 			try
 			{
