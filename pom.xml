@@ -14,6 +14,7 @@
         <mc.api-version></mc.api-version>
         <mc.api-version-patch></mc.api-version-patch>
         <dhs.read-forge-byte></dhs.read-forge-byte>
+        <skip-copy>true</skip-copy>
     </properties>
 
     <developers>
@@ -178,6 +179,8 @@
 
                         <configuration>
                             <outputDirectory>jars</outputDirectory>
+
+                            <skip>${skip-copy}</skip>
 
                             <artifactItems>
                                 <artifactItem>

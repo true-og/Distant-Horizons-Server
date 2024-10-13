@@ -11,6 +11,7 @@
     </parent>
 
     <properties>
+        <skip-copy>false</skip-copy>
         <mc.api-version>1.21.1</mc.api-version>
     </properties>
 
