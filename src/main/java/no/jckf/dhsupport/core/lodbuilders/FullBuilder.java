@@ -50,6 +50,8 @@ public class FullBuilder extends LodBuilder
 
         int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
 
+        boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, false);
+
         List<IdMapping> idMappings = new ArrayList<>();
         Map<String, Integer> mapMap = new HashMap<>();
 
@@ -67,16 +69,18 @@ public class FullBuilder extends LodBuilder
                 int hardTopLayer = topLayer;
                 int originalStep = yStep;
 
-                outer: while (topLayer + 1 < maxY) {
-                    String topSample = this.worldInterface.getMaterialAt(worldX, topLayer + 1, worldZ);
+                if (includeNonCollidingTopLayer) {
+                    outer: while (topLayer + 1 < maxY) {
+                        String topSample = this.worldInterface.getMaterialAt(worldX, topLayer + 1, worldZ);
 
-                    switch (topSample) {
-                        case "minecraft:air":
-                        case "minecraft:void_air":
-                            break outer;
+                        switch (topSample) {
+                            case "minecraft:air":
+                            case "minecraft:void_air":
+                                break outer;
+                        }
+
+                        topLayer++;
                     }
-
-                    topLayer++;
                 }
 
                 // If these differ, the top layer is non-colliding and likely requires yStep=1.
