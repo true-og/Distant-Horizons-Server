@@ -50,8 +50,9 @@ builder_resolution: 2
 
 # Whether to include non-colliding blocks when they are the top-most block.
 # True means tall grass, flowers, and snow will color the block below them.
+# Optional.
 # Default: false
-include_non-colliding_top_layer: false
+#include_non-colliding_top_layer: true
 
 # When running DHS on a proxied server, set this to a value that is unique to this specific server.
 # Optional.
