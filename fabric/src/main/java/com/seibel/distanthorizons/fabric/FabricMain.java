@@ -40,6 +40,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 #if MC_VER >= MC_1_19_2
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -95,10 +96,7 @@ public class FabricMain extends AbstractModInitializer implements ClientModIniti
 				String indiumMissingMessage = ModInfo.READABLE_NAME + " needs Indium to work with Sodium.\nPlease download Indium from https://modrinth.com/mod/indium";
 				LOGGER.fatal(indiumMissingMessage);
 				
-				if (!GraphicsEnvironment.isHeadless())
-				{
-					JOptionPane.showMessageDialog(null, indiumMissingMessage, ModInfo.READABLE_NAME, JOptionPane.INFORMATION_MESSAGE);
-				}
+				TinyFileDialogs.tinyfd_messageBox(ModInfo.READABLE_NAME, indiumMissingMessage, "ok", "error", false);
 				
 				IMinecraftClientWrapper mc = SingletonInjector.INSTANCE.get(IMinecraftClientWrapper.class);
 				String errorMessage = "loading Distant Horizons. Distant Horizons requires Indium in order to run with Sodium.";
