@@ -29,7 +29,7 @@ public class TrackablePluginMessage extends PluginMessage
 
     public int getTracker()
     {
-        return tracker;
+        return this.tracker;
     }
 
     public void isResponseTo(TrackablePluginMessage other)

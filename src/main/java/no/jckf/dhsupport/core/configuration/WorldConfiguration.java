@@ -2,6 +2,8 @@ package no.jckf.dhsupport.core.configuration;
 
 import no.jckf.dhsupport.core.world.WorldInterface;
 
+import javax.annotation.Nullable;
+
 public class WorldConfiguration extends Configuration
 {
     protected static String WORLD_PREFIX = "worlds.%s.";
@@ -17,16 +19,22 @@ public class WorldConfiguration extends Configuration
     }
 
     @Override
-    public void set(String key, Object value)
+    public void set(String key, @Nullable Object value)
     {
         this.config.set(WORLD_PREFIX.formatted(this.world.getName()) + key, value);
     }
 
     @Override
-    public Object get(String key)
+    public void unset(String key)
+    {
+        this.config.unset(WORLD_PREFIX.formatted(this.world.getName()) + key);
+    }
+
+    @Override
+    public @Nullable Object get(String key, @Nullable Object defaultValue)
     {
         Object specific = this.config.get(WORLD_PREFIX.formatted(this.world.getName()) + key);
 
-        return specific == null ? this.config.get(key) : specific;
+        return specific == null ? this.config.get(key, defaultValue) : specific;
     }
 }

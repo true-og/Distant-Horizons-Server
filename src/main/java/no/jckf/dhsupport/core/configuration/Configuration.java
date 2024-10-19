@@ -18,6 +18,7 @@
 
 package no.jckf.dhsupport.core.configuration;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,28 +26,53 @@ public class Configuration
 {
     protected Map<String, Object> variables = new HashMap<>();
 
-    public void set(String key, Object value)
+    public void set(String key, @Nullable Object value)
     {
         this.variables.put(key, value);
     }
 
-    public Object get(String key)
+    public void unset(String key)
     {
-        return this.variables.get(key);
+        this.variables.remove(key);
     }
 
-    public boolean getBool(String key)
+    public @Nullable Object get(String key, @Nullable Object defaultValue)
     {
-        return (boolean) this.get(key);
+        return this.variables.getOrDefault(key, defaultValue);
     }
 
-    public Integer getInt(String key)
+    public @Nullable Object get(String key)
     {
-        return (Integer) this.get(key);
+        return this.get(key, null);
     }
 
-    public String getString(String key)
+    public @Nullable Boolean getBool(String key, @Nullable Boolean defaultValue)
     {
-        return (String) this.get(key);
+        return (Boolean) this.get(key, defaultValue);
+    }
+
+    public @Nullable Boolean getBool(String key)
+    {
+        return this.getBool(key, null);
+    }
+
+    public @Nullable Integer getInt(String key, @Nullable Integer defaultValue)
+    {
+        return (Integer) this.get(key, defaultValue);
+    }
+
+    public @Nullable Integer getInt(String key)
+    {
+        return this.getInt(key, null);
+    }
+
+    public @Nullable String getString(String key, @Nullable String defaultValue)
+    {
+        return (String) this.get(key, defaultValue);
+    }
+
+    public @Nullable String getString(String key)
+    {
+        return (String) this.get(key, null);
     }
 }

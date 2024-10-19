@@ -50,6 +50,8 @@ public class FullBuilder extends LodBuilder
 
         int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
 
+        boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, false);
+
         List<IdMapping> idMappings = new ArrayList<>();
         Map<String, Integer> mapMap = new HashMap<>();
 
@@ -63,8 +65,12 @@ public class FullBuilder extends LodBuilder
                 // Actual Y of top-most block.
                 int topLayer = this.worldInterface.getHighestYAt(worldX, worldZ);
 
-                if (topLayer + 1 < maxY) {
-                    outer: while (true) {
+                // Copies of the original values.
+                int hardTopLayer = topLayer;
+                int originalStep = yStep;
+
+                if (includeNonCollidingTopLayer) {
+                    outer: while (topLayer + 1 < maxY) {
                         String topSample = this.worldInterface.getMaterialAt(worldX, topLayer + 1, worldZ);
 
                         switch (topSample) {
@@ -75,6 +81,11 @@ public class FullBuilder extends LodBuilder
 
                         topLayer++;
                     }
+                }
+
+                // If these differ, the top layer is non-colliding and likely requires yStep=1.
+                if (topLayer != hardTopLayer) {
+                    yStep = 1;
                 }
 
                 // Distance from bottom to top-most block.
@@ -97,21 +108,23 @@ public class FullBuilder extends LodBuilder
                         relativeY = 0;
                     }
 
-                    int worldY = minY + relativeY + thisStep - 1;
+                    int lowWorldY = minY + relativeY;
+                    int highWorldY = lowWorldY + thisStep - 1;
 
-                    String material = this.worldInterface.getMaterialAt(worldX, worldY, worldZ);
-
-                    if (material.equals("minecraft:snow") && thisStep > 1) {
-                        material += "_block";
+                    // We've reached the top-most colliding block. Restore yStep.
+                    if (highWorldY == hardTopLayer) {
+                        yStep = originalStep;
                     }
 
-                    String compositeKey = biome + "|" + material + "|" + this.worldInterface.getBlockStateAsStringAt(worldX, worldY, worldZ);
+                    String material = this.worldInterface.getMaterialAt(worldX, highWorldY, worldZ);
+
+                    String compositeKey = biome + "|" + material + "|" + this.worldInterface.getBlockStateAsStringAt(worldX, highWorldY, worldZ);
 
                     @Nullable
                     Integer id = mapMap.get(compositeKey);
 
                     if (id == null) {
-                        idMappings.add(new IdMapping(biome, material, this.worldInterface.getBlockPropertiesAt(worldX, worldY, worldZ)));
+                        idMappings.add(new IdMapping(biome, material, this.worldInterface.getBlockPropertiesAt(worldX, highWorldY, worldZ)));
                         id = idMappings.size() - 1;
                         mapMap.put(compositeKey, id);
                     }
@@ -131,17 +144,25 @@ public class FullBuilder extends LodBuilder
                         point.setHeight(thisStep);
                         point.setMappingId(id);
 
-                        if (worldY + 1 < maxY) {
-                            point.setSkyLight(this.worldInterface.getSkyLightAt(worldX, worldY + 1, worldZ));
-                            point.setBlockLight(this.worldInterface.getBlockLightAt(worldX, worldY + 1, worldZ));
+                        if (highWorldY + 1 < maxY) {
+                            point.setSkyLight(this.worldInterface.getSkyLightAt(worldX, highWorldY + 1, worldZ));
+                            point.setBlockLight(this.worldInterface.getBlockLightAt(worldX, highWorldY + 1, worldZ));
                         }
 
-                        // Start by filling the top of the column with air, then jump down to the top layer.
-                        if (relativeY == firstY && (material.equals("minecraft:air") || material.equals("minecraft:void_air"))) {
-                            point.setStartY(relativeTopLayer + 1);
-                            point.setHeight(height - relativeTopLayer);
+                        if (material.equals("minecraft:air") || material.equals("minecraft:void_air")) {
+                            // Start by filling the top of the column with air, then jump down to the top layer.
+                            if (relativeY == firstY) {
+                                point.setStartY(relativeTopLayer + 1);
+                                point.setHeight(height - relativeTopLayer);
 
-                            relativeY = point.getStartY();
+                                relativeY = point.getStartY();
+                            } else {
+                                // Encountered air that is below a non-air block. Set yStep=1 to avoid stretching the air into the ground or sea.
+                                yStep = 1;
+                            }
+                        } else {
+                            // Entered a new material. Reset yStep in case we came from air with yStep=1.
+                            yStep = originalStep;
                         }
                     }
 

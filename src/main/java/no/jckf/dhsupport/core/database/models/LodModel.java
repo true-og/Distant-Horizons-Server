@@ -48,7 +48,7 @@ public class LodModel extends Model
 
     public UUID getWorldId()
     {
-        return worldId;
+        return this.worldId;
     }
 
     public LodModel setX(int x)
@@ -108,7 +108,7 @@ public class LodModel extends Model
 
     public int getTimestamp()
     {
-        return timestamp;
+        return this.timestamp;
     }
 
     public String toString()

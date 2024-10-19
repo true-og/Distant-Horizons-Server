@@ -36,7 +36,7 @@ public class FullDataSourceRequestMessage extends TrackablePluginMessage
 
     public String getWorldName()
     {
-        return worldName;
+        return this.worldName;
     }
 
     public void setPosition(SectionPosition position)
@@ -46,7 +46,7 @@ public class FullDataSourceRequestMessage extends TrackablePluginMessage
 
     public SectionPosition getPosition()
     {
-        return position;
+        return this.position;
     }
 
     public void setTimestamp(Long timestamp)
@@ -56,7 +56,7 @@ public class FullDataSourceRequestMessage extends TrackablePluginMessage
 
     public Long getTimestamp()
     {
-        return timestamp;
+        return this.timestamp;
     }
 
     @Override

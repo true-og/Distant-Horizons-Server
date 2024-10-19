@@ -38,7 +38,7 @@ public class PluginMessageHandler
 
     public final String pluginChannel = "distant_horizons:message";
 
-    public final int protocolVersion = 5;
+    public final int protocolVersion = 6;
 
     private EventBus<PluginMessage> eventBus;
 
@@ -52,7 +52,7 @@ public class PluginMessageHandler
         this.messageTypeRegistry = new MessageTypeRegistry();
         this.messageTypeRegistry.registerMessageType(0, null);
         this.messageTypeRegistry.registerMessageType(1, CloseReasonMessage.class);
-        this.messageTypeRegistry.registerMessageType(2, CurrentLevelKeyMessage.class);
+        this.messageTypeRegistry.registerMessageType(2, LevelInitMessage.class);
         this.messageTypeRegistry.registerMessageType(3, RemotePlayerConfigMessage.class);
         this.messageTypeRegistry.registerMessageType(4, CancelMessage.class);
         this.messageTypeRegistry.registerMessageType(5, ExceptionMessage.class);

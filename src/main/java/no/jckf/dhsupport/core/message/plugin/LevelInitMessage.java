@@ -21,9 +21,11 @@ package no.jckf.dhsupport.core.message.plugin;
 import no.jckf.dhsupport.core.bytestream.Decoder;
 import no.jckf.dhsupport.core.bytestream.Encoder;
 
-public class CurrentLevelKeyMessage extends PluginMessage
+public class LevelInitMessage extends PluginMessage
 {
     protected String key;
+
+    protected long time;
 
     public void setKey(String key)
     {
@@ -35,15 +37,27 @@ public class CurrentLevelKeyMessage extends PluginMessage
         return this.key;
     }
 
+    public void setTime(long time)
+    {
+        this.time = time;
+    }
+
+    public long getTime()
+    {
+        return this.time;
+    }
+
     @Override
     public void encode(Encoder encoder)
     {
         encoder.writeShortString(this.key);
+        encoder.writeLong(this.time);
     }
 
     @Override
     public void decode(Decoder decoder)
     {
         this.key = decoder.readShortString();
+        this.time = decoder.readLong();
     }
 }

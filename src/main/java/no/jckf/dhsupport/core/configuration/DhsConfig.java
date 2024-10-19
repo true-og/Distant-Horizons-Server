@@ -34,6 +34,8 @@ public abstract class DhsConfig
 
     public static String LOGIN_DATA_SYNC_RC_LIMIT = "login_data_sync_rc_limit";
 
+    public static String MAX_DATA_TRANSFER_SPEED = "max_data_transfer_speed";
+
     public static String SCHEDULER_THREADS = "scheduler_threads";
 
     public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
@@ -47,4 +49,8 @@ public abstract class DhsConfig
     public static String BUILDER_TYPE = "builder_type";
 
     public static String BUILDER_RESOLUTION = "builder_resolution";
+
+    public static String SCAN_TO_SEA_LEVEL= "scan_to_sea_level";
+
+    public static String INCLUDE_NON_COLLIDING_TOP_LAYER = "include_non-colliding_top_layer";
 }

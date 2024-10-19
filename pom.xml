@@ -7,13 +7,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>0.5.0</revision>
+        <revision>0.6.0</revision>
         <jdk>21</jdk>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin</main.class>
         <mc.api-version></mc.api-version>
         <mc.api-version-patch></mc.api-version-patch>
         <dhs.read-forge-byte></dhs.read-forge-byte>
+        <skip-copy>true</skip-copy>
     </properties>
 
     <developers>
@@ -178,6 +179,8 @@
 
                         <configuration>
                             <outputDirectory>jars</outputDirectory>
+
+                            <skip>${skip-copy}</skip>
 
                             <artifactItems>
                                 <artifactItem>

@@ -32,7 +32,7 @@ public class CloseReasonMessage extends PluginMessage
 
     public String getReason()
     {
-        return reason;
+        return this.reason;
     }
 
     @Override

@@ -76,8 +76,8 @@ public class LodHandler
                 if (centerXz.length != 2) {
                     this.dhSupport.warning("Border for world " + world.getName() + " is misconfigured.");
                 } else {
-                    int centerX = Integer.getInteger(centerXz[0]);
-                    int centerZ = Integer.getInteger(centerXz[1]);
+                    int centerX = Integer.parseInt(centerXz[0]);
+                    int centerZ = Integer.parseInt(centerXz[1]);
 
                     int minX = centerX - borderRadius;
                     int maxX = centerX + borderRadius;

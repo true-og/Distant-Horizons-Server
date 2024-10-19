@@ -35,7 +35,7 @@ public class FullDataChunkMessage extends PluginMessage
 
     public int getBufferId()
     {
-        return bufferId;
+        return this.bufferId;
     }
 
     public void setData(byte[] data)
@@ -45,7 +45,7 @@ public class FullDataChunkMessage extends PluginMessage
 
     public byte[] getData()
     {
-        return data;
+        return this.data;
     }
 
     public void setIsFirst(boolean isFirst)
