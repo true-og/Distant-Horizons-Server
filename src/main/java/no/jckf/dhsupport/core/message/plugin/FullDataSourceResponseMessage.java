@@ -35,7 +35,7 @@ public class FullDataSourceResponseMessage extends TrackablePluginMessage
 
     public int getBufferId()
     {
-        return bufferId;
+        return this.bufferId;
     }
 
     public void setBeacons(byte[] beacons)
@@ -45,7 +45,7 @@ public class FullDataSourceResponseMessage extends TrackablePluginMessage
 
     public byte[] getBeacons()
     {
-        return beacons;
+        return this.beacons;
     }
 
     @Override

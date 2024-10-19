@@ -38,7 +38,7 @@ public class ExceptionMessage extends TrackablePluginMessage
 
     public int getTypeId()
     {
-        return typeId;
+        return this.typeId;
     }
 
     public void setMessage(String message)
@@ -48,7 +48,7 @@ public class ExceptionMessage extends TrackablePluginMessage
 
     public String getMessage()
     {
-        return message;
+        return this.message;
     }
 
     @Override

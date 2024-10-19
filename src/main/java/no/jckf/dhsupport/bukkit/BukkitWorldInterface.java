@@ -97,7 +97,7 @@ public class BukkitWorldInterface implements WorldInterface
 
     public Logger getLogger()
     {
-        return logger;
+        return this.logger;
     }
 
     @Override

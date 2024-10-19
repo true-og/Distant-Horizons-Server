@@ -44,7 +44,7 @@ public class LevelInitMessage extends PluginMessage
 
     public long getTime()
     {
-        return time;
+        return this.time;
     }
 
     @Override

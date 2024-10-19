@@ -47,7 +47,7 @@ public class BlockPosition extends DataObject
 
     public int getX()
     {
-        return x;
+        return this.x;
     }
 
     public void setY(int y)
@@ -57,7 +57,7 @@ public class BlockPosition extends DataObject
 
     public int getY()
     {
-        return y;
+        return this.y;
     }
 
     public void setZ(int z)
@@ -67,7 +67,7 @@ public class BlockPosition extends DataObject
 
     public int getZ()
     {
-        return z;
+        return this.z;
     }
 
     @Override
