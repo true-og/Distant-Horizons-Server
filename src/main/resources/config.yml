@@ -1,5 +1,5 @@
 # Don't touch :)
-config_version: 1
+config_version: 2
 
 # Maximum supported render distance. Clients will be capped to this value.
 # Required.
