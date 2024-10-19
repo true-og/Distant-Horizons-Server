@@ -32,6 +32,7 @@ public class RemotePlayerConfigMessage extends PluginMessage
         DhsConfig.REAL_TIME_UPDATES_ENABLED,
         DhsConfig.LOGIN_DATA_SYNC_ENABLED,
         DhsConfig.LOGIN_DATA_SYNC_RC_LIMIT,
+        DhsConfig.MAX_DATA_TRANSFER_SPEED,
     };
 
     protected int renderDistance;
@@ -45,6 +46,8 @@ public class RemotePlayerConfigMessage extends PluginMessage
     protected boolean loginDataSyncEnabled;
 
     protected int loginDataSyncRcLimit;
+
+    protected int maxDataTransferSpeed;
 
     public void setRenderDistance(int distance)
     {
@@ -73,7 +76,7 @@ public class RemotePlayerConfigMessage extends PluginMessage
 
     public int getFullDataRequestConcurrencyLimit()
     {
-        return fullDataRequestConcurrencyLimit;
+        return this.fullDataRequestConcurrencyLimit;
     }
 
     public void setRealTimeUpdatesEnabled(boolean enabled)
@@ -83,7 +86,7 @@ public class RemotePlayerConfigMessage extends PluginMessage
 
     public boolean isRealTimeUpdatesEnabled()
     {
-        return realTimeUpdatesEnabled;
+        return this.realTimeUpdatesEnabled;
     }
 
     public void setLoginDataSyncEnabled(boolean enabled)
@@ -93,7 +96,7 @@ public class RemotePlayerConfigMessage extends PluginMessage
 
     public boolean getLoginDataSyncEnabled()
     {
-        return loginDataSyncEnabled;
+        return this.loginDataSyncEnabled;
     }
 
     public void setLoginDataSyncRcLimit(int limit)
@@ -103,7 +106,17 @@ public class RemotePlayerConfigMessage extends PluginMessage
 
     public int getLoginDataSyncRcLimit()
     {
-        return loginDataSyncRcLimit;
+        return this.loginDataSyncRcLimit;
+    }
+
+    public void setMaxDataTransferSpeed(int speed)
+    {
+        this.maxDataTransferSpeed = speed;
+    }
+
+    public int getMaxDataTransferSpeed()
+    {
+        return this.maxDataTransferSpeed;
     }
 
     @Override
@@ -115,6 +128,7 @@ public class RemotePlayerConfigMessage extends PluginMessage
         encoder.writeBoolean(this.realTimeUpdatesEnabled);
         encoder.writeBoolean(this.loginDataSyncEnabled);
         encoder.writeInt(this.loginDataSyncRcLimit);
+        encoder.writeInt(this.maxDataTransferSpeed);
     }
 
     @Override
@@ -126,6 +140,7 @@ public class RemotePlayerConfigMessage extends PluginMessage
         this.realTimeUpdatesEnabled = decoder.readBoolean();
         this.loginDataSyncEnabled = decoder.readBoolean();
         this.loginDataSyncRcLimit = decoder.readInt();
+        this.maxDataTransferSpeed = decoder.readInt();
     }
 
     public void fromConfiguration(Configuration config)

@@ -32,6 +32,11 @@ login_data_sync_enabled: true
 # Default: 50
 login_data_sync_rc_limit: 50
 
+# Currently unsupported.
+# Required.
+# Default: 0
+max_data_transfer_speed: 0
+
 # If a client requests LODs with chunks that don't exist, should those chunks be generated?
 # Required.
 # Default: true

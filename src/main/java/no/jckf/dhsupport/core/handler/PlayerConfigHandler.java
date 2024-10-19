@@ -21,7 +21,7 @@ package no.jckf.dhsupport.core.handler;
 import no.jckf.dhsupport.core.DhSupport;
 import no.jckf.dhsupport.core.configuration.Configuration;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import no.jckf.dhsupport.core.message.plugin.CurrentLevelKeyMessage;
+import no.jckf.dhsupport.core.message.plugin.LevelInitMessage;
 import no.jckf.dhsupport.core.message.plugin.RemotePlayerConfigMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -55,8 +55,9 @@ public class PlayerConfigHandler
 
             this.dhSupport.info("Received DH config for " + player.getName() + " in " + levelKey);
 
-            CurrentLevelKeyMessage levelKeyResponse = new CurrentLevelKeyMessage();
+            LevelInitMessage levelKeyResponse = new LevelInitMessage();
             levelKeyResponse.setKey(levelKey);
+            levelKeyResponse.setTime(System.currentTimeMillis());
             this.pluginMessageHandler.sendPluginMessage(configMessage.getSender(), levelKeyResponse);
 
             Configuration clientConfig = configMessage.toConfiguration();
