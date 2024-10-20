@@ -1,9 +1,11 @@
 package com.seibel.distanthorizons.common.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 
 import static com.seibel.distanthorizons.core.network.messages.MessageRegistry.DEBUG_CODEC_CRASH_MESSAGE;
+import static net.minecraft.commands.Commands.literal;
 
 /**
  * Initializes commands of the mod.
@@ -29,12 +31,18 @@ public class CommandInitializer
 	 */
 	public void initCommands()
 	{
-		new DhConfigCommand().register(this.commandDispatcher);
+		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dh")
+				.requires(source -> source.hasPermission(4));
+		
+		builder.then(new ConfigCommand().buildCommand());
+		builder.then(new DebugCommand().buildCommand());
 		
 		if (DEBUG_CODEC_CRASH_MESSAGE)
 		{
-			new DhCrashCommand().register(this.commandDispatcher);
+			builder.then(new CrashCommand().buildCommand());
 		}
+		
+		this.commandDispatcher.register(builder);
 	}
 	
 }

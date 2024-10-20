@@ -1,6 +1,5 @@
 package com.seibel.distanthorizons.common.commands;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.seibel.distanthorizons.core.api.internal.SharedApi;
 import com.seibel.distanthorizons.core.multiplayer.server.ServerPlayerState;
@@ -9,12 +8,13 @@ import net.minecraft.commands.CommandSourceStack;
 
 import static net.minecraft.commands.Commands.literal;
 
-public class DhCrashCommand extends AbstractCommand
+public class CrashCommand extends AbstractCommand
 {
-	public void register(CommandDispatcher<CommandSourceStack> commandDispatcher)
+	@Override
+	public LiteralArgumentBuilder<CommandSourceStack> buildCommand()
 	{
-		LiteralArgumentBuilder<CommandSourceStack> dhcrash = literal("dhcrash")
-				.requires(source -> this.isPlayerSource(source) && source.hasPermission(4))
+		return literal("crash")
+				.requires(this::isPlayerSource)
 				.then(literal("encode")
 						.executes(c -> {
 							assert SharedApi.getIDhServerWorld() != null;
@@ -39,7 +39,6 @@ public class DhCrashCommand extends AbstractCommand
 							}
 							return 1;
 						}));
-		commandDispatcher.register(dhcrash);
 	}
 	
 }

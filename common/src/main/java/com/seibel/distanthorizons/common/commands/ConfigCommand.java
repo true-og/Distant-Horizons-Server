@@ -1,6 +1,5 @@
 package com.seibel.distanthorizons.common.commands;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -24,7 +23,7 @@ import static net.minecraft.commands.Commands.literal;
 /**
  * Command for managing config.
  */
-public class DhConfigCommand extends AbstractCommand
+public class ConfigCommand extends AbstractCommand
 {
 	private static final List<CommandArgumentData<?>> commandArguments = Arrays.asList(
 			new CommandArgumentData<>(Integer.class, configEntry -> integer(configEntry.getMin(), configEntry.getMax()), IntegerArgumentType::getInteger),
@@ -34,15 +33,13 @@ public class DhConfigCommand extends AbstractCommand
 	);
 	
 	/**
-	 * Registers the command with the given dispatcher.
-	 *
-	 * @param commandDispatcher the dispatcher to register the command with.
+	 * Builds a command tree.
 	 */
+	@Override
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public void register(CommandDispatcher<CommandSourceStack> commandDispatcher)
+	public LiteralArgumentBuilder<CommandSourceStack> buildCommand()
 	{
-		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dhconfig")
-				.requires(source -> source.hasPermission(4));
+		LiteralArgumentBuilder<CommandSourceStack> builder = literal("config");
 		
 		for (AbstractConfigType<?, ?> type : ConfigBase.INSTANCE.entries)
 		{
@@ -105,7 +102,7 @@ public class DhConfigCommand extends AbstractCommand
 			builder.then(subcommand);
 		}
 		
-		commandDispatcher.register(builder);
+		return builder;
 	}
 	
 	

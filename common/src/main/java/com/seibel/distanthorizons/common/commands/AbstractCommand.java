@@ -1,5 +1,6 @@
 package com.seibel.distanthorizons.common.commands;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.seibel.distanthorizons.common.wrappers.misc.ServerPlayerWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IServerPlayerWrapper;
@@ -19,6 +20,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
  */
 public abstract class AbstractCommand
 {
+	public abstract LiteralArgumentBuilder<CommandSourceStack> buildCommand();
+	
+	
 	/**
 	 * Sends a success response to the player with the given text.
 	 *
