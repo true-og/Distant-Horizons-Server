@@ -324,12 +324,12 @@ public class ClientBlockStateColorCache
 		if (count == 0)
 		{
 			// this block is entirely transparent
-			tempColor = ColorUtil.rgbToInt(0, 255, 255, 255);
+			tempColor = ColorUtil.argbToInt(0, 255, 255, 255);
 		}
 		else
 		{
 			// determine the average color
-			tempColor = ColorUtil.rgbToInt(
+			tempColor = ColorUtil.argbToInt(
 					alpha / count,
 					linearToSrgb((float) (red / (double) alpha)),
 					linearToSrgb((float) (green / (double) alpha)),
@@ -337,10 +337,10 @@ public class ClientBlockStateColorCache
 		}
 		
 		//check if not missing texture
-		if (tempColor == ColorUtil.rgbToInt(255, 182, 0, 182))
+		if (tempColor == ColorUtil.argbToInt(255, 182, 0, 182))
 		{
 			//make it not render at all
-			tempColor = ColorUtil.rgbToInt(0, 255, 255, 255);
+			tempColor = ColorUtil.argbToInt(0, 255, 255, 255);
 		}
 		return tempColor;
 	}
