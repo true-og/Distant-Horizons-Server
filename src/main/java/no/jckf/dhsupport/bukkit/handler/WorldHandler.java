@@ -46,6 +46,8 @@ public class WorldHandler implements Listener
 
         worldInterface.setLogger(this.plugin.getDhSupport().getLogger());
 
+        worldInterface.doUnsafeThings();
+
         this.plugin.getDhSupport().setWorldInterface(world.getUID(), worldInterface);
     }
 

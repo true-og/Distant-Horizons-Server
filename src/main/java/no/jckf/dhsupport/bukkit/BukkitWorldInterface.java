@@ -64,7 +64,20 @@ public class BukkitWorldInterface implements WorldInterface
         this.world = world;
         this.config = config;
         this.worldConfig = new WorldConfiguration(this, config);
+    }
 
+    public void setLogger(Logger logger)
+    {
+        this.logger = logger;
+    }
+
+    public Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    public void doUnsafeThings()
+    {
         this.unsafeValues = Bukkit.getUnsafe();
 
         // Detect if we're running under Paper (or a Paper fork) that has this patch:
@@ -84,20 +97,12 @@ public class BukkitWorldInterface implements WorldInterface
         try {
             this.getChunkAtAsync = this.world.getClass().getMethod("getChunkAtAsyncUrgently", int.class, int.class);
         } catch (NoSuchMethodException exception) {
-            this.getLogger().warning("Async chunk loading is not supported on this server. Performance will suffer.");
+            if (!ASYNC_LOAD_WARNING_SENT) {
+                this.getLogger().warning("Async chunk loading is not supported on this server. Performance will suffer.");
 
-            ASYNC_LOAD_WARNING_SENT = true;
+                ASYNC_LOAD_WARNING_SENT = true;
+            }
         }
-    }
-
-    public void setLogger(Logger logger)
-    {
-        this.logger = logger;
-    }
-
-    public Logger getLogger()
-    {
-        return this.logger;
     }
 
     @Override
@@ -106,6 +111,8 @@ public class BukkitWorldInterface implements WorldInterface
         BukkitWorldInterface newInstace = new BukkitWorldInterface(this.world, this.config);
 
         newInstace.setLogger(this.getLogger());
+
+        newInstace.doUnsafeThings();
 
         return newInstace;
     }
