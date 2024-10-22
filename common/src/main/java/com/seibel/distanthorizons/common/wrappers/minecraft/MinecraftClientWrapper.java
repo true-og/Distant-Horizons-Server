@@ -22,6 +22,7 @@ package com.seibel.distanthorizons.common.wrappers.minecraft;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.mojang.blaze3d.platform.NativeImage;
@@ -320,5 +321,11 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	
 	@Override
 	public boolean isWorldNew() { throw new UnsupportedOperationException("Not Implemented"); }
+	
+	@Override
+	public int getPlayerCount()
+	{
+		return Objects.requireNonNull(MINECRAFT.getSingleplayerServer()).getPlayerCount();
+	}
 	
 }

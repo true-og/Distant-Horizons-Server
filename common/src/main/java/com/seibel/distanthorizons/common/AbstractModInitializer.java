@@ -1,29 +1,20 @@
 package com.seibel.distanthorizons.common;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.*;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiAfterDhInitEvent;
 import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiBeforeDhInitEvent;
+import com.seibel.distanthorizons.common.commands.CommandInitializer;
 import com.seibel.distanthorizons.common.wrappers.DependencySetup;
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftServerWrapper;
-import com.seibel.distanthorizons.common.wrappers.misc.ServerPlayerWrapper;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;
 import com.seibel.distanthorizons.core.api.internal.SharedApi;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.config.ConfigBase;
 import com.seibel.distanthorizons.core.config.eventHandlers.presets.ThreadPresetConfigEventHandler;
-import com.seibel.distanthorizons.core.config.types.AbstractConfigType;
-import com.seibel.distanthorizons.core.config.types.ConfigEntry;
 import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.jar.ModJarInfo;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
-import com.seibel.distanthorizons.core.network.messages.base.CodecCrashMessage;
-import com.seibel.distanthorizons.core.util.objects.Pair;
-import com.seibel.distanthorizons.core.world.DhServerWorld;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModAccessor;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModChecker;
 import com.seibel.distanthorizons.coreapi.DependencyInjection.ApiEventInjector;
@@ -34,24 +25,8 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.seibel.distanthorizons.core.network.messages.MessageRegistry.DEBUG_CODEC_CRASH_MESSAGE;
-import static net.minecraft.commands.Commands.argument;
-import static net.minecraft.commands.Commands.literal;
-
-#if MC_VER >= MC_1_19_2
-import net.minecraft.network.chat.Component;
-#else // < 1.19.2
-import net.minecraft.network.chat.TranslatableComponent;
-#endif
 
 /**
  * Base for all mod loader initializers 
@@ -61,7 +36,7 @@ public abstract class AbstractModInitializer
 {
 	protected static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
-	private CommandDispatcher<CommandSourceStack> commandDispatcher;
+	private CommandInitializer commandInitializer;
 	
 	
 	
@@ -132,7 +107,7 @@ public abstract class AbstractModInitializer
 		LOGGER.info(ModInfo.READABLE_NAME + " server Initialized.");
 		ApiEventInjector.INSTANCE.fireAllEvents(DhApiAfterDhInitEvent.class, null);
 		
-		this.subscribeRegisterCommandsEvent(dispatcher -> { this.commandDispatcher = dispatcher; });
+		this.subscribeRegisterCommandsEvent(dispatcher -> { this.commandInitializer = new CommandInitializer(dispatcher); });
 		
 		this.subscribeServerStartingEvent(server -> 
 		{
@@ -140,7 +115,7 @@ public abstract class AbstractModInitializer
 			
 			this.initConfig();
 			this.postInit();
-			this.initCommands();
+			this.commandInitializer.initCommands();
 			
 			LOGGER.info("Dedicated server initialized at " + server.getServerDirectory());
 		});
@@ -194,137 +169,6 @@ public abstract class AbstractModInitializer
 		LOGGER.info("Post-Initializing Mod");
 		this.runDelayedSetup();
 		LOGGER.info("Mod Post-Initialized");
-	}
-	
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	private void initCommands()
-	{
-		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dhconfig")
-				.requires(source -> source.hasPermission(4));
-		
-		for (AbstractConfigType<?, ?> type : ConfigBase.INSTANCE.entries)
-		{
-			if (!(type instanceof ConfigEntry))
-			{
-				continue;
-			}
-			//noinspection PatternVariableCanBeUsed
-			ConfigEntry configEntry = (ConfigEntry) type;
-			if (configEntry.getServersideShortName() == null)
-			{
-				continue;
-			}
-			
-			Function<
-					Function<CommandContext<CommandSourceStack>, Object>,
-					Command<CommandSourceStack>
-					> makeConfigUpdater = (getter) -> (commandContext) -> {
-				Object value = getter.apply(commandContext);
-				
-				commandContext.getSource().sendSuccess(
-						#if MC_VER >= MC_1_20_1
-						() -> Component.literal("Changed the value of "+configEntry.getServersideShortName()+" to "+value),
-						#elif MC_VER >= MC_1_19_2
-						Component.literal("Changed the value of "+configEntry.getServersideShortName()+" to "+value),
-						#else
-						new TranslatableComponent("Changed the value of "+configEntry.getServersideShortName()+" to "+value),
-						#endif
-						true);
-				configEntry.set(value);
-				return 1;
-			};
-			
-			LiteralArgumentBuilder<CommandSourceStack> subcommand = literal(configEntry.getServersideShortName())
-					.executes((commandContext) -> {
-						#if MC_VER >= MC_1_20_1
-						commandContext.getSource().sendSuccess(() -> Component.literal("Current value of "+configEntry.getServersideShortName()+" is "+configEntry.get()), true);
-						#elif MC_VER >= MC_1_19_2
-						commandContext.getSource().sendSuccess(Component.literal("Current value of "+configEntry.getServersideShortName()+" is "+configEntry.get()), true);
-						#else // < 1.19.2
-						commandContext.getSource().sendSuccess(new TranslatableComponent("Current value of "+configEntry.getServersideShortName()+" is "+configEntry.get()), true);
-						#endif
-						return 1;
-					});
-			
-			if (Enum.class.isAssignableFrom(configEntry.getType()))
-			{
-				for (Object choice : configEntry.getType().getEnumConstants())
-				{
-					subcommand.then(
-							literal(choice.toString())
-									.executes(makeConfigUpdater.apply(c -> choice))
-					);
-				}
-			}
-			else
-			{
-				boolean setterAdded = false;
-				
-				for (java.util.Map.Entry<Class<?>, Pair<Supplier<ArgumentType<?>>, BiFunction<CommandContext<?>, String, ?>>> pair : new HashMap<
-						Class<?>,
-						Pair<
-								Supplier<ArgumentType<?>>,
-								BiFunction<CommandContext<?>, String, ?>>
-						>() {{
-					this.put(Integer.class, new Pair<>(() -> integer((int) configEntry.getMin(), (int) configEntry.getMax()), IntegerArgumentType::getInteger));
-					this.put(Double.class, new Pair<>(() -> doubleArg((double) configEntry.getMin(), (double) configEntry.getMax()), DoubleArgumentType::getDouble));
-					this.put(Boolean.class, new Pair<>(BoolArgumentType::bool, BoolArgumentType::getBool));
-					this.put(String.class, new Pair<>(StringArgumentType::string, StringArgumentType::getString));
-				}}.entrySet())
-				{
-					if (!pair.getKey().isAssignableFrom(configEntry.getType()))
-					{
-						continue;
-					}
-					
-					subcommand.then(argument("value", pair.getValue().first.get())
-							.executes(makeConfigUpdater.apply(c -> pair.getValue().second.apply(c, "value"))));
-					
-					setterAdded = true;
-					break;
-				}
-				
-				if (!setterAdded)
-				{
-					throw new RuntimeException("Config type of "+type.getName()+" is not supported: "+configEntry.getType().getSimpleName());
-				}
-			}
-			
-			builder.then(subcommand);
-		}
-		
-		this.commandDispatcher.register(builder);
-		
-		if (DEBUG_CODEC_CRASH_MESSAGE)
-		{
-			LiteralArgumentBuilder<CommandSourceStack> dhcrash = literal("dhcrash")
-					.requires(source -> source.hasPermission(4))
-					.then(literal("encode")
-							.executes(c -> {
-								assert SharedApi.getIDhServerWorld() != null;
-								((DhServerWorld) SharedApi.getIDhServerWorld()).getServerPlayerStateManager()
-										#if MC_VER >= MC_1_19_2
-										.getConnectedPlayer(ServerPlayerWrapper.getWrapper(Objects.requireNonNull(c.getSource().getPlayer())))
-										#else
-										.getConnectedPlayer(ServerPlayerWrapper.getWrapper(Objects.requireNonNull(c.getSource().getPlayerOrException())))
-										#endif
-										.networkSession.sendMessage(new CodecCrashMessage(CodecCrashMessage.ECrashPhase.ENCODE));
-								return 1;
-							}))
-					.then(literal("decode")
-							.executes(c -> {
-								assert SharedApi.getIDhServerWorld() != null;
-								((DhServerWorld) SharedApi.getIDhServerWorld()).getServerPlayerStateManager()
-										#if MC_VER >= MC_1_19_2
-										.getConnectedPlayer(ServerPlayerWrapper.getWrapper(Objects.requireNonNull(c.getSource().getPlayer())))
-										#else
-										.getConnectedPlayer(ServerPlayerWrapper.getWrapper(Objects.requireNonNull(c.getSource().getPlayerOrException())))
-										#endif
-										.networkSession.sendMessage(new CodecCrashMessage(CodecCrashMessage.ECrashPhase.DECODE));
-								return 1;
-							}));
-			this.commandDispatcher.register(dhcrash);
-		}
 	}
 	
 	

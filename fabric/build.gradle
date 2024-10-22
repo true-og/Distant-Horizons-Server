@@ -12,7 +12,15 @@ loom {
             setConfigName("Fabric Client")
             ideConfigGenerated(true) // When true a run configuration file will be generated for IDE's. By default only set to true for the root project.
             runDir("../run/client")
-            vmArgs("-Dio.netty.leakDetection.level=advanced") // https://netty.io/wiki/reference-counted-objects.html#leak-detection-levels
+            vmArgs(
+                    // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390
+                    "-Dminecraft.api.auth.host=https://nope.invalid",
+                    "-Dminecraft.api.account.host=https://nope.invalid",
+                    "-Dminecraft.api.session.host=https://nope.invalid",
+                    "-Dminecraft.api.services.host=https://nope.invalid",
+                    // https://netty.io/wiki/reference-counted-objects.html#leak-detection-levels
+                    "-Dio.netty.leakDetection.level=advanced"
+            )
             programArgs("--username", "Dev")
         }
         server {

@@ -47,4 +47,10 @@ public class MinecraftServerWrapper implements IMinecraftSharedWrapper
 	public boolean isWorldNew() 
 	{ return this.dedicatedServer.getWorldData().overworldData().isInitialized(); }
 	
+	@Override
+	public int getPlayerCount()
+	{
+		return this.dedicatedServer.getPlayerCount();
+	}
+	
 }
