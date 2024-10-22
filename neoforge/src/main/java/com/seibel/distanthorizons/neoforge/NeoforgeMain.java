@@ -42,7 +42,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.function.Consumer;
@@ -130,7 +130,7 @@ public class NeoforgeMain extends AbstractModInitializer
 	@Override
 	protected void subscribeServerStartingEvent(Consumer<MinecraftServer> eventHandler)
 	{
-		NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, (ServerStartingEvent e) -> { eventHandler.accept(e.getServer()); });
+		NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, (ServerAboutToStartEvent e) -> { eventHandler.accept(e.getServer()); });
 	}
 	
 	@Override
