@@ -69,9 +69,9 @@ public class UpdateModScreen extends DhScreen
 			// Logo image
 			this.addBtn(new TexturedButtonWidget(
 					// Where the button is on the screen
-					this.width / 2 - 65, this.height / 2 - 110,
+					this.width / 2 - 95, this.height / 2 - 110,
 					// Width and height of the button
-					130, 65,
+					195, 65,
 					// Offset
 					0, 0,
 					// Some textuary stuff
@@ -81,7 +81,7 @@ public class UpdateModScreen extends DhScreen
 					#else
 					ResourceLocation.fromNamespaceAndPath(ModInfo.ID, "logo.png"),
 					#endif
-					130, 65,
+					195, 65,
 					// Create the button and tell it where to go
 					// For now it goes to the client option by default
 					(buttonWidget) -> System.out.println("Nice, you found an easter egg :)"), // TODO: Add a proper easter egg to pressing the logo (maybe with confetti)
