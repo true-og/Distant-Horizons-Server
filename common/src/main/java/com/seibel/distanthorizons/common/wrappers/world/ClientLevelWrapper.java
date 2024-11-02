@@ -13,6 +13,7 @@ import com.seibel.distanthorizons.core.level.IServerKeyedClientLevel;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
+import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
@@ -210,8 +211,10 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	{
         #if MC_VER < MC_1_17_1
         return 0;
-        #else
+		#elif MC_VER < MC_1_21_3
 		return this.level.getMinBuildHeight();
+        #else
+		return this.level.getMinY();
         #endif
 	}
 	
@@ -291,8 +294,13 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	@Override
 	public Color getCloudColor(float tickDelta)
 	{
+		#if MC_VER < MC_1_21_3
 		Vec3 colorVec3 = this.level.getCloudColor(tickDelta);
 		return new Color((float)colorVec3.x, (float)colorVec3.y, (float)colorVec3.z);
+		#else
+		int argbColor = this.level.getCloudColor(tickDelta);
+		return ColorUtil.toColorObjARGB(argbColor);
+		#endif
 	}
 	
 	

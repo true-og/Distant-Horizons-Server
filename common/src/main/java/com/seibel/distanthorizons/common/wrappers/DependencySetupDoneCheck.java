@@ -25,7 +25,12 @@ public class DependencySetupDoneCheck
 {
 	// TODO move to DependencySetup
 	public static boolean isDone = false;
-	// TODO why is this here and what is its purpose?
+	/** 
+	 * This is used so we can override some MC logic when running
+	 * in DH's world generator.
+	 * Specifically so we can redirect threads to run on DH threads instead
+	 * of MC threads.
+	 */
 	public static Supplier<Boolean> getIsCurrentThreadDistantGeneratorThread = (() -> { return false; });
 	
 }

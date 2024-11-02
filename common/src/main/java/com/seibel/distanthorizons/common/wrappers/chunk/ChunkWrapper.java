@@ -23,12 +23,9 @@ import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.misc.MutableBlockPosWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.DhLitWorldGenRegion;
-import com.seibel.distanthorizons.core.api.internal.SharedApi;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
-import com.seibel.distanthorizons.core.util.LodUtil;
-import com.seibel.distanthorizons.core.world.EWorldEnvironment;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
@@ -36,19 +33,14 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IMutableBlockPosWr
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
-import net.minecraft.client.multiplayer.ClientChunkCache;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 #if MC_VER >= MC_1_17_1
 import net.minecraft.core.QuartPos;
@@ -72,8 +64,6 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 
 #if MC_VER >= MC_1_20_1
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.lighting.LevelLightEngine;
-import net.minecraft.core.SectionPos;
 #endif
 
 #if MC_VER <= MC_1_20_4
@@ -143,19 +133,29 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	
 	@Override
-	public int getMinBuildHeight() { return getMinBuildHeight(this.chunk); }
-	public static int getMinBuildHeight(ChunkAccess chunk)
+	public int getInclusiveMinBuildHeight() { return getInclusiveMinBuildHeight(this.chunk); }
+	public static int getInclusiveMinBuildHeight(ChunkAccess chunk)
 	{
 		#if MC_VER < MC_1_17_1
 		return 0;
-		#else
+		#elif MC_VER < MC_1_21_3
 		return chunk.getMinBuildHeight();
+		#else
+		return chunk.getMinY();
 		#endif
 	}
 	
 	@Override
-	public int getMaxBuildHeight() { return getMaxBuildHeight(this.chunk); }
-	public static int getMaxBuildHeight(ChunkAccess chunk) { return chunk.getMaxBuildHeight(); }
+	public int getExclusiveMaxBuildHeight() { return getExclusiveMaxBuildHeight(this.chunk); }
+	public static int getExclusiveMaxBuildHeight(ChunkAccess chunk) 
+	{
+		#if MC_VER < MC_1_21_3
+		return chunk.getMaxBuildHeight();
+		#else
+		// +1 since Minecraft made the max value inclusive
+		return chunk.getMaxY() + 1;
+		#endif
+	}
 	
 	@Override
 	public int getMinNonEmptyHeight()
@@ -167,7 +167,7 @@ public class ChunkWrapper implements IChunkWrapper
 		
 		
 		// default if every section is empty or missing
-		this.minNonEmptyHeight = this.getMinBuildHeight();
+		this.minNonEmptyHeight = this.getInclusiveMinBuildHeight();
 		
 		// determine the lowest empty section (bottom up)
 		LevelChunkSection[] sections = this.chunk.getSections();
@@ -199,7 +199,7 @@ public class ChunkWrapper implements IChunkWrapper
 		
 		
 		// default if every section is empty or missing
-		this.maxNonEmptyHeight = this.getMaxBuildHeight();
+		this.maxNonEmptyHeight = this.getExclusiveMaxBuildHeight();
 		
 		// determine the highest empty section (top down)
 		LevelChunkSection[] sections = this.chunk.getSections();
@@ -232,7 +232,7 @@ public class ChunkWrapper implements IChunkWrapper
 		return section.hasOnlyAir();
 		#endif
 	}
-	private int getChunkSectionMinHeight(int index) { return (index * 16) + this.getMinBuildHeight(); }
+	private int getChunkSectionMinHeight(int index) { return (index * 16) + this.getInclusiveMinBuildHeight(); }
 	
 	
 	@Override

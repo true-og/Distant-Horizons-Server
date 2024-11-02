@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.seibel.distanthorizons.common.wrappers.DependencySetupDoneCheck;
-import com.seibel.distanthorizons.core.util.objects.DummyRunExecutorService;
+import com.seibel.distanthorizons.core.util.objects.RunOnThisThreadExecutorService;
 
 import net.minecraft.Util;
 
@@ -46,7 +46,7 @@ public class MixinUtilBackgroundThread
 		if (shouldApplyOverride())
 		{
 			//ApiShared.LOGGER.info("util backgroundExecutor triggered");
-			ci.setReturnValue(new DummyRunExecutorService());
+			ci.setReturnValue(new RunOnThisThreadExecutorService());
 		}
 	}
 	

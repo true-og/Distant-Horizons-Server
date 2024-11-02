@@ -11,7 +11,7 @@ plugins {
     id "systems.manifold.manifold-gradle-plugin" version "0.0.2-alpha"
 
     // Architectury is used here only as a replacement for forge's own loom
-    id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
 }
 
 
@@ -532,6 +532,7 @@ allprojects { p ->
         maven { url "https://repo.enonic.com/public/" }
 
         // For parchment mappings
+        // versions can be found here: https://ldtteam.jfrog.io/ui/native/parchmentmc-public/org/parchmentmc/data/
         maven { url "https://maven.parchmentmc.org" }
 
         // For Architectury API

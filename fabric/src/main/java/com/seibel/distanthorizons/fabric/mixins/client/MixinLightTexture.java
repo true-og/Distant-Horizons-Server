@@ -19,9 +19,6 @@
 
 package com.seibel.distanthorizons.fabric.mixins.client;
 
-
-import com.mojang.blaze3d.platform.NativeImage;
-
 import com.seibel.distanthorizons.common.wrappers.minecraft.MinecraftRenderWrapper;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -35,13 +32,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+#if MC_VER < MC_1_21_3
+import com.mojang.blaze3d.platform.NativeImage;
+#else
+import com.mojang.blaze3d.pipeline.TextureTarget;
+#endif
+
 @Mixin(LightTexture.class)
 public class MixinLightTexture
 {
-	@Shadow
-	@Final
+	@Shadow 
+	@Final 
+	#if MC_VER < MC_1_21_3
 	private NativeImage lightPixels;
-	
+	#else
+	private TextureTarget target;
+	#endif
 	
 	@Inject(method = "updateLightTexture(F)V", at = @At("RETURN"))
 	public void updateLightTexture(float partialTicks, CallbackInfo ci)
@@ -52,8 +58,14 @@ public class MixinLightTexture
 			return;
 		}
 		
+		
 		IClientLevelWrapper clientLevel = mc.getWrappedClientLevel();
+		
+		#if MC_VER < MC_1_21_3
 		MinecraftRenderWrapper.INSTANCE.updateLightmap(this.lightPixels, clientLevel);
+		#else
+		MinecraftRenderWrapper.INSTANCE.setLightmapId(this.target.getColorTextureId(), clientLevel);
+		#endif
 	}
 	
 }

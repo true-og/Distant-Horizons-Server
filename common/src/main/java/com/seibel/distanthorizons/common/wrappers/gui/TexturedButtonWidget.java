@@ -19,31 +19,36 @@
 
 package com.seibel.distanthorizons.common.wrappers.gui;
 
-/**
- * Creates a button with a texture on it (and a background) that works with all mc versions
- * 
- * @author coolGi
- * @version 2023-10-03
- */
-
-
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.components.AbstractButton;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 #if MC_VER >= MC_1_17_1
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.components.Button;
 #endif
-#if MC_VER < MC_1_20_1
+
+#if MC_VER < MC_1_17_1
+import net.minecraft.client.gui.components.ImageButton;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+#elif MC_VER < MC_1_20_1
+import net.minecraft.client.gui.components.ImageButton;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.GameRenderer;
+#elif MC_VER < MC_1_20_2
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.GuiGraphics;
 #else
 import net.minecraft.client.gui.GuiGraphics;
 #endif
 
+/**
+ * Creates a button with a texture on it (and a background) that works with all mc versions
+ *
+ * @author coolGi
+ * @version 2023-10-03
+ */
 #if MC_VER < MC_1_20_2
 public class TexturedButtonWidget extends ImageButton
 #else
@@ -57,20 +62,21 @@ public class TexturedButtonWidget extends Button
 	private final int v;
 	private final int hoveredVOffset;
 	
-	private final ResourceLocation texture;
+	private final ResourceLocation textureResourceLocation;
 	
 	private final int textureWidth;
 	private final int textureHeight;
 	#endif
 	
 	
-	public TexturedButtonWidget(int x, int y, int width, int height, int u, int v, int hoveredVOffset, ResourceLocation texture, int textureWidth, int textureHeight, OnPress pressAction, Component text) {
-		this(x, y, width, height, u, v, hoveredVOffset, texture, textureWidth, textureHeight, pressAction, text, true);
+	public TexturedButtonWidget(int x, int y, int width, int height, int u, int v, int hoveredVOffset, ResourceLocation textureResourceLocation, int textureWidth, int textureHeight, OnPress pressAction, Component text) 
+	{
+		this(x, y, width, height, u, v, hoveredVOffset, textureResourceLocation, textureWidth, textureHeight, pressAction, text, true);
 	}
-	public TexturedButtonWidget(int x, int y, int width, int height, int u, int v, int hoveredVOffset, ResourceLocation texture, int textureWidth, int textureHeight, OnPress pressAction, Component text, boolean renderBackground)
+	public TexturedButtonWidget(int x, int y, int width, int height, int u, int v, int hoveredVOffset, ResourceLocation textureResourceLocation, int textureWidth, int textureHeight, OnPress pressAction, Component text, boolean renderBackground)
 	{
 		#if MC_VER < MC_1_20_2
-		super(x, y, width, height, u, v, hoveredVOffset, texture, textureWidth, textureHeight, pressAction, text);
+		super(x, y, width, height, u, v, hoveredVOffset, textureResourceLocation, textureWidth, textureHeight, pressAction, text);
 		#else
 		// We don't pass on the text option as otherwise it will render (we normally pass it for narration)
 		// TODO: Find a fix for it
@@ -80,7 +86,7 @@ public class TexturedButtonWidget extends Button
 		this.v = v;
 		this.hoveredVOffset = hoveredVOffset;
 		
-		this.texture = texture;
+		this.textureResourceLocation = textureResourceLocation;
 		
 		this.textureWidth = textureWidth;
 		this.textureHeight = textureHeight;
@@ -92,7 +98,8 @@ public class TexturedButtonWidget extends Button
 	#if MC_VER < MC_1_20_2
 	#if MC_VER < MC_1_19_4
 	@Override
-	public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) {
+	public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) 
+	{
 		if (this.renderBackground) // Renders the background of the button
 		{
 			#if MC_VER < MC_1_17_1
@@ -119,6 +126,7 @@ public class TexturedButtonWidget extends Button
 
 		super.renderButton(matrices, mouseX, mouseY, delta);
 	}
+	
 	#else
     #if MC_VER < MC_1_20_1
 	@Override
@@ -154,24 +162,43 @@ public class TexturedButtonWidget extends Button
 		super.renderWidget(matrices, mouseX, mouseY, delta);
 	}
 	#endif
+	
 	#else
 	@Override
 	public void renderWidget(GuiGraphics matrices, int mouseX, int mouseY, float delta)
 	{
 		if (this.renderBackground)
 		{
-			//RenderSystem.enableBlend();
-			//RenderSystem.enableDepthTest();
+			#if MC_VER < MC_1_21_3
 			matrices.blitSprite(SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight());
+			#else
+			// TODO
+			//matrices.blitSprite(
+			//		(resourceLocation) -> RenderType.solid(), 
+			//		this.textureResourceLocation, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+			#endif
 		}
 		
 		
 		// Renders the sprite
 		int i = 0;
-		if (!this.active)           i = 2;
-		else if (this.isHovered)    i = 1;
+		if (!this.active)
+		{
+			i = 2;
+		}
+		else if (this.isHovered)
+		{
+			i = 1;
+		}
 		
-		matrices.blit(this.texture, this.getX(), this.getY(), this.u, this.v + (this.hoveredVOffset * i), this.width, this.height, this.textureWidth, this.textureHeight);
+		#if MC_VER < MC_1_21_3
+		matrices.blit(this.textureResourceLocation, this.getX(), this.getY(), this.u, this.v + (this.hoveredVOffset * i), this.width, this.height, this.textureWidth, this.textureHeight);
+		#else
+		// TODO
+		//matrices.blit(
+		//		(resourceLocation) -> RenderType.solid(),
+		//		this.textureResourceLocation, this.getX(), this.getY(), this.u, this.v + (this.hoveredVOffset * i), this.width, this.height, this.textureWidth, this.textureHeight);
+		#endif
 	}
 	#endif
 }

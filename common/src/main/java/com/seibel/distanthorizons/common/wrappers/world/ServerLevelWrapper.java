@@ -47,6 +47,11 @@ import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 #endif
 
+#if MC_VER < MC_1_21_3
+#else
+import java.nio.file.Path;
+#endif
+
 import org.apache.logging.log4j.Logger;
 
 public class ServerLevelWrapper implements IServerLevelWrapper
@@ -76,7 +81,14 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	//=========//
 	
 	@Override
-	public File getMcSaveFolder() { return this.level.getChunkSource().getDataStorage().dataFolder; }
+	public File getMcSaveFolder() 
+	{ 
+		#if MC_VER < MC_1_21_3
+		return this.level.getChunkSource().getDataStorage().dataFolder;
+		#else
+		return this.level.getChunkSource().getDataStorage().dataFolder.toFile();
+		#endif
+	}
 	
 	@Override
 	public DimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
@@ -103,8 +115,10 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	{
         #if MC_VER < MC_1_17_1
         return 0;
-        #else
+        #elif MC_VER < MC_1_21_3
 		return this.level.getMinBuildHeight();
+        #else
+		return this.level.getMinY();
         #endif
 	}
 	

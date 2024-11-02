@@ -56,12 +56,6 @@ import com.seibel.distanthorizons.common.wrappers.worldGeneration.step.StepStruc
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.step.StepStructureStart;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.step.StepSurface;
 
-#if MC_VER >= MC_1_19_4
-import net.minecraft.core.registries.Registries;
-#else
-import net.minecraft.core.Registry;
-#endif
-
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -77,6 +71,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.nbt.CompoundTag;
 import org.apache.logging.log4j.LogManager;
+
+#if MC_VER >= MC_1_19_4
+import net.minecraft.core.registries.Registries;
+#else
+import net.minecraft.core.Registry;
+#endif
 
 #if MC_VER <= MC_1_20_4
 import net.minecraft.world.level.chunk.ChunkStatus;
@@ -301,15 +301,31 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	// synchronization //
 	//=================//
 	
-	public <T> T joinSync(CompletableFuture<T> future)
+	/**
+	 * This method checks to make sure that all world gen is being 
+	 * run on DH threads instead of leaking out to other MC threads.
+	 * This is done to prevent putting undue stress on MC threads
+	 * and prevent potential issues with concurrent processing.
+	 */
+	public <T> T confirmFutureWasRunSynchronously(CompletableFuture<T> future)
 	{
-		if (!unsafeThreadingRecorded && !future.isDone())
+		// this operation should be done since DH wants the
+		// operation to be done synchronously
+		if (!this.unsafeThreadingRecorded && !future.isDone())
 		{
-			EVENT_LOGGER.error("Unsafe MultiThreading in Chunk Generator: ", new RuntimeException("Concurrent future"));
-			EVENT_LOGGER.error("To increase stability, it is recommended to set world generation threads count to 1.");
-			unsafeThreadingRecorded = true;
+			EVENT_LOGGER.warn(
+					"Unsafe MultiThreading in Distant Horizons Chunk Generator. \n" +
+					"This can happen if world generation is run on one of Minecraft's thread pools " +
+					"instead of the thread DH provided. \n" +
+					"This can likely be ignored, however if world generator crashes occur" +
+					"to increase stability, set DH's world generation thread count to 1.", 
+					new RuntimeException("Incorrect thread pool use"));
+			this.unsafeThreadingRecorded = true;
 		}
 		
+		// if the future wasn't done synchronously,
+		// wait for it to finish so we can continue the world gen 
+		// lifecycle like normal
 		return future.join();
 	}
 	
@@ -681,18 +697,20 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	}
 	private static ProtoChunk CreateEmptyChunk(ServerLevel level, ChunkPos chunkPos)
 	{
-		return new ProtoChunk(chunkPos, UpgradeData.EMPTY
-					#if MC_VER >= MC_1_17_1 , level #endif
-					#if MC_VER >= MC_1_18_2 , level.registryAccess().registryOrThrow(
-						#if MC_VER < MC_1_19_4
-				Registry.BIOME_REGISTRY
-						#else
-				Registries.BIOME
-						#endif
-		), null #endif
-		);
+		#if MC_VER <= MC_1_16_5
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY);
+		#elif MC_VER <= MC_1_17_1
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY, level);
+		#elif MC_VER <= MC_1_19_2
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY, level, level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), null);
+		#elif MC_VER <= MC_1_19_4
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY, level, level.registryAccess().registryOrThrow(Registries.BIOME), null);
+		#elif MC_VER < MC_1_21_3
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY, level, level.registryAccess().registryOrThrow(Registries.BIOME), null);
+		#else
+		return new ProtoChunk(chunkPos, UpgradeData.EMPTY, level, level.registryAccess().lookupOrThrow(Registries.BIOME), null);
+		#endif
 	}
-	
 	
 	
 	

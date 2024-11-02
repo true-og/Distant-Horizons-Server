@@ -39,11 +39,24 @@ public class TintWithoutLevelSmoothOverrider implements BlockAndTintGetter
 	final BiomeWrapper biome;
 	public int smoothingRange;
 	
+	
+	
+	//=============//
+	// constructor //
+	//=============//
+	
 	public TintWithoutLevelSmoothOverrider(BiomeWrapper biome, int smoothingRange)
 	{
 		this.biome = biome;
 		this.smoothingRange = smoothingRange;
 	}
+	
+	
+	
+	//=========//
+	// methods //
+	//=========//
+	
 	@Override
 	public int getBlockTint(BlockPos blockPos, ColorResolver colorResolver)
 	{
@@ -57,7 +70,7 @@ public class TintWithoutLevelSmoothOverrider implements BlockAndTintGetter
 		return biome;
 		#endif
 	}
-//
+
 //    public int calculateBlockTint(BlockPos blockPos, ColorResolver colorResolver)
 //    {
 //        int i = smoothingRange;
@@ -89,44 +102,43 @@ public class TintWithoutLevelSmoothOverrider implements BlockAndTintGetter
 	
 	@Override
 	public float getShade(Direction direction, boolean shade)
-	{
-		throw new UnsupportedOperationException("ERROR: getShade() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getShade() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
 	@Override
 	public LevelLightEngine getLightEngine()
-	{
-		throw new UnsupportedOperationException("ERROR: getLightEngine() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getLightEngine() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
 	@Nullable
 	@Override
 	public BlockEntity getBlockEntity(BlockPos pos)
-	{
-		throw new UnsupportedOperationException("ERROR: getBlockEntity() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getBlockEntity() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
 	
 	@Override
 	public BlockState getBlockState(BlockPos pos)
-	{
-		throw new UnsupportedOperationException("ERROR: getBlockState() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getBlockState() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
 	@Override
 	public FluidState getFluidState(BlockPos pos)
-	{
-		throw new UnsupportedOperationException("ERROR: getFluidState() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getFluidState() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
 	
+	
+	//==============//
+	// post MC 1.17 //
+	//==============//
 	
 	#if MC_VER >= MC_1_17_1
+	
 	@Override
 	public int getHeight()
-	{
-		throw new UnsupportedOperationException("ERROR: getHeight() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getHeight() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
+	
+	#if MC_VER < MC_1_21_3
 	@Override
-	public int getMinBuildHeight()
-	{
-		throw new UnsupportedOperationException("ERROR: getMinBuildHeight() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	public int getMinBuildHeight() 
+	{ throw new UnsupportedOperationException("ERROR: getMinBuildHeight() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
+	#else
+	@Override
+	public int getMinY()
+	{ throw new UnsupportedOperationException("ERROR: getMinY() called on TintWithoutLevelSmoothOverrider. Object is for tinting only."); }
+	#endif
+	
 	#endif
 	
 }

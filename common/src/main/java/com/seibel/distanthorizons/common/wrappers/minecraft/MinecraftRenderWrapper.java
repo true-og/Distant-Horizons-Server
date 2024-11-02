@@ -30,6 +30,7 @@ import com.seibel.distanthorizons.common.wrappers.misc.LightMapWrapper;
 import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
+import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 
 #if MC_VER >= MC_1_17_1
@@ -43,7 +44,6 @@ import org.joml.Vector3f;
 #else
 #endif
 #if MC_VER >= MC_1_20_2
-import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 #endif
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.AbstractOptifineAccessor;
@@ -69,6 +69,7 @@ import net.minecraft.world.level.material.FogType;
 #endif
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector4f;
 
 
 /**
@@ -136,16 +137,30 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 		#if MC_VER < MC_1_17_1
 		float[] colorValues = new float[4];
 		GL15.glGetFloatv(GL15.GL_FOG_COLOR, colorValues);
-		#else
+		return new Color(
+				Math.max(0f, Math.min(colorValues[0], 1f)), // r
+				Math.max(0f, Math.min(colorValues[1], 1f)), // g
+				Math.max(0f, Math.min(colorValues[2], 1f)), // b
+				Math.max(0f, Math.min(colorValues[3], 1f))  // a
+		);
+		#elif MC_VER < MC_1_21_3
 		FogRenderer.setupColor(MC.gameRenderer.getMainCamera(), partialTicks, MC.level, 1, MC.gameRenderer.getDarkenWorldAmount(partialTicks));
 		float[] colorValues = RenderSystem.getShaderFogColor();
-		#endif
 		return new Color(
-				Math.max(0f, Math.min(colorValues[0], 1f)),
-				Math.max(0f, Math.min(colorValues[1], 1f)),
-				Math.max(0f, Math.min(colorValues[2], 1f)),
-				Math.max(0f, Math.min(colorValues[3], 1f))
+				Math.max(0f, Math.min(colorValues[0], 1f)), // r
+				Math.max(0f, Math.min(colorValues[1], 1f)), // g
+				Math.max(0f, Math.min(colorValues[2], 1f)), // b
+				Math.max(0f, Math.min(colorValues[3], 1f))  // a
 		);
+		#else
+		Vector4f colorValues = FogRenderer.computeFogColor(MC.gameRenderer.getMainCamera(), partialTicks, MC.level, 1, MC.gameRenderer.getDarkenWorldAmount(partialTicks));
+		return new Color(
+				Math.max(0f, Math.min(colorValues.x, 1f)), // r
+				Math.max(0f, Math.min(colorValues.y, 1f)), // g
+				Math.max(0f, Math.min(colorValues.z, 1f)), // b
+				Math.max(0f, Math.min(colorValues.w, 1f))  // a
+		);
+		#endif
 	}
 	// getSpecialFogColor() is the same as getFogColor()
 	
@@ -157,16 +172,22 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 			float frameTime;
 			#if MC_VER < MC_1_21_1
 			frameTime = MC.getFrameTime();
-			#else
+			#elif MC_VER < MC_1_21_3
 			frameTime = MC.getTimer().getRealtimeDeltaTicks();
+			#else
+			frameTime = MC.deltaTracker.getGameTimeDeltaTicks();
 			#endif
 			
 			#if MC_VER < MC_1_17_1
 			Vec3 colorValues = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getBlockPosition(), frameTime);
-			#else
-			Vec3 colorValues = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getPosition(), frameTime);
-			#endif
 			return new Color((float) colorValues.x, (float) colorValues.y, (float) colorValues.z);
+			#elif MC_VER < MC_1_21_3
+			Vec3 colorValues = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getPosition(), frameTime);
+			return new Color((float) colorValues.x, (float) colorValues.y, (float) colorValues.z);
+			#else
+			int argbColorInt = MC.level.getSkyColor(MC.gameRenderer.getMainCamera().getPosition(), frameTime);;
+			return ColorUtil.toColorObjARGB(argbColorInt); // TODO MC changed color formats
+			#endif
 		}
 		else
 		{
@@ -281,6 +302,10 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 		#endif
 	}
 	
+	/** 
+	 * It's better to use {@link MinecraftRenderWrapper#setLightmapId(int, IClientLevelWrapper)} if possible,
+	 * however old MC versions don't support it.
+	 */
 	public void updateLightmap(NativeImage lightPixels, IClientLevelWrapper level)
 	{
 		// Using ClientLevelWrapper as the key would be better, but we don't have a consistent way to create the same
@@ -290,6 +315,16 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 		
 		LightMapWrapper wrapper = this.lightmapByDimensionType.computeIfAbsent(dimensionType, (dimType) -> new LightMapWrapper());
 		wrapper.uploadLightmap(lightPixels);
+	}
+	public void setLightmapId(int tetxureId, IClientLevelWrapper level)
+	{
+		// Using ClientLevelWrapper as the key would be better, but we don't have a consistent way to create the same
+		// object for the same MC level and/or the same hash,
+		// so this will have to do for now
+		IDimensionTypeWrapper dimensionType = level.getDimensionType();
+
+		LightMapWrapper wrapper = this.lightmapByDimensionType.computeIfAbsent(dimensionType, (dimType) -> new LightMapWrapper());
+		wrapper.setLightmapId(tetxureId);
 	}
 	
 }

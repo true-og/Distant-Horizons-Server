@@ -69,8 +69,8 @@ public class TestChunkWorldGenerator extends AbstractDhApiChunkWorldGenerator
 		ChunkAccess chunk = this.level.getChunk(chunkPosX, chunkPosZ);
 		
 		
-		int minBuildHeight = this.level.getMinBuildHeight();
-		int maxBuildHeight = this.level.getMaxBuildHeight();
+		int minBuildHeight = this.levelWrapper.getMinHeight();
+		int maxBuildHeight = this.levelWrapper.getMaxHeight();
 		
 		DhApiChunk apiChunk = DhApiChunk.create(chunkPosX, chunkPosZ, minBuildHeight, maxBuildHeight);
 		for (int x = 0; x < 16; x++)

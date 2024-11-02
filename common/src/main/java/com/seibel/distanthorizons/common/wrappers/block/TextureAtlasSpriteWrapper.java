@@ -19,8 +19,14 @@
 
 package com.seibel.distanthorizons.common.wrappers.block;
 
-
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+
+#if MC_VER < MC_1_17_1
+#elif MC_VER < MC_1_21_3
+#else
+import com.seibel.distanthorizons.core.util.ColorUtil;
+import net.minecraft.client.renderer.texture.SpriteContents;
+#endif
 
 /**
  * For wrapping/utilizing around TextureAtlasSprite
@@ -29,15 +35,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
  */
 public class TextureAtlasSpriteWrapper
 {
-	
-	/**
-	 * This code is from Minecraft Forge
-	 * Which is licensed under the terms of GNU Lesser General Public License
-	 * as published by the Free Software Foundation version 2.1
-	 * of the License.
-	 *
-	 * The code has been modified to use TextureAtlasSprite
-	 */
 	public static int getPixelRGBA(TextureAtlasSprite sprite, int frameIndex, int x, int y)
 	{
         #if MC_VER < MC_1_17_1
@@ -51,13 +48,29 @@ public class TextureAtlasSpriteWrapper
 			y += sprite.animatedTexture.getFrameY(frameIndex) * sprite.height;
 		}
 		return sprite.mainImage[0].getPixelRGBA(x, y);
-        #else
+		#elif MC_VER < MC_1_21_3
 		if (sprite.contents().animatedTexture != null)
 		{
 			x += sprite.contents().animatedTexture.getFrameX(frameIndex) * sprite.contents().width();
 			y += sprite.contents().animatedTexture.getFrameY(frameIndex) * sprite.contents().width();
 		}
 		return sprite.contents().originalImage.getPixelRGBA(x, y);
+        #else
+		
+		SpriteContents content = sprite.contents(); // don't close, otherwise MC will be corrupted and you won't be able to re-access the texture
+		if (content.animatedTexture != null)
+		{
+			x += content.animatedTexture.getFrameX(frameIndex) * content.width();
+			y += content.animatedTexture.getFrameY(frameIndex) * content.width();
+		}
+		
+		int abgr = content.originalImage.getPixel(x, y);
+		// re-pack the color so we can access it normally
+		int a = (abgr & 0xFF000000) >>> 24;
+		int b = (abgr & 0x00FF0000) >>> 16;
+		int g = (abgr & 0x0000FF00) >>> 8;
+		int r = (abgr & 0x000000FF);
+		return ColorUtil.argbToInt(a, r, g, b);
         #endif
 		
 	}

@@ -58,6 +58,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.core.Holder;
 #endif
 
 public class BlockStateWrapper implements IBlockStateWrapper
@@ -142,10 +143,10 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		BlockState guessBlockState = (guess == null || guess.isAir()) ? null : (BlockState) guess.getWrappedMcObject();
 		BlockState inputBlockState = (blockState == null || blockState.isAir()) ? null : blockState;
 		
-		if (guess instanceof BlockStateWrapper guessWrapper
-				&& guessBlockState == inputBlockState)
+		if (guess instanceof BlockStateWrapper
+			&& guessBlockState == inputBlockState)
 		{
-			return guessWrapper;
+			return (BlockStateWrapper) guess;
 		}
 		else
 		{
@@ -362,7 +363,11 @@ public class BlockStateWrapper implements IBlockStateWrapper
 			// +1 to indicate that the block is translucent (in between transparent and opaque) 
 			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT + 1;
 		}
+		#if MC_VER < MC_1_21_3
 		else if (this.blockState.propagatesSkylightDown(EmptyBlockGetter.INSTANCE, BlockPos.ZERO))
+		#else
+		else if (this.blockState.propagatesSkylightDown())
+		#endif
 		{
 			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT;
 		}
@@ -481,8 +486,10 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		resourceLocation = Registry.BLOCK.getKey(this.blockState.getBlock());
 		#elif MC_VER == MC_1_18_2 || MC_VER == MC_1_19_2
 		resourceLocation = registryAccess.registryOrThrow(Registry.BLOCK_REGISTRY).getKey(this.blockState.getBlock());
-		#else
+		#elif MC_VER < MC_1_21_3
 		resourceLocation = registryAccess.registryOrThrow(Registries.BLOCK).getKey(this.blockState.getBlock());
+		#else
+		resourceLocation = registryAccess.lookupOrThrow(Registries.BLOCK).getKey(this.blockState.getBlock());
 		#endif
 		
 		
@@ -571,9 +578,13 @@ public class BlockStateWrapper implements IBlockStateWrapper
 				#elif MC_VER == MC_1_18_2 || MC_VER == MC_1_19_2
 				net.minecraft.core.RegistryAccess registryAccess = level.registryAccess();
 				block = registryAccess.registryOrThrow(Registry.BLOCK_REGISTRY).get(resourceLocation);
-				#else
+				#elif MC_VER < MC_1_21_3
 				net.minecraft.core.RegistryAccess registryAccess = level.registryAccess();
 				block = registryAccess.registryOrThrow(Registries.BLOCK).get(resourceLocation);
+				#else
+				net.minecraft.core.RegistryAccess registryAccess = level.registryAccess();
+				Optional<Holder.Reference<Block>> optionalBlockHolder = registryAccess.lookupOrThrow(Registries.BLOCK).get(resourceLocation);
+				block = optionalBlockHolder.isPresent() ? optionalBlockHolder.get().value() : null;
 				#endif
 				
 				

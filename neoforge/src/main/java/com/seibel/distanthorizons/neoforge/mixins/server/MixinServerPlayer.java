@@ -31,10 +31,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-#if MC_VER >= MC_1_21_1
+#if MC_VER < MC_1_20_6
 import net.minecraft.world.level.portal.DimensionTransition;
+#elif MC_VER < MC_1_21_1
+import net.neoforged.neoforge.common.util.ITeleporter;
+#elif MC_VER < MC_1_21_3
+import net.minecraft.world.level.portal.DimensionTransition;
+#else
+import net.minecraft.world.level.portal.TeleportTransition;
 #endif
-
 
 @Mixin(ServerPlayer.class)
 public class MixinServerPlayer implements IMixinServerPlayer
@@ -44,27 +49,37 @@ public class MixinServerPlayer implements IMixinServerPlayer
 	private ServerLevel distantHorizons$dimensionChangeDestination;
 	
 	
+	
 	@Unique
 	@Override
 	@Nullable
 	public ServerLevel distantHorizons$getDimensionChangeDestination() 
 	{ return this.distantHorizons$dimensionChangeDestination; }
 	
+	#if MC_VER < MC_1_20_6
 	@Inject(at = @At("HEAD"), method = "changeDimension")
-	#if MC_VER >= MC_1_21_1
+	public void changeDimension(ServerLevel destination, CallbackInfoReturnable<Entity> cir)
+	{ this.distantHorizons$dimensionChangeDestination = destination; }
+	#elif MC_VER < MC_1_21_1
+	@Inject(at = @At("HEAD"), method = "changeDimension")
+	public void changeDimension(ServerLevel destination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir)
+	{ this.distantHorizons$dimensionChangeDestination = destination; }
+	#elif MC_VER < MC_1_21_3
+	@Inject(at = @At("HEAD"), method = "changeDimension")
 	public void changeDimension(DimensionTransition dimensionTransition, CallbackInfoReturnable<Entity> cir)
 	{ this.distantHorizons$dimensionChangeDestination = dimensionTransition.newLevel(); }
 	#else
-	public void changeDimension(ServerLevel destination, CallbackInfoReturnable<Entity> cir)
-	{ this.distantHorizons$dimensionChangeDestination = destination; }
+	@Inject(at = @At("HEAD"), method = "teleport")
+	public void changeDimension(TeleportTransition teleportTransition, CallbackInfoReturnable<ServerPlayer> cir)
+	{ this.distantHorizons$dimensionChangeDestination = teleportTransition.newLevel(); }
 	#endif
 	
-	#if MC_VER >= MC_1_20_1
-	@Inject(at = @At("RETURN"), method = "setServerLevel")
-	public void setServerLevel(ServerLevel level, CallbackInfo ci)
-	#else
+	#if MC_VER < MC_1_20_1
 	@Inject(at = @At("RETURN"), method = "setLevel")
 	public void setLevel(ServerLevel level, CallbackInfo ci)
+	#else
+	@Inject(at = @At("RETURN"), method = "setServerLevel")
+	public void setServerLevel(ServerLevel level, CallbackInfo ci)
 	#endif
 	{
 		this.distantHorizons$dimensionChangeDestination = null;

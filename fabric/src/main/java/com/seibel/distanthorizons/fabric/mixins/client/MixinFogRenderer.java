@@ -23,6 +23,7 @@ import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -35,35 +36,42 @@ import net.minecraft.client.renderer.FogRenderer.FogMode;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+
 #if MC_VER < MC_1_17_1
 import net.minecraft.world.level.material.FluidState;
+#elif MC_VER < MC_1_21_3
+import net.minecraft.world.level.material.FogType;
 #else
 import net.minecraft.world.level.material.FogType;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.mojang.blaze3d.shaders.FogShape;
+import net.minecraft.client.renderer.FogParameters;
+import org.joml.Vector4f;
 #endif
 
 @Mixin(FogRenderer.class)
 public class MixinFogRenderer
 {
-	
 	// Using this instead of Float.MAX_VALUE because Sodium don't like it.
+	@Unique
 	private static final float A_REALLY_REALLY_BIG_VALUE = 420694206942069.F;
+	@Unique
 	private static final float A_EVEN_LARGER_VALUE = 42069420694206942069.F;
 	
-	@Inject(at = @At("RETURN"), method = "setupFog")
+	
+	
 	#if MC_VER < MC_1_19_2
+	@Inject(at = @At("RETURN"), method = "setupFog")
 	private static void disableSetupFog(Camera camera, FogMode fogMode, float f, boolean bl, CallbackInfo callback)
-	{
-	#else
+	#elif MC_VER < MC_1_21_3
+	@Inject(at = @At("RETURN"), method = "setupFog")
 	private static void disableSetupFog(Camera camera, FogMode fogMode, float f, boolean bl, float g, CallbackInfo callback)
-	{
+	#else
+	@Inject(at = @At("RETURN"), method = "setupFog", cancellable = true)
+	private static void disableSetupFog(Camera camera, FogMode fogMode, Vector4f vector4f, float f, boolean bl, float g, CallbackInfoReturnable<FogParameters> callback)
 	#endif
-		#if MC_VER < MC_1_17_1
-		FluidState fluidState = camera.getFluidInCamera();
-		boolean cameraNotInFluid = fluidState.isEmpty();
-		#else
-		FogType fogTypes = camera.getFluidInCamera();
-		boolean cameraNotInFluid = fogTypes == FogType.NONE;
-		#endif
+	{
+		boolean cameraNotInFluid = cameraNotInFluid(camera);
 		
 		Entity entity = camera.getEntity();
 		boolean isSpecialFog = (entity instanceof LivingEntity) && ((LivingEntity) entity).hasEffect(MobEffects.BLINDNESS);
@@ -74,11 +82,27 @@ public class MixinFogRenderer
 			#if MC_VER < MC_1_17_1
 			RenderSystem.fogStart(A_REALLY_REALLY_BIG_VALUE);
 			RenderSystem.fogEnd(A_EVEN_LARGER_VALUE);
-			#else
+			#elif MC_VER < MC_1_21_3
 			RenderSystem.setShaderFogStart(A_REALLY_REALLY_BIG_VALUE);
 			RenderSystem.setShaderFogEnd(A_EVEN_LARGER_VALUE);
+			#else
+			callback.setReturnValue(FogParameters.NO_FOG);
 			#endif
 		}
+	}
+	
+	@Unique
+	private static boolean cameraNotInFluid(Camera camera)
+	{
+		#if MC_VER < MC_1_17_1
+		FluidState fluidState = camera.getFluidInCamera();
+		boolean cameraNotInFluid = fluidState.isEmpty();
+		#else
+		FogType fogTypes = camera.getFluidInCamera();
+		boolean cameraNotInFluid = fogTypes == FogType.NONE;
+		#endif
+		
+		return cameraNotInFluid;
 	}
 	
 }

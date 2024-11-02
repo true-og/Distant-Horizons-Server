@@ -111,16 +111,22 @@ public class MixinLevelRenderer
 	    mcProjectionMatrix.setIdentity();
 		#endif
 	    
+		// TODO move this into a common place
+		float frameTime;
+		#if MC_VER < MC_1_21_1
+		frameTime = Minecraft.getInstance().getFrameTime();
+		#elif MC_VER < MC_1_21_3
+		frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+		#else
+		frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
+		#endif
+	    
 	    if (renderType.equals(RenderType.translucent())) 
 		{
 		    ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level),
 				    mcModelViewMatrix,
 				    mcProjectionMatrix,
-					#if MC_VER < MC_1_21_1
-					Minecraft.getInstance().getFrameTime()
-					#else
-				    Minecraft.getInstance().getTimer().getRealtimeDeltaTicks()
-					#endif
+				    frameTime
 				    );
 	    }
 		

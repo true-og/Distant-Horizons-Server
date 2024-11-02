@@ -19,78 +19,60 @@
 
 package com.seibel.distanthorizons.neoforge.mixins.server;
 
-import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
+#if MC_VER < MC_1_21_3
+import org.spongepowered.asm.mixin.Mixin;
 
+/**
+ * {@link MixinUtilBackgroundThread} was used for versions before 1.21.3
+ * This is just a dummy class/mixin to make the compiler happy.
+ *
+ * @see MixinUtilBackgroundThread
+ */
+@Mixin(net.minecraft.Util.class) // TODO we should allow version specific mixins so we don't have to create dummy mixins that exist for all MC versions
+public class MixinTracingExecutor
+{
+	
+}
+#else
+
+import com.seibel.distanthorizons.common.wrappers.DependencySetupDoneCheck;
 import com.seibel.distanthorizons.core.util.objects.RunOnThisThreadExecutorService;
+import net.minecraft.TracingExecutor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.seibel.distanthorizons.common.wrappers.DependencySetupDoneCheck;
-
-import net.minecraft.Util;
+import java.util.concurrent.Executor;
 
 /**
  * This is needed for DH's world gen so we can run
  * world gen on our own threads instead of using MC thread pools.
  * 
- * @see MixinTracingExecutor
+ * @see MixinUtilBackgroundThread
  * @see RunOnThisThreadExecutorService
  */
-@Mixin(Util.class)
-public class MixinUtilBackgroundThread
+@Mixin(TracingExecutor.class)
+public class MixinTracingExecutor
 {
+	// TODO put in a common location
 	private static boolean isWorldGenThread()
 	{ return DependencySetupDoneCheck.isDone && DependencySetupDoneCheck.getIsCurrentThreadDistantGeneratorThread.get(); }
 	
 	
+	// Util.backgroundExecutor().forName("init_biomes")
+	// needed for world gen
 	
-	#if MC_VER < MC_1_21_3
-	@Inject(method = "backgroundExecutor", at = @At("HEAD"), cancellable = true)
-	private static void overrideUtil$backgroundExecutor(CallbackInfoReturnable<ExecutorService> ci)
+	// replaced with TracingExecutor in MC 1.21.3+
+	@Inject(method = "forName(Ljava/lang/String;)Ljava/util/concurrent/Executor;", at = @At("HEAD"), cancellable = true)
+	private void forName(String executorName, CallbackInfoReturnable<Executor> ci)
 	{
 		if (isWorldGenThread())
 		{
 			// run this task on the current DH thread instead of a new MC thread
 			ci.setReturnValue(new RunOnThisThreadExecutorService());
 		}
-	}
-	#else
-	// replaced with TracingExecutor in MC 1.21.3+
-	#endif
-	
-	#if MC_VER < MC_1_17_1
-	#elif MC_VER < MC_1_21_3
-	@Inject(method = "wrapThreadWithTaskName(Ljava/lang/String;Ljava/lang/Runnable;)Ljava/lang/Runnable;",
-			at = @At("HEAD"), cancellable = true)
-	private static void overrideUtil$wrapThreadWithTaskName(String string, Runnable r, CallbackInfoReturnable<Runnable> ci)
-	{
-		if (isWorldGenThread())
-		{
-			//ApiShared.LOGGER.info("util wrapThreadWithTaskName(Runnable) triggered");
-			ci.setReturnValue(r);
-		}
-	}
-	#else
-	// replaced with TracingExecutor in MC 1.21.3+
-	#endif
-	
-	#if MC_VER < MC_1_18_2
-	#elif MC_VER < MC_1_21_3
-	@Inject(method = "wrapThreadWithTaskName(Ljava/lang/String;Ljava/util/function/Supplier;)Ljava/util/function/Supplier;",
-			at = @At("HEAD"), cancellable = true)
-	private static void overrideUtil$wrapThreadWithTaskNameForSupplier(String string, Supplier<?> r, CallbackInfoReturnable<Supplier<?>> ci)
-	{
-		if (isWorldGenThread())
-		{
-			//ApiShared.LOGGER.info("util wrapThreadWithTaskName(Supplier) triggered");
-			ci.setReturnValue(r);
-		}
-	}
-	#else
-	// replaced with TracingExecutor in MC 1.21.3+
-	#endif
+	}	
 	
 }
+#endif

@@ -80,21 +80,43 @@ public final class StepBiomes
 		
 		for (ChunkAccess chunk : chunksToDo)
 		{
-			// System.out.println("StepBiomes: "+chunk.getPos());
 			#if MC_VER < MC_1_18_2
 			this.environment.params.generator.createBiomes(this.environment.params.biomes, chunk);
 			#elif MC_VER < MC_1_19_2
-			chunk = this.environment.joinSync(this.environment.params.generator.createBiomes(this.environment.params.biomes, Runnable::run, Blender.of(worldGenRegion),
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.createBiomes(
+							this.environment.params.biomes, 
+							Runnable::run, 
+							Blender.of(worldGenRegion),
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk)
+					);
 			#elif MC_VER < MC_1_19_4
-			chunk = this.environment.joinSync(this.environment.params.generator.createBiomes(this.environment.params.biomes, Runnable::run, this.environment.params.randomState, Blender.of(worldGenRegion),
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.createBiomes(
+							this.environment.params.biomes, 
+							Runnable::run, 
+							this.environment.params.randomState, Blender.of(worldGenRegion),
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk)
+					);
 			#elif MC_VER < MC_1_21_1
-			chunk = this.environment.joinSync(this.environment.params.generator.createBiomes(Runnable::run, this.environment.params.randomState, Blender.of(worldGenRegion),
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.createBiomes(
+							Runnable::run, 
+							this.environment.params.randomState, 
+							Blender.of(worldGenRegion),
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk)
+					);
 			#else
-			chunk = this.environment.joinSync(this.environment.params.generator.createBiomes(this.environment.params.randomState, Blender.of(worldGenRegion),
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.createBiomes(
+							this.environment.params.randomState, 
+							Blender.of(worldGenRegion),
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk)
+					);
 			#endif
 		}
 	}

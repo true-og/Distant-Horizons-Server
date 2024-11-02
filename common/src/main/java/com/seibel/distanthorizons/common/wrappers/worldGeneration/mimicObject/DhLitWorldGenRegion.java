@@ -170,7 +170,18 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 		if (center.isUpgrading())
 		{
 			LevelHeightAccessor levelHeightAccessor = center.getHeightAccessorForGeneration();
-			if (blockPos.getY() < levelHeightAccessor.getMinBuildHeight() || blockPos.getY() >= levelHeightAccessor.getMaxBuildHeight())
+			
+			int minY;
+			int maxY;
+			#if MC_VER < MC_1_21_3
+			minY = levelHeightAccessor.getMinBuildHeight();
+			maxY = levelHeightAccessor.getMaxBuildHeight();
+			#else
+			minY = levelHeightAccessor.getMinY();
+			maxY = levelHeightAccessor.getMaxY();
+			#endif
+			
+			if (blockPos.getY() < minY || blockPos.getY() >= maxY)
 			{
 				return false;
 			}
@@ -390,14 +401,10 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	/** Overriding allows us to use our own lighting engine */
 	@Override
 	public boolean canSeeSky(@NotNull BlockPos blockPos)
-	{
-		return (this.getBrightness(LightLayer.SKY, blockPos) >= this.getMaxLightLevel());
-	}
+	{ return (this.getBrightness(LightLayer.SKY, blockPos) >= LodUtil.MAX_MC_LIGHT); }
 	
 	public int getBlockTint(@NotNull BlockPos blockPos, @NotNull ColorResolver colorResolver)
-	{
-		return this.calculateBlockTint(blockPos, colorResolver);
-	}
+	{ return this.calculateBlockTint(blockPos, colorResolver); }
 	
 	private Biome _getBiome(BlockPos pos)
 	{

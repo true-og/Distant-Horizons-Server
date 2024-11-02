@@ -20,6 +20,7 @@
 package com.seibel.distanthorizons.common.wrappers.misc;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.seibel.distanthorizons.core.render.glObject.GLState;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 import org.lwjgl.opengl.GL32;
 
@@ -30,6 +31,7 @@ public class LightMapWrapper implements ILightMapWrapper
 	private int textureId = 0;
 	
 	
+	
 	//==============//
 	// constructors //
 	//==============//
@@ -38,9 +40,9 @@ public class LightMapWrapper implements ILightMapWrapper
 	
 	
 	
-	//=========//
-	// methods //
-	//=========//
+	//==================//
+	// lightmap syncing //
+	//==================//
 	
 	public void uploadLightmap(NativeImage image)
 	{
@@ -64,6 +66,17 @@ public class LightMapWrapper implements ILightMapWrapper
 				0, image.format().glFormat(), GL32.GL_UNSIGNED_BYTE, (ByteBuffer) null);
 	}
 	
+	public void setLightmapId(int minecraftLightmapTetxureId)
+	{
+		// just use the MC texture ID
+		this.textureId = minecraftLightmapTetxureId;
+	}
+	
+	
+	
+	//==============//
+	// lightmap use //
+	//==============//
 	
 	@Override
 	public void bind()
@@ -76,3 +89,4 @@ public class LightMapWrapper implements ILightMapWrapper
 	public void unbind() { GL32.glBindTexture(GL32.GL_TEXTURE_2D, 0); }
 	
 }
+

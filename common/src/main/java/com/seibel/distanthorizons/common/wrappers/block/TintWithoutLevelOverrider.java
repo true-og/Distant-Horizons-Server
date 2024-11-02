@@ -132,17 +132,27 @@ public class TintWithoutLevelOverrider implements BlockAndTintGetter
 	}
 	
 	
+	
+	//==============//
+	// post MC 1.17 //
+	//==============//
+	
 	#if MC_VER >= MC_1_17_1
+	
 	@Override
 	public int getHeight()
-	{
-		throw new UnsupportedOperationException("ERROR: getHeight() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	{ throw new UnsupportedOperationException("ERROR: getHeight() called on TintWithoutLevelOverrider. Object is for tinting only."); }
+	
+	#if MC_VER < MC_1_21_3
 	@Override
-	public int getMinBuildHeight()
-	{
-		throw new UnsupportedOperationException("ERROR: getMinBuildHeight() called on TintWithoutLevelOverrider. Object is for tinting only.");
-	}
+	public int getMinBuildHeight() 
+	{ throw new UnsupportedOperationException("ERROR: getMinBuildHeight() called on TintWithoutLevelOverrider. Object is for tinting only."); }
+	#else
+	@Override
+	public int getMinY()
+	{ throw new UnsupportedOperationException("ERROR: getMinY() called on TintWithoutLevelOverrider. Object is for tinting only."); }
+	#endif
+	
 	#endif
 	
 }

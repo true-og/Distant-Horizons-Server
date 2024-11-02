@@ -54,9 +54,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TextComponent;
 #endif
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.ChunkPos;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+
+#if MC_VER < MC_1_21_3
+#else
+import net.minecraft.util.profiling.Profiler;
+#endif
 
 /**
  * A singleton that wraps the Minecraft object.
@@ -243,13 +249,20 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	@Override
 	public IProfilerWrapper getProfiler()
 	{
+		ProfilerFiller profiler;
+		#if MC_VER < MC_1_21_3
+		profiler = MINECRAFT.getProfiler();
+		#else
+		profiler = Profiler.get();
+		#endif
+		
 		if (this.profilerWrapper == null)
 		{
-			this.profilerWrapper = new ProfilerWrapper(MINECRAFT.getProfiler());
+			this.profilerWrapper = new ProfilerWrapper(profiler);
 		}
-		else if (MINECRAFT.getProfiler() != this.profilerWrapper.profiler)
+		else if (profiler != this.profilerWrapper.profiler)
 		{
-			this.profilerWrapper.profiler = MINECRAFT.getProfiler();
+			this.profilerWrapper.profiler = profiler;
 		}
 		
 		return this.profilerWrapper;
@@ -282,8 +295,10 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 		}
         #if MC_VER < MC_1_19_2
 		player.sendMessage(new TextComponent(string), getPlayer().getUUID());
-        #else
+		#elif MC_VER < MC_1_21_3
 		player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(string));
+        #else
+		player.displayClientMessage(net.minecraft.network.chat.Component.translatable(string), /*isOverlay*/false);
         #endif
 	}
 	

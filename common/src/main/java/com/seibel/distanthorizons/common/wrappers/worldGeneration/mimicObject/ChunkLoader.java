@@ -19,7 +19,6 @@
 
 package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
@@ -27,21 +26,13 @@ import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGeneratio
 
 import com.seibel.distanthorizons.core.logging.ConfigBasedLogger;
 import com.seibel.distanthorizons.core.util.LodUtil;
-import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
-import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 
+import it.unimi.dsi.fastutil.shorts.ShortList;
 import net.minecraft.core.Registry;
-import net.minecraft.core.SectionPos;
 #if MC_VER >= MC_1_19_4
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -50,7 +41,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
@@ -59,20 +49,22 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
+
+#if MC_VER < MC_1_21_3
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
+#else
+#endif
+
 import net.minecraft.world.level.levelgen.Heightmap;
 #if MC_VER >= MC_1_18_2
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 #if MC_VER < MC_1_19_2
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 #endif
-import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.ticks.LevelChunkTicks;
 #endif
 #if MC_VER >= MC_1_18_2
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 #if MC_VER < MC_1_19_2
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 #endif
@@ -238,18 +230,23 @@ public class ChunkLoader
 		#if MC_VER >= MC_1_18_2
 		#if MC_VER < MC_1_19_4
 		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
-		#else
+		#elif MC_VER < MC_1_21_3
 		Registry<Biome> biomes = level.registryAccess().registryOrThrow(Registries.BIOME);
+		#else
+		Registry<Biome> biomes = level.registryAccess().lookupOrThrow(Registries.BIOME);
 		#endif
 			#if MC_VER < MC_1_18_2
 			Codec<PalettedContainer<Biome>> biomeCodec = PalettedContainer.codec(
 					biomes, biomes.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getOrThrow(Biomes.PLAINS));
 			#elif MC_VER < MC_1_19_2
-		Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codec(
+			Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codec(
+				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
+			#elif MC_VER < MC_1_21_3
+			Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codecRW(
 				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
 			#else
-		Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codecRW(
-				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getHolderOrThrow(Biomes.PLAINS));
+			Codec<PalettedContainer<Holder<Biome>>> biomeCodec = PalettedContainer.codecRW(
+				biomes.asHolderIdMap(), biomes.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomes.getOrThrow(Biomes.PLAINS));
 			#endif
 		#endif
 		int sectionYIndex = #if MC_VER < MC_1_17_1 16; #else level.getSectionsCount(); #endif
@@ -302,14 +299,28 @@ public class ChunkLoader
 						: new PalettedContainer<Biome>(biomes, biomes.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
 				#else
 				
-				biomeContainer = tagSection.contains("biomes", 10)
-						? biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logBiomeDeserializationWarning(chunkPos, sectionYIndex, (String) string))
+				
+				if (tagSection.contains("biomes", 10))
+				{
+					biomeContainer =
+						biomeCodec.parse(NbtOps.INSTANCE, tagSection.getCompound("biomes")).promotePartial(string -> logBiomeDeserializationWarning(chunkPos, sectionYIndex, (String) string))
 						#if MC_VER < MC_1_20_6 
-						.getOrThrow(false, LOGGER::error)
+						.getOrThrow(false, LOGGER::error);
 						#else
-						.getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null))
+						.getOrThrow((message) -> (RuntimeException) LOGGER.errorAndThrow(message, null));
 						#endif
-						: new PalettedContainer<Holder<Biome>>(biomes.asHolderIdMap(), biomes.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
+				}
+				else
+				{
+					biomeContainer = new PalettedContainer<Holder<Biome>>(biomes.asHolderIdMap(), 
+							#if MC_VER < MC_1_21_3
+							biomes.getHolderOrThrow(Biomes.PLAINS), 
+							#else
+							biomes.getOrThrow(Biomes.PLAINS),
+							#endif
+							PalettedContainer.Strategy.SECTION_BIOMES);
+				}
+				
 				#endif
 				
 				#if MC_VER < MC_1_20_1
@@ -353,12 +364,16 @@ public class ChunkLoader
 	private static void readPostPocessings(LevelChunk chunk, CompoundTag chunkData)
 	{
 		ListTag tagPostProcessings = chunkData.getList("PostProcessing", 9);
-		for (int n = 0; n < tagPostProcessings.size(); ++n)
+		for (int i = 0; i < tagPostProcessings.size(); ++i)
 		{
-			ListTag listTag3 = tagPostProcessings.getList(n);
-			for (int o = 0; o < listTag3.size(); ++o)
+			ListTag listTag3 = tagPostProcessings.getList(i);
+			for (int j = 0; j < listTag3.size(); ++j)
 			{
-				chunk.addPackedPostProcess(listTag3.getShort(o), n);
+				#if MC_VER < MC_1_21_3
+				chunk.addPackedPostProcess(listTag3.getShort(j), i);
+				#else
+				chunk.addPackedPostProcess(ShortList.of(listTag3.getShort(j)), i);
+				#endif
 			}
 		}
 	}
@@ -370,7 +385,12 @@ public class ChunkLoader
 		{
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			Dynamic<CompoundTag> blendingDataTag = new Dynamic(NbtOps.INSTANCE, chunkData.getCompound("blending_data"));
+			
+			#if MC_VER < MC_1_21_3
 			blendingData = BlendingData.CODEC.parse(blendingDataTag).resultOrPartial(LOGGER::error).orElse(null);
+			#else
+			blendingData = BlendingData.unpack(BlendingData.Packed.CODEC.parse(blendingDataTag).resultOrPartial(LOGGER::error).orElse(null));
+			#endif
 		}
 		return blendingData;
 	}
@@ -392,7 +412,7 @@ public class ChunkLoader
 		return null;
 		#else
 		
-		CombinedChunkLightStorage combinedStorage = new CombinedChunkLightStorage(ChunkWrapper.getMinBuildHeight(chunk), ChunkWrapper.getMaxBuildHeight(chunk));
+		CombinedChunkLightStorage combinedStorage = new CombinedChunkLightStorage(ChunkWrapper.getInclusiveMinBuildHeight(chunk), ChunkWrapper.getExclusiveMaxBuildHeight(chunk));
 		ChunkLightStorage blockLightStorage = combinedStorage.blockLightStorage;
 		ChunkLightStorage skyLightStorage = combinedStorage.skyLightStorage;
 		
@@ -471,7 +491,7 @@ public class ChunkLoader
 							skyLight = LodUtil.MAX_MC_LIGHT;
 						}
 						
-						int y = relY + (sectionIndex * LodUtil.CHUNK_WIDTH) + ChunkWrapper.getMinBuildHeight(chunk);
+						int y = relY + (sectionIndex * LodUtil.CHUNK_WIDTH) + ChunkWrapper.getInclusiveMinBuildHeight(chunk);
 						blockLightStorage.set(relX, y, relZ, blockLight);
 						skyLightStorage.set(relX, y, relZ, skyLight);
 					}

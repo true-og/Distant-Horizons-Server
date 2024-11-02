@@ -78,21 +78,36 @@ public final class StepNoise
 		
 		for (ChunkAccess chunk : chunksToDo)
 		{
-			// System.out.println("StepNoise: "+chunk.getPos());
 			#if MC_VER < MC_1_17_1
 			this.environment.params.generator.fillFromNoise(worldGenRegion, tParams.structFeat, chunk);
 			#elif MC_VER < MC_1_18_2
-			chunk = this.environment.joinSync(this.environment.params.generator.fillFromNoise(Runnable::run,
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.fillFromNoise(
+							Runnable::run,
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk));
 			#elif MC_VER < MC_1_19_2
-			chunk = this.environment.joinSync(this.environment.params.generator.fillFromNoise(Runnable::run, Blender.of(worldGenRegion),
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.fillFromNoise(
+							Runnable::run, 
+							Blender.of(worldGenRegion),
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk));
 			#elif MC_VER < MC_1_21_1
-			chunk = this.environment.joinSync(this.environment.params.generator.fillFromNoise(Runnable::run, Blender.of(worldGenRegion), this.environment.params.randomState,
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.fillFromNoise(
+							Runnable::run, 
+							Blender.of(worldGenRegion), 
+							this.environment.params.randomState,
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk));
 			#else
-			chunk = this.environment.joinSync(this.environment.params.generator.fillFromNoise(Blender.of(worldGenRegion), this.environment.params.randomState,
-					tParams.structFeat.forWorldGenRegion(worldGenRegion), chunk));
+			chunk = this.environment.confirmFutureWasRunSynchronously(
+						this.environment.params.generator.fillFromNoise(
+							Blender.of(worldGenRegion), 
+							this.environment.params.randomState,
+							tParams.structFeat.forWorldGenRegion(worldGenRegion), 
+							chunk));
 			#endif
 			UncheckedInterruptedException.throwIfInterrupted();
 		}
