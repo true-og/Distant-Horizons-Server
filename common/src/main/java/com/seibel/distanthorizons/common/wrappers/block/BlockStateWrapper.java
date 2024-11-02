@@ -420,6 +420,11 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	@Override
 	public boolean isSolid()
 	{
+		if (this.isAir())
+		{
+			return false;
+		}
+		
         #if MC_VER < MC_1_20_1
 		return this.blockState.getMaterial().isSolid();
         #else
