@@ -822,7 +822,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			// light each chunk in the list
 			for (int i = 0; i < iChunkWrapperList.size(); i++)
 			{
-				IChunkWrapper centerChunk = iChunkWrapperList.get(i);
+				ChunkWrapper centerChunk = (ChunkWrapper) iChunkWrapperList.get(i);
 				if (centerChunk == null)
 				{
 					continue;
@@ -832,7 +832,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				
 				// make sure the height maps are all properly generated
 				// if this isn't done everything else afterward may fail
-				Heightmap.primeHeightmaps(((ChunkWrapper)centerChunk).getChunk(), ChunkStatus.FEATURES.heightmapsAfter());
+				Heightmap.primeHeightmaps(centerChunk.getChunk(), ChunkStatus.FEATURES.heightmapsAfter());
+				centerChunk.recalculateDhHeightMaps();
 				
 				// pre-generated chunks should have lighting but new ones won't
 				if (!centerChunk.isDhBlockLightingCorrect())

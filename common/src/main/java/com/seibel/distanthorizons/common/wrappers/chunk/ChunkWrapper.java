@@ -23,9 +23,11 @@ import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.misc.MutableBlockPosWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.DhLitWorldGenRegion;
+import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
+import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
@@ -89,8 +91,6 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	private boolean isDhBlockLightCorrect = false;
 	private boolean isDhSkyLightCorrect = false;
-	/** only used when connected to a dedicated server */
-	private boolean isMcClientLightingCorrect = false;
 	
 	private ChunkLightStorage blockLightStorage;
 	private ChunkLightStorage skyLightStorage;
@@ -99,6 +99,11 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	private int minNonEmptyHeight = Integer.MIN_VALUE;
 	private int maxNonEmptyHeight = Integer.MAX_VALUE;
+	
+	/** will be null if we are using MC heightmaps */
+	private final int[][] solidHeightMap;
+	/** will be null if we are using MC heightmaps */
+	private final int[][] lightBlockingHeightMap;
 	
 	
 	
@@ -113,6 +118,19 @@ public class ChunkWrapper implements IChunkWrapper
 		this.wrappedLevel = wrappedLevel;
 		this.chunkPos = new DhChunkPos(chunk.getPos().x, chunk.getPos().z);
 		
+		// use DH heightmaps if requested
+		if (Config.Common.LodBuilding.recalculateChunkHeightmaps.get())
+		{
+			this.solidHeightMap = new int[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH];
+			this.lightBlockingHeightMap = new int[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH];
+			
+			this.recalculateDhHeightMaps();
+		}
+		else
+		{
+			this.solidHeightMap = null;
+			this.lightBlockingHeightMap = null;
+		}
 	}
 	
 	
@@ -235,11 +253,89 @@ public class ChunkWrapper implements IChunkWrapper
 	private int getChunkSectionMinHeight(int index) { return (index * 16) + this.getInclusiveMinBuildHeight(); }
 	
 	
-	@Override
-	public int getSolidHeightMapValue(int xRel, int zRel) { return this.chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE).getFirstAvailable(xRel, zRel); }
+	public void recalculateDhHeightMaps()
+	{
+		// re-calculate the min/max heights for consistency (during world gen these may be wrong)
+		this.minNonEmptyHeight = Integer.MIN_VALUE;
+		this.maxNonEmptyHeight = Integer.MAX_VALUE;
+		
+		
+		// recalculate heightmaps if needed
+		if (this.solidHeightMap != null)
+		{
+			for (int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
+			{
+				for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
+				{
+					int minInclusiveBuildHeight = this.getMinNonEmptyHeight();
+					// if no blocks are found the height map will be at the bottom of the world
+					int solidHeight = minInclusiveBuildHeight;
+					int lightBlockingHeight = minInclusiveBuildHeight;
+					
+					
+					int y = this.getMaxNonEmptyHeight(); //this.getExclusiveMaxBuildHeight();
+					IBlockStateWrapper block = this.getBlockState(x, y, z);
+					while (// go down until we reach the minimum build height
+							y > minInclusiveBuildHeight
+							// keep going until we find both height map values
+							&& (solidHeight == minInclusiveBuildHeight || lightBlockingHeight == minInclusiveBuildHeight))
+					{
+						// is this block solid?
+						if (solidHeight == minInclusiveBuildHeight
+								&& block.isSolid())
+						{
+							solidHeight = y;
+						}
+						
+						// is this block light blocking?
+						if (lightBlockingHeight == minInclusiveBuildHeight
+								&& block.getOpacity() != LodUtil.BLOCK_FULLY_TRANSPARENT)
+						{
+							lightBlockingHeight = y;
+						}
+						
+						// get the next block down
+						y--;
+						block = this.getBlockState(x, y, z);
+					}
+					
+					this.solidHeightMap[x][z] = solidHeight;
+					this.lightBlockingHeightMap[x][z] = lightBlockingHeight;
+				}
+			}
+		}
+	}
 	
 	@Override
-	public int getLightBlockingHeightMapValue(int xRel, int zRel) { return this.chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getFirstAvailable(xRel, zRel); }
+	public int getSolidHeightMapValue(int xRel, int zRel) 
+	{ 
+		this.throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(xRel, zRel);
+		
+		// will be null if we want to use MC heightmaps
+		if (this.solidHeightMap == null)
+		{
+			return this.chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE).getFirstAvailable(xRel, zRel);	
+		}
+		else
+		{
+			return this.solidHeightMap[xRel][zRel];
+		}
+	}
+	
+	@Override
+	public int getLightBlockingHeightMapValue(int xRel, int zRel) 
+	{
+		this.throwIndexOutOfBoundsIfRelativePosOutsideChunkBounds(xRel, zRel);
+		
+		if (this.lightBlockingHeightMap == null)
+		{
+			return this.chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getFirstAvailable(xRel, zRel);
+		}
+		else
+		{
+			return this.lightBlockingHeightMap[xRel][zRel];
+		} 
+	}
 	
 	
 	@Override
