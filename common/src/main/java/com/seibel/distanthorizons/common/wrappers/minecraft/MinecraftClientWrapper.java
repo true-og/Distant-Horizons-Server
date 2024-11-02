@@ -340,7 +340,15 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	@Override
 	public int getPlayerCount()
 	{
-		return Objects.requireNonNull(MINECRAFT.getSingleplayerServer()).getPlayerCount();
+		// can be null if the server hasn't finished booting up yet
+		if (MINECRAFT.getSingleplayerServer() == null)
+		{
+			return 1;
+		}
+		else
+		{
+			return MINECRAFT.getSingleplayerServer().getPlayerCount();
+		}
 	}
 	
 }
