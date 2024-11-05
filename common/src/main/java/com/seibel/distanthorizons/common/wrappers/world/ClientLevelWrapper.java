@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.level.chunk.ChunkStatus;
 #else
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import com.seibel.distanthorizons.core.util.ColorUtil;
 #endif
 
 public class ClientLevelWrapper implements IClientLevelWrapper
