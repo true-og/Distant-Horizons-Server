@@ -2,6 +2,8 @@ accessWidener v1 named
 
 # used when determining where to save files to
 accessible field net/minecraft/world/level/storage/DimensionDataStorage dataFolder Ljava/nio/file/Path;
+# used to help determine what folder a clientLevel is
+accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
 
 # used when rendering
 accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)F

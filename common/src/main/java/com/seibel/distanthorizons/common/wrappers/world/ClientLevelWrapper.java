@@ -13,7 +13,6 @@ import com.seibel.distanthorizons.core.level.IServerKeyedClientLevel;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
-import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
@@ -193,6 +192,9 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	public String getDimensionName() { return this.level.dimension().location().toString(); }
 	
 	@Override
+	public long getHashedSeed() { return this.level.getBiomeManager().biomeZoomSeed; }
+	
+	@Override
 	public EDhApiLevelType getLevelType() { return EDhApiLevelType.CLIENT_LEVEL; }
 	
 	public ClientLevel getLevel() { return this.level; }
@@ -317,7 +319,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 			return "Wrapped{null}";
 		}
 		
-		return "Wrapped{" + this.level.toString() + "@" + this.getDimensionName() + "}";
+		return "Wrapped{" + this.level.toString() + "@" + this.getLevelIdString() + "}";
 	}
 	
 }

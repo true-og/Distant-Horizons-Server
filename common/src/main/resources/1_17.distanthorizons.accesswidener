@@ -1,8 +1,9 @@
 accessWidener v1 named
 
-
 # used when determining where to save files to
 accessible field net/minecraft/world/level/storage/DimensionDataStorage dataFolder Ljava/io/File;
+# used to help determine what folder a clientLevel is
+accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
 
 # used when rendering
 accessible field com/mojang/blaze3d/vertex/VertexBuffer indexCount I
