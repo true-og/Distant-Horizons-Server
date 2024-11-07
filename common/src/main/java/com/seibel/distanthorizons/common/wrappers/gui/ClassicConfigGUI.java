@@ -142,13 +142,17 @@ public class ClassicConfigGUI
 				switch (isValid)
 				{
 					case 0:
-						((EntryInfo) info.guiValue).error = null; break;
+						((EntryInfo) info.guiValue).error = null; 
+						break;
 					case -1:
-						((EntryInfo) info.guiValue).error = new AbstractMap.SimpleEntry<>(editBox, TextOrTranslatable("§cMinimum length is " + ((ConfigEntry) info).getMin())); break;
+						((EntryInfo) info.guiValue).error = new AbstractMap.SimpleEntry<>(editBox, TextOrTranslatable("§cMinimum length is " + ((ConfigEntry) info).getMin())); 
+						break;
 					case 1:
-						((EntryInfo) info.guiValue).error = new AbstractMap.SimpleEntry<>(editBox, TextOrTranslatable("§cMaximum length is " + ((ConfigEntry) info).getMax())); break;
+						((EntryInfo) info.guiValue).error = new AbstractMap.SimpleEntry<>(editBox, TextOrTranslatable("§cMaximum length is " + ((ConfigEntry) info).getMax())); 
+						break;
 					case 2:
-						((EntryInfo) info.guiValue).error = new AbstractMap.SimpleEntry<>(editBox, TextOrTranslatable("§cValue is invalid")); break;
+						((EntryInfo) info.guiValue).error = new AbstractMap.SimpleEntry<>(editBox, TextOrTranslatable("§cValue is invalid")); 
+						break;
 				}
 			}
 			
@@ -471,47 +475,47 @@ public class ClassicConfigGUI
 	
 	
 	
-	private static void initEntry(AbstractConfigType info, String translationPrefix)
+	private static void initEntry(AbstractConfigType configType, String translationPrefix)
 	{
-		info.guiValue = new EntryInfo();
-		Class<?> fieldClass = info.getType();
+		configType.guiValue = new EntryInfo();
+		Class<?> fieldClass = configType.getType();
 		
-		if (ConfigEntry.class.isAssignableFrom(info.getClass()))
+		if (ConfigEntry.class.isAssignableFrom(configType.getClass()))
 		{
 			if (fieldClass == Integer.class)
 			{
 				// For int
-				textField(info, Integer::parseInt, INTEGER_ONLY_REGEX, true);
+				textField(configType, Integer::parseInt, INTEGER_ONLY_REGEX, true);
 			}
 			else if (fieldClass == Double.class)
 			{
 				// For double
-				textField(info, Double::parseDouble, DECIMAL_ONLY_REGEX, false);
+				textField(configType, Double::parseDouble, DECIMAL_ONLY_REGEX, false);
 			}
 			else if (fieldClass == String.class || fieldClass == List.class)
 			{
 				// For string or list
-				textField(info, String::length, null, true);
+				textField(configType, String::length, null, true);
 			}
 			else if (fieldClass == Boolean.class)
 			{
 				// For boolean
 				Function<Object, Component> func = value -> Translatable("distanthorizons.general."+((Boolean) value ? "true" : "false")).withStyle((Boolean) value ? ChatFormatting.GREEN : ChatFormatting.RED);
 				
-				((EntryInfo) info.guiValue).widget = new AbstractMap.SimpleEntry<Button.OnPress, Function<Object, Component>>(button -> {
-					((ConfigEntry) info).uiSetWithoutSaving(!(Boolean) info.get());
-					button.setMessage(func.apply(info.get()));
+				((EntryInfo) configType.guiValue).widget = new AbstractMap.SimpleEntry<Button.OnPress, Function<Object, Component>>(button -> {
+					((ConfigEntry) configType).uiSetWithoutSaving(!(Boolean) configType.get());
+					button.setMessage(func.apply(configType.get()));
 				}, func);
 			}
 			else if (fieldClass.isEnum())
 			{
 				// For enum
-				List<?> values = Arrays.asList(info.getType().getEnumConstants());
-				Function<Object, Component> func = value -> Translatable(translationPrefix + "enum." + fieldClass.getSimpleName() + "." + info.get().toString());
-				((EntryInfo) info.guiValue).widget = new AbstractMap.SimpleEntry<Button.OnPress, Function<Object, Component>>(button -> {
+				List<?> values = Arrays.asList(configType.getType().getEnumConstants());
+				Function<Object, Component> func = value -> Translatable(translationPrefix + "enum." + fieldClass.getSimpleName() + "." + configType.get().toString());
+				((EntryInfo) configType.guiValue).widget = new AbstractMap.SimpleEntry<Button.OnPress, Function<Object, Component>>(button -> {
 					
 					// get the currently selected enum and enum index
-					int startingIndex = values.indexOf(info.get());
+					int startingIndex = values.indexOf(configType.get());
 					Enum<?> enumValue = (Enum<?>) values.get(startingIndex);
 					
 					// search for the next enum that is selectable
@@ -539,12 +543,12 @@ public class ClassicConfigGUI
 					}
 					
 					
-					((ConfigEntry<Enum<?>>) info).uiSetWithoutSaving(enumValue);
-					button.setMessage(func.apply(info.get()));
+					((ConfigEntry<Enum<?>>) configType).uiSetWithoutSaving(enumValue);
+					button.setMessage(func.apply(configType.get()));
 				}, func);
 			}
 		}
-		else if (ConfigCategory.class.isAssignableFrom(info.getClass()))
+		else if (ConfigCategory.class.isAssignableFrom(configType.getClass()))
 		{
 //            if (!info.info.getName().equals(""))
 //                info.name = new TranslatableComponent(info.info.getName());
