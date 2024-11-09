@@ -25,8 +25,6 @@ public class ServerKeyedClientLevel extends ClientLevelWrapper implements IServe
 	public String getServerLevelKey() { return this.serverLevelKey; }
 	
 	@Override
-	public String getDimensionName() { return this.getServerLevelKey(); }
-	@Override 
-	public String getLevelIdString() { return this.getServerLevelKey(); }
+	public String getDhIdentifier() { return this.getServerLevelKey(); }
 	
 }

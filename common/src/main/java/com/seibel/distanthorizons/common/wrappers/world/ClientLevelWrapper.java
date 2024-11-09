@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.level.chunk.ChunkStatus;
 #else
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import com.seibel.distanthorizons.core.util.ColorUtil;
 #endif
 
 public class ClientLevelWrapper implements IClientLevelWrapper
@@ -187,13 +186,16 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	@Override
 	public IDimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
-
+	
 	
 	@Override
 	public String getDimensionName() { return this.level.dimension().location().toString(); }
 	
 	@Override
-	public long getHashedSeed() { return this.level.getBiomeManager().biomeZoomSeed; }
+	public int getHashedSeed() { return (int) this.level.getBiomeManager().biomeZoomSeed; }
+	
+	@Override
+	public String getDhIdentifier() { return this.getHashedSeed() + "@" + this.getDimensionName(); }
 	
 	@Override
 	public EDhApiLevelType getLevelType() { return EDhApiLevelType.CLIENT_LEVEL; }
@@ -320,7 +322,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 			return "Wrapped{null}";
 		}
 		
-		return "Wrapped{" + this.level.toString() + "@" + this.getLevelIdString() + "}";
+		return "Wrapped{" + this.level.toString() + "@" + this.getDhIdentifier() + "}";
 	}
 	
 }

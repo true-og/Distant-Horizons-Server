@@ -335,9 +335,6 @@ public class MinecraftClientWrapper implements IMinecraftClientWrapper, IMinecra
 	public void executeOnRenderThread(Runnable runnable) { MINECRAFT.execute(runnable); }
 	
 	@Override
-	public boolean isWorldNew() { throw new UnsupportedOperationException("Not Implemented"); }
-	
-	@Override
 	public int getPlayerCount()
 	{
 		// can be null if the server hasn't finished booting up yet
