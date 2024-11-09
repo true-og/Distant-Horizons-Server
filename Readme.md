@@ -1,4 +1,4 @@
-# <img src="https://gitlab.com/jeseibel/distant-horizons-core/-/raw/main/_Misc%20Files%2Flogo%20files%2Fnew%2FSVG%2FDistant-Horizons-Logo.svg" height="128px"> 
+# <img src="https://gitlab.com/distant-horizons-team/distant-horizons-core/-/raw/main/_Misc%20Files/logo%20files/new/SVG/Distant-Horizons.svg" height="128px"> 
 _See farther without turning your game into a slide show._
 
 <br>
@@ -131,14 +131,14 @@ Prerequisites:
 
 From the File Explorer:
 1. Download and extract the project zip
-2. Download the core from https://gitlab.com/jeseibel/distant-horizons-core and extract into a folder called `coreSubProjects`
+2. Download the core from https://gitlab.com/distant-horizons-team/distant-horizons-core and extract into a folder called `coreSubProjects`
 3. Open a terminal emulator in the project folder (On Windows you can type `cmd` in the title bar)
 4. Run the commands: `./gradlew assemble` (You may need to use a `.\` on Windows)
 5. Merge the jars with `./gradlew mergeJars`
 6. The compiled jar file will be in the folder `Merged`
 
 From the command line:
-1. `git clone --recurse-submodules https://gitlab.com/jeseibel/distant-horizons.git`
+1. `git clone --recurse-submodules https://gitlab.com/distant-horizons-team/distant-horizons.git`
 2. `cd distant-horizons`
 3. `./gradlew assemble`
 4. `./gradlew mergeJars`
