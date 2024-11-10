@@ -96,8 +96,11 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	@Override
 	public String getDimensionName() { return this.level.dimension().location().toString(); }
 	
-	@Override 
-	public long getHashedSeed() { return this.level.getBiomeManager().biomeZoomSeed; }
+	@Override
+	public int getHashedSeed() { return (int) this.level.getBiomeManager().biomeZoomSeed; }
+	
+	@Override
+	public String getDhIdentifier() { return this.getDimensionName(); }
 	
 	@Override
 	public EDhApiLevelType getLevelType() { return EDhApiLevelType.SERVER_LEVEL; }
@@ -202,6 +205,6 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	//================//
 	
 	@Override
-	public String toString() { return "Wrapped{" + this.level.toString() + "@" + this.getLevelIdString() + "}"; }
+	public String toString() { return "Wrapped{" + this.level.toString() + "@" + this.getDhIdentifier() + "}"; }
 	
 }
