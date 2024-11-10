@@ -39,6 +39,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.level.chunk.ChunkStatus;
 #else
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+#endif
+
+#if MC_VER < MC_1_21_3
 import com.seibel.distanthorizons.core.util.ColorUtil;
 #endif
 
