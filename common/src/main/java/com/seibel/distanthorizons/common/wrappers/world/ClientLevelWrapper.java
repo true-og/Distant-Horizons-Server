@@ -42,6 +42,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 #endif
 
 #if MC_VER < MC_1_21_3
+#else
 import com.seibel.distanthorizons.core.util.ColorUtil;
 #endif
 
