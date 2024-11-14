@@ -118,14 +118,18 @@ public class ClassicConfigGUI
 	 */
 	private static void textField(AbstractConfigType info, Function<String, Number> func, Pattern pattern, boolean cast)
 	{
-		boolean isNumber = pattern != null;
 		((EntryInfo) info.guiValue).widget = (BiFunction<EditBox, Button, Predicate<String>>) (editBox, button) -> stringValue ->
 		{
+			boolean isNumber = (pattern != null);
+			
 			stringValue = stringValue.trim();
 			if (!(stringValue.isEmpty() || !isNumber || pattern.matcher(stringValue).matches()))
+			{
 				return false;
+			}
 			
-			Number value = 0;
+			
+			Number value = info.typeIsFloatingPointNumber() ? 0.0 : 0; // different default values are needed so implicit casting works correctly (if not done casting from 0 (an int) to a double will cause an exception)
 			((EntryInfo) info.guiValue).error = null;
 			if (isNumber && !stringValue.isEmpty() && !stringValue.equals("-") && !stringValue.equals("."))
 			{
@@ -157,7 +161,7 @@ public class ClassicConfigGUI
 			}
 			
 			((EntryInfo) info.guiValue).tempValue = stringValue;
-			editBox.setTextColor(((ConfigEntry) info).isValid(value) == 0 ? 0xFFFFFFFF : 0xFFFF7777);
+			editBox.setTextColor(((ConfigEntry) info).isValid(value) == 0 ? 0xFFFFFFFF : 0xFFFF7777); // white and red
 //            button.active = entries.stream().allMatch(e -> e.inLimits);
 			
 			
