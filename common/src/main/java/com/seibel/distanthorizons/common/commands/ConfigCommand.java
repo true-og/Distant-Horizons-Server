@@ -57,11 +57,11 @@ public class ConfigCommand extends AbstractCommand
 			}
 			
 			LiteralArgumentBuilder<CommandSourceStack> subcommand = literal(configEntry.getServersideShortName())
-					.executes(commandContext -> this.sendSuccessResponse(commandContext, "Current value of ${configEntry.getServersideShortName()} is ${configEntry.get()}"));
+					.executes(commandContext -> this.sendSuccessResponse(commandContext, "Current value of ["+configEntry.getServersideShortName()+"] is ["+configEntry.get()+"]"));
 			
 			ToIntBiFunction<CommandContext<CommandSourceStack>, Object> updateConfigValue = (commandContext, value) -> {
 				configEntry.set(value);
-				return this.sendSuccessResponse(commandContext, "Changed the value of ${configEntry.getServersideShortName()} to $value");
+				return this.sendSuccessResponse(commandContext, "Changed the value of ["+configEntry.getServersideShortName()+"] to ["+value+"]");
 			};
 			
 			// Enum type needs a special case since enums aren't represented by existing argument type

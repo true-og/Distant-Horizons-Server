@@ -184,9 +184,6 @@ subprojects { p ->
             annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
         }
 
-        annotationProcessor("systems.manifold:manifold-strings:${rootProject.manifold_version}")
-        testAnnotationProcessor("systems.manifold:manifold-strings:${rootProject.manifold_version}")
-        
         // Log4j
         if (p == project(":core"))
         {
