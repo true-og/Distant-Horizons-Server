@@ -192,7 +192,7 @@ subprojects { p ->
         {
             // the standalone core jar needs logging shaded otherwise it won't run
             forgeShadowMe("org.apache.logging.log4j:log4j-api:${rootProject.log4j_version}")
-            forgeShadowMe("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")   
+            forgeShadowMe("org.apache.logging.log4j:log4j-core:${rootProject.log4j_version}")
         }
         else
         {

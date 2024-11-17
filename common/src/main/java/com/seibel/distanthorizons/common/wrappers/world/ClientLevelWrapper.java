@@ -197,10 +197,10 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	public String getDimensionName() { return this.level.dimension().location().toString(); }
 	
 	@Override
-	public long getHashedSeed() { return (int) this.level.getBiomeManager().biomeZoomSeed; }
+	public long getHashedSeed() { return this.level.getBiomeManager().biomeZoomSeed; }
 	
 	@Override
-	public String getDhIdentifier() { return this.getHashedSeed() + "@" + this.getDimensionName(); }
+	public String getDhIdentifier() { return this.getHashedSeedEncoded() + "@" + this.getDimensionName(); }
 	
 	@Override
 	public EDhApiLevelType getLevelType() { return EDhApiLevelType.CLIENT_LEVEL; }
