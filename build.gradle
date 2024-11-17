@@ -162,6 +162,7 @@ subprojects { p ->
             if (findProject(":neoforge"))
                 developmentNeoForge.extendsFrom coreProjects
 
+            // TODO remove unused fabricLike
             if (findProject(":fabricLike") && p != project(":fabricLike")) {
                 // Shadow fabricLike
                 fabricLike
