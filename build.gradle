@@ -66,8 +66,11 @@ writeBuildGradlePredefine(rootProject.mcVers, rootProject.mcIndex)
 rootProject.versionStr = rootProject.mod_version + "-" + rootProject.minecraft_version // + "-" + new Date().format("yyyy_MM_dd_HH_mm")
 // Forgix settings (used for merging jars)
 forgix {
+    
+    String loaderHyphenSeparatedList = ((String)gradle.builds_for).replaceAll(",", "-");
+    
     group = "com.seibel.distanthorizons"
-    mergedJarName = "DistantHorizons-${rootProject.versionStr}.jar"
+    mergedJarName = "DistantHorizons-${rootProject.versionStr}-${loaderHyphenSeparatedList}.jar"
 
     if (findProject(":forge"))
         forge {
