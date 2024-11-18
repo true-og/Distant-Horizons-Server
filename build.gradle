@@ -659,7 +659,6 @@ allprojects { p ->
             options.release = 8; // Core & Api should use Java 8 no matter what
             //options.release = rootProject.java_version as Integer // But if you want to test some stuff, then this can be enabled
         }
-        options.compilerArgs += ["-Xplugin:Manifold"]
         options.encoding = "UTF-8"
     }
 
