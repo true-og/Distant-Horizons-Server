@@ -9,12 +9,14 @@ import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.jar.installer.GitlabGetter;
 import com.seibel.distanthorizons.core.jar.installer.ModrinthGetter;
 import com.seibel.distanthorizons.core.jar.updater.SelfUpdater;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.distanthorizons.coreapi.ModInfo;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -31,6 +33,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft
 {
+	@Unique
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MixinMinecraft.class.getSimpleName());
+	
+	
 	@Shadow
 	public abstract boolean isLocalServer();
 	
@@ -89,6 +95,7 @@ public abstract class MixinMinecraft
 	)
 	private void buildInitialScreens(Runnable runnable)
 	{
+		// TODO merge logic for forge, neo, and fabric
 		if (
 				DEBUG_ALWAYS_SHOW_UPDATER ||
 				(
@@ -111,11 +118,28 @@ public abstract class MixinMinecraft
 					versionId = GitlabGetter.INSTANCE.projectPipelines.get(0).get("sha");
 				}
 				
-				Minecraft.getInstance().setScreen(new UpdateModScreen(
-						// TODO: Change to runnable, instead of tittle screen
-						new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
-						versionId
-				));
+				if (versionId != null)
+				{
+					try
+					{
+						
+						Minecraft.getInstance().setScreen(new UpdateModScreen(
+								// TODO: Change to runnable, instead of tittle screen
+								new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
+								versionId
+						));
+					}
+					catch (IllegalArgumentException e)
+					{
+						// info instead of error since this can be ignored and probably just means
+						// there isn't a new DH version available
+						LOGGER.info("Unable to show DH update screen, reason: ["+e.getMessage()+"].");
+					}
+				}
+				else
+				{
+					LOGGER.info("Unable to find new DH update for the ["+updateBranch+"] branch. Assuming DH is up to date...");
+				}
 			};
 		}
 		

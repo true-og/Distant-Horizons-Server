@@ -7,11 +7,14 @@ import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.jar.installer.GitlabGetter;
 import com.seibel.distanthorizons.core.jar.installer.ModrinthGetter;
 import com.seibel.distanthorizons.core.jar.updater.SelfUpdater;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.distanthorizons.coreapi.ModInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -25,6 +28,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraft
 {
+	@Unique
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MixinMinecraft.class.getSimpleName());
+	
+	/**
+	 * Can be enabled for testing the auto updater UI. <br/>
+	 * will always show the auto updater if set to true. 
+	 */
+	@Unique
+	private static final boolean DEBUG_ALWAYS_SHOW_UPDATER = false;
+	
+	
+	
 	// commented out due to a bug with Manifold and having nested preprocessors
 	// and since neoforge doesn't work for anything before MC 1.20.6 anyway it doesn't need to be included
 	
@@ -71,10 +86,15 @@ public class MixinMinecraft
 	)
 	private void buildInitialScreens(Runnable runnable)
 	{
+		// TODO merge logic for forge, neo, and fabric
 		if (
-				Config.Client.Advanced.AutoUpdater.enableAutoUpdater.get() // Don't do anything if the user doesn't want it
-				&& SelfUpdater.onStart()
-		)
+				DEBUG_ALWAYS_SHOW_UPDATER ||
+				(
+					// Don't do anything if the user doesn't want it
+					Config.Client.Advanced.AutoUpdater.enableAutoUpdater.get()
+					&& SelfUpdater.onStart()
+				)
+			)
 		{
 			runnable = () -> 
 			{
@@ -89,11 +109,28 @@ public class MixinMinecraft
 					versionId = GitlabGetter.INSTANCE.projectPipelines.get(0).get("sha");
 				}
 				
-				Minecraft.getInstance().setScreen(new UpdateModScreen(
-						// TODO: Change to runnable, instead of tittle screen
-						new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
-						versionId
-				));
+				if (versionId != null)
+				{
+					try
+					{
+						
+						Minecraft.getInstance().setScreen(new UpdateModScreen(
+								// TODO: Change to runnable, instead of tittle screen
+								new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
+								versionId
+						));
+					}
+					catch (IllegalArgumentException e)
+					{
+						// info instead of error since this can be ignored and probably just means
+						// there isn't a new DH version available
+						LOGGER.info("Unable to show DH update screen, reason: ["+e.getMessage()+"].");
+					}
+				}
+				else
+				{
+					LOGGER.info("Unable to find new DH update for the ["+updateBranch+"] branch. Assuming DH is up to date...");
+				}
 			};
 		}
 		

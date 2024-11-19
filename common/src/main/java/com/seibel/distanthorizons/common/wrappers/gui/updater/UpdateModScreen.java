@@ -36,7 +36,7 @@ public class UpdateModScreen extends DhScreen
 	private String nextVer;
 	
 	
-	public UpdateModScreen(Screen parent, String newVersionID)
+	public UpdateModScreen(Screen parent, String newVersionID) throws IllegalArgumentException
 	{
 		super(Translatable(ModInfo.ID + ".updater.title"));
 		this.parent = parent;
@@ -54,6 +54,13 @@ public class UpdateModScreen extends DhScreen
 	        this.currentVer = ModJarInfo.Git_Commit.substring(0,7);
 	        this.nextVer = this.newVersionID.substring(0,7);
         }
+		
+		// done to prevent trying to update to "null"
+		// (this can happen if no versions are available to check/download from modrinth/gitlab)
+		if (this.nextVer == null)
+		{
+			throw new IllegalArgumentException("No new version found with the ID ["+newVersionID+"].");
+		}
 	}
 	
 	@Override
