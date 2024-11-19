@@ -15,7 +15,6 @@ public class MixinClientPacketListener
 {
 	@Shadow
 	private ClientLevel level;
-	// TODO update fabric version as well
 	
 	@Inject(method = "handleLogin", at = @At("RETURN"))
 	void onHandleLoginEnd(CallbackInfo ci)
