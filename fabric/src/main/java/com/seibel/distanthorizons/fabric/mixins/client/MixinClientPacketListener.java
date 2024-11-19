@@ -21,8 +21,14 @@ import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 @Mixin(ClientPacketListener.class)
 public class MixinClientPacketListener
 {
+	@Shadow
+	private ClientLevel level;
+	
 	@Inject(method = "handleLogin", at = @At("RETURN"))
-	void onHandleLoginEnd(CallbackInfo ci) { ClientApi.INSTANCE.onClientOnlyConnected(); }
+	void onHandleLoginEnd(CallbackInfo ci) { 
+		ClientApi.INSTANCE.onClientOnlyConnected(); 
+		ClientApi.INSTANCE.clientLevelLoadEvent(ClientLevelWrapper.getWrapper(this.level, true));
+}
 	
 	#if MC_VER < MC_1_19_4
 	@Inject(method = "cleanup", at = @At("HEAD"))
