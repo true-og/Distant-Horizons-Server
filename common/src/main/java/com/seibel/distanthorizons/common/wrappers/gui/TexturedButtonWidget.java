@@ -41,6 +41,7 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.GuiGraphics;
 #else
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 #endif
 
 /**
@@ -172,10 +173,12 @@ public class TexturedButtonWidget extends Button
 			#if MC_VER < MC_1_21_3
 			matrices.blitSprite(SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight());
 			#else
-			// TODO
-			//matrices.blitSprite(
-			//		(resourceLocation) -> RenderType.solid(), 
-			//		this.textureResourceLocation, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+			matrices.blitSprite(
+				RenderType::guiTextured,
+				SPRITES.get(this.active, this.isHoveredOrFocused()),
+				this.getX(), this.getY(),
+				this.getWidth(), this.getHeight());
+
 			#endif
 		}
 		
@@ -194,10 +197,14 @@ public class TexturedButtonWidget extends Button
 		#if MC_VER < MC_1_21_3
 		matrices.blit(this.textureResourceLocation, this.getX(), this.getY(), this.u, this.v + (this.hoveredVOffset * i), this.width, this.height, this.textureWidth, this.textureHeight);
 		#else
-		// TODO
-		//matrices.blit(
-		//		(resourceLocation) -> RenderType.solid(),
-		//		this.textureResourceLocation, this.getX(), this.getY(), this.u, this.v + (this.hoveredVOffset * i), this.width, this.height, this.textureWidth, this.textureHeight);
+		matrices.blit(
+				RenderType::guiTextured,
+				this.textureResourceLocation,
+				this.getX(), this.getY(),
+				this.u, this.v + (this.hoveredVOffset * i),
+				this.width, this.height,
+				this.textureWidth, this.textureHeight);
+
 		#endif
 	}
 	#endif
