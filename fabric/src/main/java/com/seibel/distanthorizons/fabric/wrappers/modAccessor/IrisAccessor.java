@@ -26,11 +26,9 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IIrisAccess
 #if MC_VER <= MC_1_20_4
 import net.coderbot.iris.Iris;
 import net.irisshaders.iris.api.v0.IrisApi;
-#elif MC_VER < MC_1_21_3
+#else
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.api.v0.IrisApi;
-#else
-// TODO fabric/iris needs fixing for MC 1.21.3
 #endif
 
 public class IrisAccessor implements IIrisAccessor
@@ -38,34 +36,19 @@ public class IrisAccessor implements IIrisAccessor
 	@Override
 	public String getModName()
 	{
-		// TODO
-		#if MC_VER < MC_1_21_3
 		return Iris.MODID;
-		#else
-		return "Iris-Fabric";
-		#endif
 	}
 	
 	@Override
 	public boolean isShaderPackInUse()
 	{
-		// TODO
-		#if MC_VER < MC_1_21_3
 		return IrisApi.getInstance().isShaderPackInUse();
-		#else
-		return false;
-		#endif
 	}
 	
 	@Override
 	public boolean isRenderingShadowPass()
 	{
-		// TODO
-		#if MC_VER < MC_1_21_3
 		return IrisApi.getInstance().isRenderingShadowPass();
-		#else
-		return false;
-		#endif
 	}
 }
 
