@@ -91,7 +91,6 @@ public final class StepFeatures
 				#endif
 				
 				Heightmap.primeHeightmaps(chunk, STATUS.heightmapsAfter());
-				BatchGenerationEnvironment.clearDistantGenerationMixinData();
 			}
 			catch (Exception e)
 			{

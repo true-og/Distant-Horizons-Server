@@ -51,7 +51,6 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
 	private final boolean isDedicatedServer;
-	public static Supplier<Boolean> isGenerationThreadChecker = null;
 	
 	
 	
@@ -87,7 +86,6 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 	public void registerEvents()
 	{
 		LOGGER.info("Registering Fabric Server Events");
-		isGenerationThreadChecker = BatchGenerationEnvironment::isCurrentThreadDistantGeneratorThread;
 		
 		/* Register the mod needed event callbacks */
 		

@@ -198,24 +198,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	}
 	
 	public static ThreadLocal<Boolean> isDistantGeneratorThread = new ThreadLocal<>();
-	public static ThreadLocal<Object> onDistantGenerationMixinData = new ThreadLocal<>();
 	public static boolean isCurrentThreadDistantGeneratorThread() { return (isDistantGeneratorThread.get() != null); }
-	public static void putDistantGenerationMixinData(Object data)
-	{
-		LodUtil.assertTrue(isCurrentThreadDistantGeneratorThread());
-		onDistantGenerationMixinData.set(data);
-	}
-	public static Object getDistantGenerationMixinData()
-	{
-		LodUtil.assertTrue(isCurrentThreadDistantGeneratorThread());
-		return onDistantGenerationMixinData.get();
-	}
-	
-	public static void clearDistantGenerationMixinData()
-	{
-		LodUtil.assertTrue(isCurrentThreadDistantGeneratorThread());
-		onDistantGenerationMixinData.remove();
-	}
 	
 	
 	

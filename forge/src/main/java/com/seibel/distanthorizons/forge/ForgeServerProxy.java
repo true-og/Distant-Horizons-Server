@@ -59,7 +59,6 @@ public class ForgeServerProxy implements AbstractModInitializer.IEventProxy
 	
 	private final ServerApi serverApi = ServerApi.INSTANCE;
 	private final boolean isDedicated;
-	public static Supplier<Boolean> isGenerationThreadChecker = null;
 	
 	
 	
@@ -82,7 +81,6 @@ public class ForgeServerProxy implements AbstractModInitializer.IEventProxy
 	public ForgeServerProxy(boolean isDedicated)
 	{
 		this.isDedicated = isDedicated;
-		isGenerationThreadChecker = BatchGenerationEnvironment::isCurrentThreadDistantGeneratorThread;
 	}
 	
 	
