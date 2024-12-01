@@ -20,12 +20,12 @@
 package com.seibel.distanthorizons.common.wrappers.worldGeneration;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiWorldGenerationStep;
+import com.seibel.distanthorizons.core.dataObjects.render.bufferBuilding.LodQuadBuilder;
 import com.seibel.distanthorizons.core.util.objects.UncheckedInterruptedException;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
@@ -75,7 +75,7 @@ public final class GenerationEvent
 			ExecutorService worldGeneratorThreadPool)
 	{
 		GenerationEvent generationEvent = new GenerationEvent(minPos, size, genEnvironment, target, resultConsumer);
-		generationEvent.future = CompletableFuture.runAsync(() ->
+		generationEvent.future = CompletableFuture.supplyAsync(() ->
 		{
 			long runStartTime = System.nanoTime();
 			generationEvent.timeoutTime = runStartTime;
@@ -85,15 +85,55 @@ public final class GenerationEvent
 			BatchGenerationEnvironment.isDistantGeneratorThread.set(true);
 			try
 			{
-				//LOGGER.info("generating [{}]", event.minPos);
-				genEnvironment.generateLodFromList(generationEvent);
+				return genEnvironment.generateLodFromListAsync(generationEvent, (runnable) -> 
+				{
+					worldGeneratorThreadPool.execute(() ->
+					{
+						boolean alreadyMarked = BatchGenerationEnvironment.isCurrentThreadDistantGeneratorThread();
+						if (!alreadyMarked)
+						{
+							BatchGenerationEnvironment.isDistantGeneratorThread.set(true);
+						}
+						
+						try
+						{
+							runnable.run();
+						}
+						finally
+						{
+							if (!alreadyMarked)
+							{
+								BatchGenerationEnvironment.isDistantGeneratorThread.set(false);
+							}
+						}
+					});
+				}).exceptionallyCompose(throwable -> 
+				{
+					while (throwable instanceof CompletionException completionException)
+					{
+						throwable = completionException.getCause();
+					}
+					
+					if (throwable instanceof InterruptedException 
+						|| throwable instanceof UncheckedInterruptedException
+						|| throwable instanceof RejectedExecutionException)
+					{
+						return CompletableFuture.completedFuture(null);
+					}
+					else
+					{
+						return CompletableFuture.failedFuture(throwable);
+					}
+				});
 			}
-			catch (InterruptedException ignored) { }
 			finally
 			{
 				BatchGenerationEnvironment.isDistantGeneratorThread.remove();
 			}
-		}, worldGeneratorThreadPool);
+		}, worldGeneratorThreadPool)
+			// un-wrap future so we can go from CompletableFuture<CompletableFuture<Void>> -> CompletableFuture<Void>
+			// TODO can we remove this double future wrapping?
+			.thenCompose(Function.identity());
 		return generationEvent;
 	}
 	

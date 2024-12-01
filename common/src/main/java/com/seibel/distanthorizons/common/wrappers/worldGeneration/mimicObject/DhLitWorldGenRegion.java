@@ -77,7 +77,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 	
 	
 	public final DummyLightEngine lightEngine;
-	public final BatchGenerationEnvironment.IEmptyChunkGeneratorFunc generator;
+	public final BatchGenerationEnvironment.IEmptyChunkRetrievalFunc generator;
 	public final int writeRadius;
 	public final int size;
 	
@@ -122,7 +122,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 			ChunkAccess centerChunk,
 			ServerLevel serverLevel, DummyLightEngine lightEngine,
 			List<ChunkAccess> chunkList, ChunkStatus chunkStatus, int writeRadius,
-			BatchGenerationEnvironment.IEmptyChunkGeneratorFunc generator)
+			BatchGenerationEnvironment.IEmptyChunkRetrievalFunc generator)
 	{
 		#if MC_VER == MC_1_16_5
 		super(serverLevel, chunkList);
@@ -350,7 +350,7 @@ public class DhLitWorldGenRegion extends WorldGenRegion
 			if (chunk == null)
 			{
 				// chunk isn't in memory, generate a new one
-				chunk = this.generator.generate(chunkX, chunkZ);
+				chunk = this.generator.getChunk(chunkX, chunkZ);
 				if (chunk == null)
 				{
 					throw new NullPointerException("The provided generator should not return null!");
