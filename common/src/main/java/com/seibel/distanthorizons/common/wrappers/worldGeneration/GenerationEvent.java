@@ -22,10 +22,8 @@ package com.seibel.distanthorizons.common.wrappers.worldGeneration;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiWorldGenerationStep;
-import com.seibel.distanthorizons.core.dataObjects.render.bufferBuilding.LodQuadBuilder;
 import com.seibel.distanthorizons.core.util.objects.UncheckedInterruptedException;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.DhChunkPos;
@@ -83,9 +81,10 @@ public final class GenerationEvent
 			generationEvent.timer = new EventTimer("setup");
 			
 			BatchGenerationEnvironment.isDistantGeneratorThread.set(true);
+			
 			try
 			{
-				return genEnvironment.generateLodFromListAsync(generationEvent, (runnable) -> 
+				genEnvironment.generateLodFromListAsync(generationEvent, (runnable) -> 
 				{
 					worldGeneratorThreadPool.execute(() ->
 					{
@@ -99,6 +98,10 @@ public final class GenerationEvent
 						{
 							runnable.run();
 						}
+						catch (Throwable throwable)
+						{
+							handleWorldGenThrowable(generationEvent, throwable);
+						}
 						finally
 						{
 							if (!alreadyMarked)
@@ -107,34 +110,45 @@ public final class GenerationEvent
 							}
 						}
 					});
-				}).exceptionallyCompose(throwable -> 
-				{
-					while (throwable instanceof CompletionException completionException)
-					{
-						throwable = completionException.getCause();
-					}
-					
-					if (throwable instanceof InterruptedException 
-						|| throwable instanceof UncheckedInterruptedException
-						|| throwable instanceof RejectedExecutionException)
-					{
-						return CompletableFuture.completedFuture(null);
-					}
-					else
-					{
-						return CompletableFuture.failedFuture(throwable);
-					}
 				});
+			}
+			catch (Throwable initialThrowable)
+			{
+				handleWorldGenThrowable(generationEvent, initialThrowable);
 			}
 			finally
 			{
 				BatchGenerationEnvironment.isDistantGeneratorThread.remove();
 			}
-		}, worldGeneratorThreadPool)
-			// un-wrap future so we can go from CompletableFuture<CompletableFuture<Void>> -> CompletableFuture<Void>
-			// TODO can we remove this double future wrapping?
-			.thenCompose(Function.identity());
+			
+			return null;
+		}, worldGeneratorThreadPool);
 		return generationEvent;
+	}
+	/** There's probably a better way to handle this, but it'll work for now */
+	private static void handleWorldGenThrowable(GenerationEvent generationEvent, Throwable initialThrowable)
+	{
+		Throwable throwable = initialThrowable;
+		while (throwable instanceof CompletionException)
+		{
+			throwable = throwable.getCause();
+		}
+		
+		if (throwable instanceof InterruptedException
+			|| throwable instanceof UncheckedInterruptedException
+			|| throwable instanceof RejectedExecutionException)
+		{
+			// these exceptions can be ignored, generally they just mean
+			// the thread is busy so it'll need to try again later.
+			// FIXME this should cause the world gen task to be re-queued so we can try again later
+			//  however, currently it can cause large gaps in the world gen instead.
+			//  These gaps will generate correctly if the level is reloaded and the world gen is re-queued,
+			//  however this is makes it look like the generator isn't working or skipped something.
+		}
+		else
+		{
+			generationEvent.future.completeExceptionally(throwable);
+		}
 	}
 	
 	public boolean isComplete() { return this.future.isDone(); }

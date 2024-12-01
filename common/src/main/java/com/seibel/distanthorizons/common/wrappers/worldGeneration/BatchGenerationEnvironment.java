@@ -566,44 +566,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	/** @param extraRadius in both the positive and negative directions */
 	private static Stream<ChunkPos> getChunkPosToGenerateStream(int genMinX, int genMinZ, int width, int extraRadius)
 	{
-		final int widthPlusExtra = width + (extraRadius * 2);
-		
-		final int minX = genMinX - extraRadius;
-		final int minZ = genMinZ - extraRadius;
-		
-		final int maxX = genMinX + (width - 1) + extraRadius;
-		final int maxZ = genMinZ + (width - 1) + extraRadius; 
-		
-		return StreamSupport.stream(
-			new Spliterators.AbstractSpliterator<>((long) widthPlusExtra * widthPlusExtra, Spliterator.SIZED) 
-			{
-				// X starts at 1 minus the minX so we can immediately re-add 1 in the tryAdvance() loop
-				private int x = minX - 1;
-				private int z = minZ;
-				
-				public boolean tryAdvance(Consumer<? super ChunkPos> consumer)
-				{
-					if (this.x == maxX && this.z == maxZ)
-					{
-						// the last returned position was the final valid position
-						return false;
-					}
-					
-					if (this.x == maxX)
-					{
-						// we reached the max X position, loop back around in the next Z row
-						this.x = minX;
-						this.z++;
-					}
-					else
-					{
-						this.x++;
-					}
-					
-					consumer.accept(new ChunkPos(this.x, this.z));
-					return true;
-				}
-			}, false);
+		return StreamSupport.stream(new InclusiveChunkPosStream(genMinX, genMinZ, width, extraRadius), false);
 		
 		// method this is replacing
 		//return ChunkPos.rangeClosed(
@@ -974,6 +937,74 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		ChunkAccess getChunk(int chunkPosX, int chunkPosZ);
 	}
 	
-	
+	private static class InclusiveChunkPosStream extends Spliterators.AbstractSpliterator<ChunkPos>
+	{
+		private final int minX;
+		private final int minZ;
+		
+		private final int maxX;
+		private final int maxZ;
+		
+		
+		/** current X pos */
+		int x;
+		/** current Z pos */
+		private int z;
+		
+		
+		
+		//=============//
+		// constructor //
+		//=============//
+		
+		protected InclusiveChunkPosStream(int genMinX, int genMinZ, int width, int extraRadius)
+		{
+			super(getCount(width, extraRadius), Spliterator.SIZED);
+			
+			this.minX = genMinX - extraRadius;
+			this.minZ = genMinZ - extraRadius;
+			
+			this.maxX = genMinX + (width - 1) + extraRadius;
+			this.maxZ = genMinZ + (width - 1) + extraRadius;
+			
+			// X starts at 1 minus the minX so we can immediately re-add 1 in the tryAdvance() loop
+			this.x = this.minX - 1;
+			this.z = this.minZ;
+		}
+		private static int getCount(int width, int extraRadius)
+		{
+			int widthPlusExtra = width + (extraRadius * 2);
+			return widthPlusExtra * widthPlusExtra;
+		}
+		
+		
+		
+		//=================//
+		// iterator method //
+		//=================//
+		
+		public boolean tryAdvance(Consumer<? super ChunkPos> consumer)
+		{
+			if (this.x == this.maxX && this.z == this.maxZ)
+			{
+				// the last returned position was the final valid position
+				return false;
+			}
+			
+			if (this.x == this.maxX)
+			{
+				// we reached the max X position, loop back around in the next Z row
+				this.x = this.minX;
+				this.z++;
+			}
+			else
+			{
+				this.x++;
+			}
+			
+			consumer.accept(new ChunkPos(this.x, this.z));
+			return true;
+		}
+	}
 	
 }
