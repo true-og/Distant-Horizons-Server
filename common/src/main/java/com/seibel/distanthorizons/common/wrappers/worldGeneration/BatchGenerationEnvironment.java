@@ -78,6 +78,7 @@ import net.minecraft.core.Registry;
 
 #if MC_VER <= MC_1_20_4
 import net.minecraft.world.level.chunk.ChunkStatus;
+import org.jetbrains.annotations.Nullable;
 #else
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
@@ -610,9 +611,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				
 				return newChunk;
 			})
+			// separate handle so we can cleanly handle missing chunks and/or thrown errors 
 			.handle((newChunk, throwable) -> 
 			{
-				// TODO why handle this here insteadof above?
 				if (newChunk != null)
 				{
 					return newChunk;
@@ -659,11 +660,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 						
 						if (actualThrowable instanceof TimeoutException)
 						{
-							LOAD_LOGGER.warn("Unable to get chunk at pos [{}] after [{}] milliseconds.", chunkPos, maxGetTimeInSec, actualThrowable);
+							LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInSec+"] milliseconds.", actualThrowable);
 						}
 						else
 						{
-							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk [{}].", chunkPos, actualThrowable);
+							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
 						}
 						
 						return null;
@@ -689,7 +690,14 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			try
 			{
 				LOAD_LOGGER.debug("DistantHorizons: Loading chunk [" + chunkPos + "] from disk.");
-				return ChunkLoader.read(level, chunkPos, chunkData);
+				
+				@Nullable
+				ChunkAccess chunk = ChunkLoader.read(level, chunkPos, chunkData);
+				if (chunk == null)
+				{
+					chunk = CreateEmptyChunk(level, chunkPos);
+				}
+				return chunk;
 			}
 			catch (Exception e)
 			{
