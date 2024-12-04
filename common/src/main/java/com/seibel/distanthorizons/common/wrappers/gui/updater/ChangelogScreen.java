@@ -161,16 +161,28 @@ public class ChangelogScreen extends DhScreen
 		#else
 		this.renderBackground(matrices, mouseX, mouseY, delta); // Render background
 		#endif
-		if (!usable)
+		if (!this.usable)
+		{
 			return;
+		}
+		
+		int maxScroll;
+		#if MC_VER <= MC_1_21_3
+		maxScroll = this.changelogArea.getMaxScroll();
+		#else
+		maxScroll = this.changelogArea.maxScrollAmount();
+		#endif
 		
 		// Set the scroll position to the mouse height relative to the screen
 		// This is a bit of a hack as we cannot scroll on this area
-		double scrollAmount = ((double) mouseY) / ((double) this.height) * 1.1 * this.changelogArea.getMaxScroll();
+		double scrollAmount = ((double) mouseY) / ((double) this.height) * 1.1 * maxScroll;
+		
 	    #if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
 		this.changelogArea.setScrollAmount(scrollAmount);
-		#else
+		#elif MC_VER <= MC_1_21_3
 		this.changelogArea.scrollAmount = scrollAmount;
+		#else
+		this.changelogArea.setScrollAmount(scrollAmount);
 		#endif
 		
 		

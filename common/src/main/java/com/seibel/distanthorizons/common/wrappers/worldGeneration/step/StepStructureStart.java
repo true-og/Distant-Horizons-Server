@@ -28,7 +28,9 @@ import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGeneratio
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.ThreadedParameters;
 
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import org.apache.logging.log4j.Logger;
@@ -96,7 +98,8 @@ public final class StepStructureStart
 		if (this.environment.params.worldGenSettings.generateFeatures())
 		{
 		#elif MC_VER < MC_1_19_4
-		if (this.environment.params.worldGenSettings.generateStructures()) {
+		if (this.environment.params.worldGenSettings.generateStructures()) 
+		{
 		#else
 		if (this.environment.params.worldOptions.generateStructures())
 		{
@@ -114,15 +117,20 @@ public final class StepStructureStart
 				STRUCTURE_PLACEMENT_LOCK.lock();
 				
 				#if MC_VER < MC_1_19_2
-				environment.params.generator.createStructures(environment.params.registry, tParams.structFeat, chunk, environment.params.structures,
-						environment.params.worldSeed);
+				this.environment.params.generator.createStructures(this.environment.params.registry, tParams.structFeat, chunk, this.environment.params.structures,
+						this.environment.params.worldSeed);
 				#elif MC_VER < MC_1_19_4
-				environment.params.generator.createStructures(environment.params.registry, environment.params.randomState, tParams.structFeat, chunk, environment.params.structures,
-						environment.params.worldSeed);
+				this.environment.params.generator.createStructures(this.environment.params.registry, this.environment.params.randomState, tParams.structFeat, chunk, this.environment.params.structures,
+						this.environment.params.worldSeed);
+				#elif MC_VER <= MC_1_21_3
+				this.environment.params.generator.createStructures(this.environment.params.registry,
+						this.environment.params.level.getChunkSource().getGeneratorState(),
+						tParams.structFeat, chunk, this.environment.params.structures);
 				#else
-				environment.params.generator.createStructures(environment.params.registry,
-						environment.params.level.getChunkSource().getGeneratorState(),
-						tParams.structFeat, chunk, environment.params.structures);
+				this.environment.params.generator.createStructures(this.environment.params.registry,
+						this.environment.params.level.getChunkSource().getGeneratorState(),
+						tParams.structFeat, chunk, this.environment.params.structures, 
+						this.environment.params.level.dimension());
 				#endif
 				
 				#if MC_VER >= MC_1_18_2
