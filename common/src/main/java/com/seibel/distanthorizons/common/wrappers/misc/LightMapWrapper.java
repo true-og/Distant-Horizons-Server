@@ -20,7 +20,8 @@
 package com.seibel.distanthorizons.common.wrappers.misc;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.seibel.distanthorizons.core.render.glObject.GLState;
+import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
+import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftGLWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 import org.lwjgl.opengl.GL32;
 
@@ -28,6 +29,8 @@ import java.nio.ByteBuffer;
 
 public class LightMapWrapper implements ILightMapWrapper
 {
+	private static final IMinecraftGLWrapper GLMC = SingletonInjector.INSTANCE.get(IMinecraftGLWrapper.class);
+	
 	private int textureId = 0;
 	
 	
@@ -46,22 +49,22 @@ public class LightMapWrapper implements ILightMapWrapper
 	
 	public void uploadLightmap(NativeImage image)
 	{
-		int currentBind = GL32.glGetInteger(GL32.GL_TEXTURE_BINDING_2D);
+		int currentTexture = GLMC.getActiveTexture();
 		if (this.textureId == 0)
 		{
 			this.createLightmap(image);
 		}
 		else
 		{
-			GL32.glBindTexture(GL32.GL_TEXTURE_2D, this.textureId);
+			GLMC.glBindTexture(this.textureId);
 		}
 		image.upload(0, 0, 0, false);
-		GL32.glBindTexture(GL32.GL_TEXTURE_2D, currentBind);
+		GLMC.glBindTexture(currentTexture);
 	}
 	private void createLightmap(NativeImage image)
 	{
-		this.textureId = GL32.glGenTextures();
-		GL32.glBindTexture(GL32.GL_TEXTURE_2D, this.textureId);
+		this.textureId = GLMC.glGenTextures();
+		GLMC.glBindTexture(this.textureId);
 		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, image.format().glFormat(), image.getWidth(), image.getHeight(),
 				0, image.format().glFormat(), GL32.GL_UNSIGNED_BYTE, (ByteBuffer) null);
 	}
@@ -81,12 +84,12 @@ public class LightMapWrapper implements ILightMapWrapper
 	@Override
 	public void bind()
 	{
-		GL32.glActiveTexture(GL32.GL_TEXTURE0);
-		GL32.glBindTexture(GL32.GL_TEXTURE_2D, this.textureId);
+		GLMC.glActiveTexture(GL32.GL_TEXTURE0);
+		GLMC.glBindTexture(this.textureId);
 	}
 	
 	@Override
-	public void unbind() { GL32.glBindTexture(GL32.GL_TEXTURE_2D, 0); }
+	public void unbind() { GLMC.glBindTexture(0); }
 	
 }
 
