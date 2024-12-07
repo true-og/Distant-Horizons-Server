@@ -19,39 +19,13 @@
 
 package com.seibel.distanthorizons.common.wrappers.minecraft;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.seibel.distanthorizons.common.wrappers.WrapperFactory;
-import com.seibel.distanthorizons.common.wrappers.misc.LightMapWrapper;
-import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
-import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
-import com.seibel.distanthorizons.core.util.ColorUtil;
-import com.seibel.distanthorizons.core.util.math.Vec3d;
-import com.seibel.distanthorizons.core.util.math.Vec3f;
-import com.seibel.distanthorizons.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftGLWrapper;
-import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
-import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
-import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.AbstractOptifineAccessor;
-import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IOptifineAccessor;
-import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
-import com.seibel.distanthorizons.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.Logger;
-import org.joml.Vector4f;
-import org.lwjgl.opengl.GL32;
-import org.lwjgl.system.NativeType;
 
-import java.awt.*;
-import java.lang.invoke.MethodHandles;
-import java.util.concurrent.ConcurrentHashMap;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
+import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftGLWrapper;
+
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL32;
 
 
 /**
@@ -177,7 +151,14 @@ public class MinecraftGLWrapper implements IMinecraftGLWrapper
 	public void glActiveTexture(int textureId) { GlStateManager._activeTexture(textureId); }
 	/** only works for textures bound via this system or MC's {@link GlStateManager} */
 	@Override
-	public int getActiveTexture() { return GlStateManager._getActiveTexture(); }
+	public int getActiveTexture() 
+	{ 
+		#if MC_VER <= MC_1_16_5
+		return GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+		#else
+		return GlStateManager._getActiveTexture();
+		#endif
+	}
 	
 	/**
 	 * Always binds to {@link GL32#GL_TEXTURE_2D}
