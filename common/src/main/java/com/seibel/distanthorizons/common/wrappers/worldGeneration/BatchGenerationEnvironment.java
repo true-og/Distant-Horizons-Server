@@ -348,25 +348,6 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				
 				iter.remove();
 			}
-			else if (event.hasTimeout(Config.Common.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get(), TimeUnit.SECONDS))
-			{
-				EVENT_LOGGER.warn(
-						"Batching World Generator: [" + event + "] timed out and terminated after ["+Config.Common.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get()+"] seconds. " +
-								"\nYour computer might be overloaded or your world gen mods might be causing world gen to take longer than expected. " +
-								"\nEither increase DH's world gen timeout or reduce your computer's CPU load.");
-				EVENT_LOGGER.debug("Dump PrefEvent: " + event.timer);
-				try
-				{
-					if (!event.terminate())
-					{
-						EVENT_LOGGER.error("Failed to terminate the stuck generation event!");
-					}
-				}
-				finally
-				{
-					iter.remove();
-				}
-			}
 		}
 		
 		if (this.unknownExceptionCount > EXCEPTION_COUNTER_TRIGGER)
@@ -642,7 +623,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			#else
 			
 			// timeout should prevent locking up the thread if the ioWorker dies or has issues 
-			int maxGetTimeInSec = Config.Common.WorldGenerator.worldGenerationTimeoutLengthInSeconds.get();
+			int maxGetTimeInSec = 60 * 3; // 3 minutes (same as old timeout config default)
 			
 			// when running in vanilla MC, loadAsync will run on this same thread due to a vanilla threading mixin,
 			// however if a mod like C2ME is installed this will run on a C2ME thread instead
