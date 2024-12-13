@@ -236,10 +236,24 @@ public abstract class AbstractModInitializer
 		
 		
 		// if chunky is active we need to run chunk update synchronously to prevent holes if DH gets overwhelmed
-		SharedApi.runChunkUpdatesAsync = !modChecker.isModLoaded("chunky");
-		if (SharedApi.runChunkUpdatesAsync)
+		boolean chunkyPresent = modChecker.isModLoaded("chunky");
+		if (chunkyPresent)
 		{
+			SharedApi.runChunkUpdatesAsync = false;
+			
 			LOGGER.info("Chunky detected. DH will run chunk updates on the server thread. This will prevent data loss or holes but may cause stuttering.");
+			
+			String chunkyWarning = "If you are using Chunky to generate terrain disable \n" +
+					"DH's 'distant generation' option to prevent generating the same chunks twice.";
+
+			if (showChatWarnings)
+			{
+				String message =
+						// orange text
+						"\u00A76" + "Distant Horizons: Chunky detected." + "\u00A7r\n" +
+								chunkyWarning;
+				ClientApi.INSTANCE.showChatMessageNextFrame(message);
+			}
 		}
 		
 		//// Chunky
