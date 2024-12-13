@@ -471,7 +471,20 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 							// ArrayGridList's use relative positions and don't have a center position
 							// so we need to use the offsetFinal to select the correct position
 							DhChunkPos chunkPos = new DhChunkPos(relX + refPosX + xOffsetFinal, relZ + refPosZ + zOffsetFinal);
-							ChunkAccess chunk = regionChunks.get(relX, relZ);
+							
+							
+							ChunkAccess chunk;
+							if (genEvent.targetGenerationStep != EDhApiWorldGenerationStep.LIGHT) // TODO using something other than LIGHT would be good for clarity
+							{
+								// DH's world gen will be used
+								chunk = regionChunks.get(relX, relZ);
+							}
+							else
+							{
+								// use the internal server's world gen
+								// this will cause a lot of server lag, but is the most accurate world gen option
+								chunk = this.params.level.getChunk(chunkPos.getX(), chunkPos.getZ(), ChunkStatus.FULL, true);
+							}
 							
 							if (chunkWrappersByDhPos.containsKey(chunkPos))
 							{
