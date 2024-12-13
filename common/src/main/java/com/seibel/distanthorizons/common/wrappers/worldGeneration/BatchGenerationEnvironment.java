@@ -713,7 +713,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	
 	
 	public void generateDirect(
-			GenerationEvent genEvent, ArrayGridList<ChunkWrapper> chunksToGenerate, int border,
+			GenerationEvent genEvent, ArrayGridList<ChunkWrapper> chunkWrappersToGenerate, int border,
 			EDhApiWorldGenerationStep step, DhLitWorldGenRegion region) throws InterruptedException
 	{
 		if (Thread.interrupted())
@@ -723,7 +723,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		
 		try
 		{
-			chunksToGenerate.forEach((chunkWrapper) ->
+			chunkWrappersToGenerate.forEach((chunkWrapper) ->
 			{
 				ChunkAccess chunk = chunkWrapper.getChunk();
 				if (chunk instanceof ProtoChunk)
@@ -741,7 +741,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			
 			genEvent.timer.nextEvent("structStart");
 			throwIfThreadInterrupted();
-			this.stepStructureStart.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunksToGenerate, EDhApiWorldGenerationStep.STRUCTURE_START));
+			this.stepStructureStart.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunkWrappersToGenerate, EDhApiWorldGenerationStep.STRUCTURE_START));
 			genEvent.refreshTimeout();
 			if (step == EDhApiWorldGenerationStep.STRUCTURE_START)
 			{
@@ -750,7 +750,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			
 			genEvent.timer.nextEvent("structRef");
 			throwIfThreadInterrupted();
-			this.stepStructureReference.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunksToGenerate, EDhApiWorldGenerationStep.STRUCTURE_REFERENCE));
+			this.stepStructureReference.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunkWrappersToGenerate, EDhApiWorldGenerationStep.STRUCTURE_REFERENCE));
 			genEvent.refreshTimeout();
 			if (step == EDhApiWorldGenerationStep.STRUCTURE_REFERENCE)
 			{
@@ -759,7 +759,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			
 			genEvent.timer.nextEvent("biome");
 			throwIfThreadInterrupted();
-			this.stepBiomes.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunksToGenerate, EDhApiWorldGenerationStep.BIOMES));
+			this.stepBiomes.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunkWrappersToGenerate, EDhApiWorldGenerationStep.BIOMES));
 			genEvent.refreshTimeout();
 			if (step == EDhApiWorldGenerationStep.BIOMES)
 			{
@@ -768,7 +768,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			
 			genEvent.timer.nextEvent("noise");
 			throwIfThreadInterrupted();
-			this.stepNoise.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunksToGenerate, EDhApiWorldGenerationStep.NOISE));
+			this.stepNoise.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunkWrappersToGenerate, EDhApiWorldGenerationStep.NOISE));
 			genEvent.refreshTimeout();
 			if (step == EDhApiWorldGenerationStep.NOISE)
 			{
@@ -777,7 +777,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			
 			genEvent.timer.nextEvent("surface");
 			throwIfThreadInterrupted();
-			this.stepSurface.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunksToGenerate, EDhApiWorldGenerationStep.SURFACE));
+			this.stepSurface.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunkWrappersToGenerate, EDhApiWorldGenerationStep.SURFACE));
 			genEvent.refreshTimeout();
 			if (step == EDhApiWorldGenerationStep.SURFACE)
 			{
@@ -794,7 +794,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			
 			genEvent.timer.nextEvent("feature");
 			throwIfThreadInterrupted();
-			this.stepFeatures.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunksToGenerate, EDhApiWorldGenerationStep.FEATURES));
+			this.stepFeatures.generateGroup(genEvent.threadedParam, region, GetCutoutFrom(chunkWrappersToGenerate, EDhApiWorldGenerationStep.FEATURES));
 			genEvent.refreshTimeout();
 		}
 		finally
@@ -808,9 +808,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			// only light generated chunks,
 			// attempting to light un-generated chunks will cause lighting issues on bordering generated chunks
 			ArrayList<IChunkWrapper> iChunkWrapperList = new ArrayList<>();
-			for (int i = 0; i < chunksToGenerate.size(); i++) // regular for loop since enhanced for loops increase GC pressure slightly
+			for (int i = 0; i < chunkWrappersToGenerate.size(); i++) // regular for loop since enhanced for loops increase GC pressure slightly
 			{
-				ChunkWrapper chunkWrapper = chunksToGenerate.get(i);
+				ChunkWrapper chunkWrapper = chunkWrappersToGenerate.get(i);
 				if (chunkWrapper.getStatus() != ChunkStatus.EMPTY)
 				{
 					iChunkWrapperList.add(chunkWrapper);
