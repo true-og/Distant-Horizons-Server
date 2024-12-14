@@ -242,7 +242,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 			return null;
 		}
 		
-		return new ChunkWrapper(chunk, this.level, this);
+		return new ChunkWrapper(chunk, this);
 	}
 	
 	@Override

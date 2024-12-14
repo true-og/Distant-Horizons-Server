@@ -142,7 +142,7 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 			return null;
 		}
 		
-		return new ChunkWrapper(chunk, this.level, this);
+		return new ChunkWrapper(chunk, this);
 	}
 	
 	@Override

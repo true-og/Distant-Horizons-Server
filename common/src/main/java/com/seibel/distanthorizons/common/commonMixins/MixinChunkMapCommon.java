@@ -77,7 +77,7 @@ public class MixinChunkMapCommon
 		
 		// submit the update event
 		ServerApi.INSTANCE.serverChunkSaveEvent(
-				new ChunkWrapper(chunk, level, ServerLevelWrapper.getWrapper(level)),
+				new ChunkWrapper(chunk, ServerLevelWrapper.getWrapper(level)),
 				ServerLevelWrapper.getWrapper(level)
 		);
 	}

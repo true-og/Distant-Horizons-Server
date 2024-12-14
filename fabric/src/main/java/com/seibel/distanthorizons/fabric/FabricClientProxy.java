@@ -126,7 +126,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 			if (MC.clientConnectedToDedicatedServer())
 			{
 				IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper(level);
-				SharedApi.INSTANCE.chunkLoadEvent(new ChunkWrapper(chunk, level, wrappedLevel), wrappedLevel);
+				SharedApi.INSTANCE.chunkLoadEvent(new ChunkWrapper(chunk, wrappedLevel), wrappedLevel);
 			}
 		});
 		
@@ -154,7 +154,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 								
 								IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper((ClientLevel) level);
 								SharedApi.INSTANCE.chunkBlockChangedEvent(
-										new ChunkWrapper(chunk, level, wrappedLevel),
+										new ChunkWrapper(chunk, wrappedLevel),
 										wrappedLevel
 								);
 							}
@@ -194,7 +194,7 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 									
 									IClientLevelWrapper wrappedLevel = ClientLevelWrapper.getWrapper((ClientLevel) level);
 									SharedApi.INSTANCE.chunkBlockChangedEvent(
-											new ChunkWrapper(chunk, level, wrappedLevel),
+											new ChunkWrapper(chunk, wrappedLevel),
 											wrappedLevel
 									);
 								}

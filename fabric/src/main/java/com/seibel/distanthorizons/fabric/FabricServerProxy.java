@@ -142,7 +142,7 @@ public class FabricServerProxy implements AbstractModInitializer.IEventProxy
 			if (this.isValidTime())
 			{
 				ServerApi.INSTANCE.serverChunkLoadEvent(
-						new ChunkWrapper(chunk, chunk.getLevel(), level),
+						new ChunkWrapper(chunk, level),
 						level);
 			}
 		});

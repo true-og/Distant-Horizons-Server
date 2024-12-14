@@ -213,7 +213,7 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	private void onBlockChangeEvent(LevelAccessor level, ChunkAccess chunk)
 	{
 		ILevelWrapper wrappedLevel = ProxyUtil.getLevelWrapper(level);
-		SharedApi.INSTANCE.chunkBlockChangedEvent(new ChunkWrapper(chunk, level, wrappedLevel), wrappedLevel);
+		SharedApi.INSTANCE.chunkBlockChangedEvent(new ChunkWrapper(chunk, wrappedLevel), wrappedLevel);
 	}
 	
 	

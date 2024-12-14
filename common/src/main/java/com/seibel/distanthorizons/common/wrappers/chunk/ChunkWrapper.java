@@ -86,7 +86,6 @@ public class ChunkWrapper implements IChunkWrapper
 	
 	private final ChunkAccess chunk;
 	private final DhChunkPos chunkPos;
-	private final LevelReader lightSource;
 	private final ILevelWrapper wrappedLevel;
 	
 	private boolean isDhBlockLightCorrect = false;
@@ -111,10 +110,9 @@ public class ChunkWrapper implements IChunkWrapper
 	// constructor //
 	//=============//
 	
-	public ChunkWrapper(ChunkAccess chunk, LevelReader lightSource, ILevelWrapper wrappedLevel)
+	public ChunkWrapper(ChunkAccess chunk, ILevelWrapper wrappedLevel)
 	{
 		this.chunk = chunk;
-		this.lightSource = lightSource;
 		this.wrappedLevel = wrappedLevel;
 		this.chunkPos = new DhChunkPos(chunk.getPos().x, chunk.getPos().z);
 		
@@ -524,32 +522,6 @@ public class ChunkWrapper implements IChunkWrapper
 	//===============//
 	// other methods //
 	//===============//
-	
-	@Override
-	public boolean doNearbyChunksExist()
-	{
-		if (this.lightSource instanceof DhLitWorldGenRegion)
-		{
-			return true;
-		}
-		
-		for (int dx = -1; dx <= 1; dx++)
-		{
-			for (int dz = -1; dz <= 1; dz++)
-			{
-				if (dx == 0 && dz == 0)
-				{
-					continue;
-				}
-				else if (this.lightSource.getChunk(dx + this.chunk.getPos().x, dz + this.chunk.getPos().z, ChunkStatus.BIOMES, false) == null)
-				{
-					return false;
-				}
-			}
-		}
-		
-		return true;
-	}
 	
 	@Override
 	public boolean isStillValid() { return this.wrappedLevel.tryGetChunk(this.chunkPos) == this; }

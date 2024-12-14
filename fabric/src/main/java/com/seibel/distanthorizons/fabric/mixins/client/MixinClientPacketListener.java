@@ -46,7 +46,7 @@ public class MixinClientPacketListener
 	void onEnableChunkLight(LevelChunk chunk, int x, int z, CallbackInfo ci)
 	{
 		IClientLevelWrapper clientLevel = ClientLevelWrapper.getWrapper((ClientLevel) chunk.getLevel());
-		SharedApi.INSTANCE.chunkLoadEvent(new ChunkWrapper(chunk, chunk.getLevel(), clientLevel), clientLevel);
+		SharedApi.INSTANCE.chunkLoadEvent(new ChunkWrapper(chunk, clientLevel), clientLevel);
 	}
 
 	#endif

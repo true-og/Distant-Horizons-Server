@@ -174,8 +174,6 @@ public class WrapperFactory implements IWrapperFactory
 			}
 			// the level is needed for the DH level wrapper...
 			Level level = (Level) objectArray[1];
-			// ...the LevelReader is needed for chunk lighting
-			LevelReader lightSource = level;
 			
 			
 			// level wrapper
@@ -184,7 +182,7 @@ public class WrapperFactory implements IWrapperFactory
 					: ServerLevelWrapper.getWrapper((ServerLevel)level);
 			
 			
-			return new ChunkWrapper(chunk, lightSource, levelWrapper);
+			return new ChunkWrapper(chunk, levelWrapper);
 		}
 		// incorrect number of parameters from the API
 		else
