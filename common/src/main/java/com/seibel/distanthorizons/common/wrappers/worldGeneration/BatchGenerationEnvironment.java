@@ -629,13 +629,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			return CompletableFuture.completedFuture(ioWorker.load(chunkPos));
 			#else
 			
-			// timeout should prevent locking up the thread if the ioWorker dies or has issues 
-			int maxGetTimeInSec = 60 * 3; // 3 minutes (same as old timeout config default)
-			
 			// when running in vanilla MC, loadAsync will run on this same thread due to a vanilla threading mixin,
 			// however if a mod like C2ME is installed this will run on a C2ME thread instead
 			return ioWorker.loadAsync(chunkPos)
-					.orTimeout(maxGetTimeInSec, TimeUnit.SECONDS)
 					.thenApply(optional -> optional.orElse(null))
 					.exceptionally((throwable) -> 
 					{
@@ -646,15 +642,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 							actualThrowable = completionException.getCause();
 						}
 						
-						if (actualThrowable instanceof TimeoutException)
-						{
-							LOAD_LOGGER.warn("Unable to get chunk at pos ["+chunkPos+"] after ["+maxGetTimeInSec+"] milliseconds.", actualThrowable);
-						}
-						else
-						{
-							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
-						}
-						
+						LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
 						return null;
 					});
 			#endif
