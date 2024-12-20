@@ -629,22 +629,33 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			return CompletableFuture.completedFuture(ioWorker.load(chunkPos));
 			#else
 			
-			// when running in vanilla MC, loadAsync will run on this same thread due to a vanilla threading mixin,
-			// however if a mod like C2ME is installed this will run on a C2ME thread instead
-			return ioWorker.loadAsync(chunkPos)
-					.thenApply(optional -> optional.orElse(null))
-					.exceptionally((throwable) -> 
-					{
-						// unwrap the CompletionException if necessary
-						Throwable actualThrowable = throwable;
-						while (actualThrowable instanceof CompletionException completionException)
+			// storage will be null if C2ME is installed
+			if (ioWorker.storage != null)
+			{
+				// run synchronously if possible to prevent lagging the server thread
+				return CompletableFuture.completedFuture(ioWorker.storage.read(chunkPos));
+			}
+			else
+			{
+				// When running in vanilla MC on versions before 1.21.4,  
+				// DH would run loadAsync on this same thread via a threading mixin,
+				// to prevent causing lag on any MC threads.
+				// However, if a mod like C2ME is installed this will run on a C2ME thread instead.
+				return ioWorker.loadAsync(chunkPos)
+						.thenApply(optional -> optional.orElse(null))
+						.exceptionally((throwable) ->
 						{
-							actualThrowable = completionException.getCause();
-						}
-						
-						LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
-						return null;
-					});
+							// unwrap the CompletionException if necessary
+							Throwable actualThrowable = throwable;
+							while (actualThrowable instanceof CompletionException completionException)
+							{
+								actualThrowable = completionException.getCause();
+							}
+							
+							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
+							return null;
+						});
+			}
 			#endif
 		}
 		catch (Exception e)
