@@ -378,7 +378,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		// We handle this later, although that handling would need to change if the gen size ever changes.
 		LodUtil.assertTrue(genEvent.size % 2 == 0, "Generation events are expected to be an evan number of chunks wide.");
 		
-		if (genEvent.targetGenerationStep == EDhApiWorldGenerationStep.LIGHT) // TODO using something other than LIGHT would be good for clarity
+		if (genEvent.generatorMode == EDhApiDistantGeneratorMode.INTERNAL_SERVER)
 		{
 			return this.generateChunksViaInternalServerAsync(genEvent);
 		}
@@ -515,7 +515,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 						
 						try
 						{
-							this.generateDirect(genEvent, chunkWrapperList, borderSize, genEvent.targetGenerationStep, region);
+							this.generateDirect(genEvent, chunkWrapperList, region);
 						}
 						catch (InterruptedException e)
 						{
@@ -669,7 +669,17 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				
 				@Nullable
 				ChunkAccess chunk = ChunkLoader.read(level, chunkPos, chunkData);
-				if (chunk == null)
+				if (chunk != null)
+				{
+					if (Config.Common.LodBuilding.assumePreExistingChunksAreFinished.get())
+					{
+						// Sometimes the chunk status is wrong 
+						// (this might be an issue with some versions of chunky)
+						// which can cause issues with some world gen steps re-running and locking up
+						ChunkWrapper.trySetStatus(chunk, ChunkStatus.FULL);
+					}
+				}
+				else
 				{
 					chunk = CreateEmptyChunk(level, chunkPos);
 				}
@@ -761,7 +771,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					ArrayList<IChunkWrapper> chunksToLight = new ArrayList<>(chunkWrappersByDhPos.values());
 					for (IChunkWrapper iChunkWrapper : chunksToLight)
 					{
-						((ChunkWrapper) iChunkWrapper).recalculateDhHeightMaps();
+						((ChunkWrapper) iChunkWrapper).recalculateDhHeightMapsIfNeeded();
 						
 						// pre-generated chunks should have lighting but new ones won't
 						if (!iChunkWrapper.isDhBlockLightingCorrect())
@@ -898,8 +908,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	}
 	
 	public void generateDirect(
-			GenerationEvent genEvent, ArrayGridList<ChunkWrapper> chunkWrappersToGenerate, int border,
-			EDhApiWorldGenerationStep step, DhLitWorldGenRegion region) throws InterruptedException
+			GenerationEvent genEvent, ArrayGridList<ChunkWrapper> chunkWrappersToGenerate,
+			DhLitWorldGenRegion region) throws InterruptedException
 	{
 		if (Thread.interrupted())
 		{
@@ -919,8 +929,10 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				}
 			});
 			
+			EDhApiWorldGenerationStep step = genEvent.targetGenerationStep;
 			if (step == EDhApiWorldGenerationStep.EMPTY)
 			{
+				// shouldn't normally happen but is here for consistency with the other world gen steps
 				return;
 			}
 			
@@ -1016,7 +1028,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				// make sure the height maps are all properly generated
 				// if this isn't done everything else afterward may fail
 				Heightmap.primeHeightmaps(centerChunk.getChunk(), ChunkStatus.FEATURES.heightmapsAfter());
-				centerChunk.recalculateDhHeightMaps();
+				centerChunk.recalculateDhHeightMapsIfNeeded();
 				
 				// pre-generated chunks should have lighting but new ones won't
 				if (!centerChunk.isDhBlockLightingCorrect())
@@ -1069,13 +1081,14 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	
 	@Override
 	public CompletableFuture<Void> generateChunks(
-			int minX, int minZ, int genSize, EDhApiWorldGenerationStep targetStep,
+			int minX, int minZ, int genSize, 
+			EDhApiDistantGeneratorMode generatorMode, EDhApiWorldGenerationStep targetStep,
 			ExecutorService worldGeneratorThreadPool, Consumer<IChunkWrapper> resultConsumer)
 	{
 		//System.out.println("GenerationEvent: "+genSize+"@"+minX+","+minZ+" "+targetStep);
 		
 		// TODO: Check event overlap via e.tooClose()
-		GenerationEvent genEvent = GenerationEvent.startEvent(new DhChunkPos(minX, minZ), genSize, this, targetStep, resultConsumer, worldGeneratorThreadPool);
+		GenerationEvent genEvent = GenerationEvent.startEvent(new DhChunkPos(minX, minZ), genSize, this, generatorMode, targetStep, resultConsumer, worldGeneratorThreadPool);
 		this.generationEventList.add(genEvent);
 		return genEvent.future;
 	}

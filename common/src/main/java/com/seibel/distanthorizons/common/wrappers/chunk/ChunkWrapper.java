@@ -22,7 +22,6 @@ package com.seibel.distanthorizons.common.wrappers.chunk;
 import com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import com.seibel.distanthorizons.common.wrappers.block.BlockStateWrapper;
 import com.seibel.distanthorizons.common.wrappers.misc.MutableBlockPosWrapper;
-import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.DhLitWorldGenRegion;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos;
@@ -36,8 +35,8 @@ import com.seibel.distanthorizons.core.wrapperInterfaces.world.IBiomeWrapper;
 
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.ILevelWrapper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import org.apache.logging.log4j.Logger;
@@ -122,7 +121,7 @@ public class ChunkWrapper implements IChunkWrapper
 			this.solidHeightMap = new int[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH];
 			this.lightBlockingHeightMap = new int[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH];
 			
-			this.recalculateDhHeightMaps();
+			this.recalculateDhHeightMapsIfNeeded();
 		}
 		else
 		{
@@ -250,8 +249,8 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	private int getChunkSectionMinHeight(int index) { return (index * 16) + this.getInclusiveMinBuildHeight(); }
 	
-	
-	public void recalculateDhHeightMaps()
+	/** Will only run if the config says the MC heightmaps shouldn't be trusted. */
+	public void recalculateDhHeightMapsIfNeeded()
 	{
 		// re-calculate the min/max heights for consistency (during world gen these may be wrong)
 		this.minNonEmptyHeight = Integer.MIN_VALUE;
@@ -393,6 +392,20 @@ public class ChunkWrapper implements IChunkWrapper
 	public DhChunkPos getChunkPos() { return this.chunkPos; }
 	
 	public ChunkAccess getChunk() { return this.chunk; }
+	
+	public void trySetStatus(ChunkStatus status) { trySetStatus(this.getChunk(), status); }
+	/** does nothing if the chunk object doesn't support setting it's status */
+	public static void trySetStatus(ChunkAccess chunk, ChunkStatus status)
+	{
+		if (chunk instanceof ProtoChunk)
+		{
+			#if MC_VER < MC_1_21_1
+			((ProtoChunk) chunk).setStatus(STATUS);
+			#else
+			((ProtoChunk) chunk).setPersistedStatus(status);
+			#endif
+		}
+	}
 	
 	public ChunkStatus getStatus() { return getStatus(this.getChunk()); }
 	public static ChunkStatus getStatus(ChunkAccess chunk)

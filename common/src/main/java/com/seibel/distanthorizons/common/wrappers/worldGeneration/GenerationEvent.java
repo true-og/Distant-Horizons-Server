@@ -23,6 +23,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
+import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiDistantGeneratorMode;
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiWorldGenerationStep;
 import com.seibel.distanthorizons.core.util.objects.UncheckedInterruptedException;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
@@ -44,6 +45,7 @@ public final class GenerationEvent
 	/** the number of chunks wide this event is */
 	public final int size;
 	public final EDhApiWorldGenerationStep targetGenerationStep;
+	public final EDhApiDistantGeneratorMode generatorMode;
 	public EventTimer timer = null;
 	public long inQueueTime;
 	public long timeoutTime = -1;
@@ -54,12 +56,13 @@ public final class GenerationEvent
 	
 	public GenerationEvent(
 			DhChunkPos minPos, int size, BatchGenerationEnvironment generationGroup,
-			EDhApiWorldGenerationStep targetGenerationStep, Consumer<IChunkWrapper> resultConsumer)
+			EDhApiDistantGeneratorMode generatorMode, EDhApiWorldGenerationStep targetGenerationStep, Consumer<IChunkWrapper> resultConsumer)
 	{
 		this.inQueueTime = System.nanoTime();
 		this.id = generationFutureDebugIDs++;
 		this.minPos = minPos;
 		this.size = size;
+		this.generatorMode = generatorMode;
 		this.targetGenerationStep = targetGenerationStep;
 		this.threadedParam = ThreadedParameters.getOrMake(generationGroup.params);
 		this.resultConsumer = resultConsumer;
@@ -69,10 +72,10 @@ public final class GenerationEvent
 	
 	public static GenerationEvent startEvent(
 			DhChunkPos minPos, int size, BatchGenerationEnvironment genEnvironment,
-			EDhApiWorldGenerationStep target, Consumer<IChunkWrapper> resultConsumer,
+			EDhApiDistantGeneratorMode generatorMode, EDhApiWorldGenerationStep target, Consumer<IChunkWrapper> resultConsumer,
 			ExecutorService worldGeneratorThreadPool)
 	{
-		GenerationEvent generationEvent = new GenerationEvent(minPos, size, genEnvironment, target, resultConsumer);
+		GenerationEvent generationEvent = new GenerationEvent(minPos, size, genEnvironment, generatorMode, target, resultConsumer);
 		generationEvent.future = CompletableFuture.supplyAsync(() ->
 		{
 			long runStartTime = System.nanoTime();
