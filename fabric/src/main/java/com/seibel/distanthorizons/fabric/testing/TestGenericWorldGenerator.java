@@ -45,7 +45,9 @@ public class TestGenericWorldGenerator implements IDhApiWorldGenerator
 	@Override
 	public byte getSmallestDataDetailLevel() { return (byte) (EDhApiDetailLevel.BLOCK.detailLevel); }
 	@Override
-	public byte getLargestDataDetailLevel() { return (byte) (EDhApiDetailLevel.BLOCK.detailLevel + 12); }
+	public byte getLargestDataDetailLevel() 
+	//{ return (byte) (EDhApiDetailLevel.BLOCK.detailLevel + 12); }
+	{ return (byte) (EDhApiDetailLevel.BLOCK.detailLevel); }
 	
 	
 	@Override
@@ -69,107 +71,118 @@ public class TestGenericWorldGenerator implements IDhApiWorldGenerator
 			Consumer<IDhApiFullDataSource> resultConsumer)
 	{
 		return CompletableFuture.runAsync(() -> 
+			this.generateInternal(
+				chunkPosMinX, chunkPosMinZ,
+				posX, posZ, detailLevel,
+				pooledFullDataSource, generatorMode, resultConsumer),
+			worldGeneratorThreadPool);
+	}
+	public void generateInternal(
+		int chunkPosMinX, int chunkPosMinZ,
+		int posX, int posZ, byte detailLevel,
+		IDhApiFullDataSource pooledFullDataSource,
+		EDhApiDistantGeneratorMode generatorMode,
+		Consumer<IDhApiFullDataSource> resultConsumer)
+	{
+		// this test is only validated for 1.18.2 and up 
+		// (and it is only needed when testing world gen overrides/API chunks, so it isn't normally needed)
+		#if MC_VER >= MC_1_18_2
+		
+		
+		IDhApiBiomeWrapper biome;
+		IDhApiBlockStateWrapper colorBlock;
+		IDhApiBlockStateWrapper borderBlock;
+		IDhApiBlockStateWrapper airBlock;
+		int maxHeight;
+		try
 		{
-			// this test is only validated for 1.18.2 and up 
-			// (and it is only needed when testing world gen overrides/API chunks, so it isn't normally needed)
-			#if MC_VER >= MC_1_18_2
+			biome = DhApi.Delayed.wrapperFactory.getBiomeWrapper("minecraft:plains", this.levelWrapper);
+			airBlock = DhApi.Delayed.wrapperFactory.getAirBlockStateWrapper();
+			borderBlock = DhApi.Delayed.wrapperFactory.getDefaultBlockStateWrapper("minecraft:stone", this.levelWrapper);
 			
-			
-			IDhApiBiomeWrapper biome;
-			IDhApiBlockStateWrapper colorBlock;
-			IDhApiBlockStateWrapper borderBlock;
-			IDhApiBlockStateWrapper airBlock;
-			int maxHeight;
-			try
+			String blockResourceLocation;
+			switch (detailLevel)
 			{
-				biome = DhApi.Delayed.wrapperFactory.getBiomeWrapper("minecraft:plains", this.levelWrapper);
-				airBlock = DhApi.Delayed.wrapperFactory.getAirBlockStateWrapper();
-				borderBlock = DhApi.Delayed.wrapperFactory.getDefaultBlockStateWrapper("minecraft:stone", this.levelWrapper);
-				
-				String blockResourceLocation;
-				switch (detailLevel)
-				{
-					case 0:
-						blockResourceLocation = "minecraft:red_wool";
-						maxHeight = 60;
-						break;
-					case 1:
-						blockResourceLocation = "minecraft:orange_wool";
-						maxHeight = 70;
-						break;
-					case 2:
-						blockResourceLocation = "minecraft:yellow_wool";
-						maxHeight = 80;
-						break;
-					case 3:
-						blockResourceLocation = "minecraft:lime_wool";
-						maxHeight = 90;
-						break;
-					case 4:
-						blockResourceLocation = "minecraft:cyan_wool";
-						maxHeight = 100;
-						break;
-					case 5:
-						blockResourceLocation = "minecraft:blue_wool";
-						maxHeight = 100;
-						break;
-					case 6:
-						blockResourceLocation = "minecraft:magenta_wool";
-						maxHeight = 110;
-						break;
-					case 7:
-						blockResourceLocation = "minecraft:white_wool";
-						maxHeight = 120;
-						break;
-					case 8:
-						blockResourceLocation = "minecraft:gray_wool";
-						maxHeight = 120;
-						break;
-					default:
-						blockResourceLocation = "minecraft:black_wool";
-						maxHeight = 140;
-						break;
-				}
-				
-				colorBlock = DhApi.Delayed.wrapperFactory.getDefaultBlockStateWrapper(blockResourceLocation, this.levelWrapper);
-				
-			}
-			catch (IOException e)
-			{
-				LOGGER.error("Failed to get biome/block: "+ e.getMessage(), e);
-				return;
+				case 0:
+					blockResourceLocation = "minecraft:red_wool";
+					maxHeight = 60;
+					break;
+				case 1:
+					blockResourceLocation = "minecraft:orange_wool";
+					maxHeight = 70;
+					break;
+				case 2:
+					blockResourceLocation = "minecraft:yellow_wool";
+					maxHeight = 80;
+					break;
+				case 3:
+					blockResourceLocation = "minecraft:lime_wool";
+					maxHeight = 90;
+					break;
+				case 4:
+					blockResourceLocation = "minecraft:cyan_wool";
+					maxHeight = 100;
+					break;
+				case 5:
+					blockResourceLocation = "minecraft:blue_wool";
+					maxHeight = 100;
+					break;
+				case 6:
+					blockResourceLocation = "minecraft:magenta_wool";
+					maxHeight = 110;
+					break;
+				case 7:
+					blockResourceLocation = "minecraft:white_wool";
+					maxHeight = 120;
+					break;
+				case 8:
+					blockResourceLocation = "minecraft:gray_wool";
+					maxHeight = 120;
+					break;
+				default:
+					blockResourceLocation = "minecraft:black_wool";
+					maxHeight = 140;
+					break;
 			}
 			
-			ArrayList<DhApiTerrainDataPoint> dataPoints = new ArrayList<>();
-			int width = pooledFullDataSource.getWidthInDataColumns();
-			for (int x = 0; x < width; x++)
+			colorBlock = DhApi.Delayed.wrapperFactory.getDefaultBlockStateWrapper(blockResourceLocation, this.levelWrapper);
+			
+		}
+		catch (IOException e)
+		{
+			LOGGER.error("Failed to get biome/block: "+ e.getMessage(), e);
+			return;
+		}
+		
+		ArrayList<DhApiTerrainDataPoint> dataPoints = new ArrayList<>();
+		int width = pooledFullDataSource.getWidthInDataColumns();
+		for (int x = 0; x < width; x++)
+		{
+			for (int z = 0; z < width; z++)
 			{
-				for (int z = 0; z < width; z++)
-				{
-					dataPoints.clear();
-					
-					IDhApiBlockStateWrapper block = colorBlock;
-					if (x == 0 || x == (width-1)
+				dataPoints.clear();
+				
+				IDhApiBlockStateWrapper block = colorBlock;
+				if (x == 0 || x == (width-1)
 						|| z == 0 || z == (width-1))
-					{
-						block = borderBlock;
-					}
-					
-					// TODO make mutable dataPoint object
-					// sky lighting can be ignored. DH will auto light the LODs after they've been submitted
-					// block lighting however will need to be generated here
-					dataPoints.add(DhApiTerrainDataPoint.create((byte)0, 0, 0, 0, maxHeight, block, biome));
-					dataPoints.add(DhApiTerrainDataPoint.create((byte)0, 0, 0, maxHeight, 256, airBlock, biome));
-					
-					pooledFullDataSource.setApiDataPointColumn(x, z, dataPoints);
+				{
+					block = borderBlock;
 				}
+				
+				// TODO make mutable dataPoint object
+				// sky lighting can be ignored. DH will auto light the LODs after they've been submitted
+				// block lighting however will need to be generated here
+				dataPoints.add(DhApiTerrainDataPoint.create((byte)0, 0, 0, 0, maxHeight, block, biome));
+				dataPoints.add(DhApiTerrainDataPoint.create((byte)0, 0, 0, maxHeight, 256, airBlock, biome));
+				
+				pooledFullDataSource.setApiDataPointColumn(x, z, dataPoints);
 			}
+		}
+		
+		resultConsumer.accept(pooledFullDataSource);
 			
-			resultConsumer.accept(pooledFullDataSource);
-			
-			#else
-			#endif
-		}, worldGeneratorThreadPool);
+		#else
+		#endif
 	}
 	
 	
