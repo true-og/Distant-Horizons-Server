@@ -400,7 +400,7 @@ public class ChunkWrapper implements IChunkWrapper
 		if (chunk instanceof ProtoChunk)
 		{
 			#if MC_VER < MC_1_21_1
-			((ProtoChunk) chunk).setStatus(STATUS);
+			((ProtoChunk) chunk).setStatus(status);
 			#else
 			((ProtoChunk) chunk).setPersistedStatus(status);
 			#endif
