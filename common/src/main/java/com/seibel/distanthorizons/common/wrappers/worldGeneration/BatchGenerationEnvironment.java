@@ -25,6 +25,7 @@ import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiDistantGenerat
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiWorldGenerationStep;
 import com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject.*;
+import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.generation.DhLightingEngine;
 import com.seibel.distanthorizons.core.level.IDhServerLevel;
 import com.seibel.distanthorizons.core.config.Config;
@@ -36,6 +37,7 @@ import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.util.gridList.ArrayGridList;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.IChunkWrapper;
+import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModChecker;
 import com.seibel.distanthorizons.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvironmentWrapper;
 import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 
@@ -113,61 +115,19 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	
 	private static final TicketType<ChunkPos> DH_SERVER_GEN_TICKET = TicketType.create("dh_server_gen_ticket", Comparator.comparingLong(ChunkPos::toLong));
 	
+	private static final IModChecker MOD_CHECKER = SingletonInjector.INSTANCE.get(IModChecker.class);
 	
-	public static class PerfCalculator
-	{
-		private static final String[] TIME_NAMES = {
-				"total",
-				"setup",
-				"structStart",
-				"structRef",
-				"biome",
-				"noise",
-				"surface",
-				"carver",
-				"feature",
-				"light",
-				"cleanup",
-				//"lodCreation" (No longer used)
-		};
-		
-		public static final int SIZE = 50;
-		ArrayList<Rolling> times = new ArrayList<>();
-		
-		public PerfCalculator()
-		{
-			for (int i = 0; i < 11; i++)
-			{
-				times.add(new Rolling(SIZE));
-			}
-		}
-		
-		public void recordEvent(EventTimer event)
-		{
-			for (EventTimer.Event e : event.events)
-			{
-				String name = e.name;
-				int index = Arrays.asList(TIME_NAMES).indexOf(name);
-				if (index == -1) continue;
-				times.get(index).add(e.timeNs);
-			}
-			times.get(0).add(event.getTotalTimeNs());
-		}
-		
-		public String toString()
-		{
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < times.size(); i++)
-			{
-				if (times.get(i).getAverage() == 0) continue;
-				sb.append(TIME_NAMES[i]).append(": ").append(times.get(i).getAverage()).append("\n");
-			}
-			return sb.toString();
-		}
-		
-	}
 	
 	private final IDhServerLevel serverlevel;
+	
+	/** 
+	 * will be true if C2ME is installed (since they require us to
+	 * pull chunks using their async method), or if there
+	 * was an issue with the sync pulling method.
+	 */
+	private boolean pullExistingChunkAsync = false;
+	
+	
 	
 	//=================Generation Step===================
 	
@@ -186,17 +146,16 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	public int unknownExceptionCount = 0;
 	public long lastExceptionTriggerTime = 0;
 	
-	private AtomicReference<RegionFileStorageExternalCache> regionFileStorageCacheRef = new AtomicReference<>();
-	
+	private final AtomicReference<RegionFileStorageExternalCache> regionFileStorageCacheRef = new AtomicReference<>();
 	public RegionFileStorageExternalCache getOrCreateRegionFileCache(RegionFileStorage storage)
 	{
-		RegionFileStorageExternalCache cache = regionFileStorageCacheRef.get();
+		RegionFileStorageExternalCache cache = this.regionFileStorageCacheRef.get();
 		if (cache == null)
 		{
 			cache = new RegionFileStorageExternalCache(storage);
-			if (!regionFileStorageCacheRef.compareAndSet(null, cache))
+			if (!this.regionFileStorageCacheRef.compareAndSet(null, cache))
 			{
-				cache = regionFileStorageCacheRef.get();
+				cache = this.regionFileStorageCacheRef.get();
 			}
 		}
 		return cache;
@@ -279,6 +238,21 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				EVENT_LOGGER.warn("If it does crash, disable Distant Generation or set the Generation Mode to [" + EDhApiDistantGeneratorMode.PRE_EXISTING_ONLY + "].");
 			}
 		}
+		
+		if (MOD_CHECKER.isModLoaded("c2me"))
+		{
+			EVENT_LOGGER.info("C2ME detected: DH's pre-existing chunk accessing will use async methods handled by C2ME.");
+			this.pullExistingChunkAsync = true;
+		}
+		
+		//IOWorker ioWorker = level.getChunkSource().chunkMap.worker;
+		//	
+		//	#if MC_VER <= MC_1_18_2
+		//	return CompletableFuture.completedFuture(ioWorker.load(chunkPos));
+		//	#else
+		//
+		//// storage will be null if C2ME is installed
+		//if (ioWorker.storage != null)
 		
 		this.params = new GlobalParameters(serverlevel);
 	}
@@ -621,6 +595,11 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	{
 		ServerLevel level = this.params.level;
 		
+		//if (true)
+		//	return CompletableFuture.completedFuture(null);
+		
+		// TODO disabling drastically reduces GC overhead (2Gb/s -> 1GB/s)
+		
 		try
 		{
 			IOWorker ioWorker = level.getChunkSource().chunkMap.worker;
@@ -630,31 +609,55 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			#else
 			
 			// storage will be null if C2ME is installed
-			if (ioWorker.storage != null)
+			if (!this.pullExistingChunkAsync && ioWorker.storage != null)
 			{
-				// run synchronously if possible to prevent lagging the server thread
-				return CompletableFuture.completedFuture(ioWorker.storage.read(chunkPos));
+				try
+				{
+					RegionFileStorage storage = this.params.level.getChunkSource().chunkMap.worker.storage;
+					RegionFileStorageExternalCache cache = this.getOrCreateRegionFileCache(storage);
+					return CompletableFuture.completedFuture(cache.read(chunkPos));
+				}
+				catch (NullPointerException e)
+				{
+					// this shouldn't happen, if anything is null it should be
+					// ioWorker.storage
+					// but just in case
+					EVENT_LOGGER.error("Unexpected issue pulling pre-existing chunk ["+chunkPos+"], falling back to async chunk pulling. This may cause server-tick lag.", e);
+					this.pullExistingChunkAsync = true;
+					
+					// try again now using the async method
+					return this.getChunkNbtDataAsync(chunkPos);
+				}
 			}
 			else
 			{
+				// log if we unexpectedly weren't able to run the sync chunk pulling
+				if (!this.pullExistingChunkAsync)
+				{
+					// this shouldn't happen, but just in case
+					EVENT_LOGGER.info("Unable to pull pre-existing chunk using synchronous method. Falling back to async method. this may cause server-tick lag.");
+					this.pullExistingChunkAsync = true;
+				}
+				
+				
 				// When running in vanilla MC on versions before 1.21.4,  
-				// DH would run loadAsync on this same thread via a threading mixin,
-				// to prevent causing lag on any MC threads.
+				// DH would attempt to run loadAsync on this same thread via a threading mixin,
+				// to prevent causing lag on the server thread.
 				// However, if a mod like C2ME is installed this will run on a C2ME thread instead.
 				return ioWorker.loadAsync(chunkPos)
-						.thenApply(optional -> optional.orElse(null))
-						.exceptionally((throwable) ->
+					.thenApply(optional -> optional.orElse(null))
+					.exceptionally((throwable) ->
+					{
+						// unwrap the CompletionException if necessary
+						Throwable actualThrowable = throwable;
+						while (actualThrowable instanceof CompletionException completionException)
 						{
-							// unwrap the CompletionException if necessary
-							Throwable actualThrowable = throwable;
-							while (actualThrowable instanceof CompletionException completionException)
-							{
-								actualThrowable = completionException.getCause();
-							}
-							
-							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
-							return null;
-						});
+							actualThrowable = completionException.getCause();
+						}
+						
+						LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
+						return null;
+					});
 			}
 			#endif
 		}
@@ -1204,5 +1207,59 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			return true;
 		}
 	}
+	
+	public static class PerfCalculator
+	{
+		private static final String[] TIME_NAMES = {
+				"total",
+				"setup",
+				"structStart",
+				"structRef",
+				"biome",
+				"noise",
+				"surface",
+				"carver",
+				"feature",
+				"light",
+				"cleanup",
+				//"lodCreation" (No longer used)
+		};
+		
+		public static final int SIZE = 50;
+		ArrayList<Rolling> times = new ArrayList<>();
+		
+		public PerfCalculator()
+		{
+			for (int i = 0; i < 11; i++)
+			{
+				times.add(new Rolling(SIZE));
+			}
+		}
+		
+		public void recordEvent(EventTimer event)
+		{
+			for (EventTimer.Event e : event.events)
+			{
+				String name = e.name;
+				int index = Arrays.asList(TIME_NAMES).indexOf(name);
+				if (index == -1) continue;
+				times.get(index).add(e.timeNs);
+			}
+			times.get(0).add(event.getTotalTimeNs());
+		}
+		
+		public String toString()
+		{
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < times.size(); i++)
+			{
+				if (times.get(i).getAverage() == 0) continue;
+				sb.append(TIME_NAMES[i]).append(": ").append(times.get(i).getAverage()).append("\n");
+			}
+			return sb.toString();
+		}
+		
+	}
+	
 	
 }

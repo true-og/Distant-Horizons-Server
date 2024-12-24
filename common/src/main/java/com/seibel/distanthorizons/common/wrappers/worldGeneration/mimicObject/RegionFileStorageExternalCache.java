@@ -22,11 +22,11 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 #endif
 
 /** 
- * @deprecated should be replaced with net.minecraft.world.level.chunk.storage.IOWorker to
- *              prevent potential file corruption and issues with the C2ME mod.
- *              Generally this would be done via (MC ServerLevel) level.getChunkSource().chunkMap.worker#loadAsync()
+ * Shouldn't be used when the C2ME mod is present,
+ * otherwise there may be potential file corruption.
+ * When C2ME is present use (via MC ServerLevel) level.getChunkSource().chunkMap.worker#loadAsync()
+ * instead.
  */
-@Deprecated
 public class RegionFileStorageExternalCache implements AutoCloseable
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
@@ -46,22 +46,11 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 	
 	
 	
-	static class RegionFileCache
-	{
-		public final long pos;
-		public final RegionFile file;
-		
-		public RegionFileCache(long pos, RegionFile file)
-		{
-			this.pos = pos;
-			this.file = file;
-		}
-		
-	}
 	
 	
+	private final ConcurrentLinkedQueue<RegionFileCache> regionFileCache = new ConcurrentLinkedQueue<>();
 	
-	public ConcurrentLinkedQueue<RegionFileCache> regionFileCache = new ConcurrentLinkedQueue<>();
+	
 	
 	public RegionFileStorageExternalCache(RegionFileStorage storage) { this.storage = storage; }
 	
@@ -150,7 +139,7 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 		
 		if (retryCount >= maxRetryCount)
 		{
-			BatchGenerationEnvironment.LOAD_LOGGER.warn("Concurrency issue detected when getting region file for chunk at " + pos + ".");
+			BatchGenerationEnvironment.LOAD_LOGGER.warn("Concurrency issue detected when getting region file for chunk at [" + pos + "].");
 		}
 		
 		
@@ -236,5 +225,23 @@ public class RegionFileStorageExternalCache implements AutoCloseable
 		}
 	}
 	
+	
+	
+	//================//
+	// helper classes //
+	//================//
+	
+	private static class RegionFileCache
+	{
+		public final long pos;
+		public final RegionFile file;
+		
+		public RegionFileCache(long pos, RegionFile file)
+		{
+			this.pos = pos;
+			this.file = file;
+		}
+		
+	}
 	
 }
