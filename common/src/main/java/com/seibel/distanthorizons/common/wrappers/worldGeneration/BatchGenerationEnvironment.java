@@ -782,20 +782,22 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					genEvent.timer.nextEvent("light");
 					int maxSkyLight = this.serverlevel.getServerLevelWrapper().hasSkyLight() ? LodUtil.MAX_MC_LIGHT : LodUtil.MIN_MC_LIGHT;
 					
-					ArrayList<IChunkWrapper> chunksToLight = new ArrayList<>(chunkWrappersByDhPos.values());
-					for (IChunkWrapper iChunkWrapper : chunksToLight)
+					ArrayList<IChunkWrapper> generatedChunks = new ArrayList<>(chunkWrappersByDhPos.values());
+					for (IChunkWrapper iChunkWrapper : generatedChunks)
 					{
 						((ChunkWrapper) iChunkWrapper).recalculateDhHeightMapsIfNeeded();
 						
 						// pre-generated chunks should have lighting but new ones won't
 						if (!iChunkWrapper.isDhBlockLightingCorrect())
 						{
-							DhLightingEngine.INSTANCE.bakeChunkBlockLighting(iChunkWrapper, chunksToLight, maxSkyLight);
+							DhLightingEngine.INSTANCE.bakeChunkBlockLighting(iChunkWrapper, generatedChunks, maxSkyLight);
 						}
+						
+						this.serverlevel.updateBeaconBeamsForChunk(iChunkWrapper, generatedChunks);
 					}
 					
 					genEvent.timer.nextEvent("cleanup");
-					for (IChunkWrapper iChunkWrapper : chunksToLight)
+					for (IChunkWrapper iChunkWrapper : generatedChunks)
 					{
 						genEvent.resultConsumer.accept(iChunkWrapper);
 					}
@@ -1049,6 +1051,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				{
 					DhLightingEngine.INSTANCE.bakeChunkBlockLighting(centerChunk, iChunkWrapperList, maxSkyLight);
 				}
+				
+				this.serverlevel.updateBeaconBeamsForChunk(centerChunk, iChunkWrapperList);
 			}
 			
 			genEvent.refreshTimeout();
