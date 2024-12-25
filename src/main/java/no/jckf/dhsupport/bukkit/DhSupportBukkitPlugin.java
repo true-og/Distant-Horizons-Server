@@ -23,9 +23,11 @@ import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
 import no.jckf.dhsupport.bukkit.handler.WorldHandler;
 import no.jckf.dhsupport.core.DhSupport;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
+import java.io.InputStreamReader;
 
 public class DhSupportBukkitPlugin extends JavaPlugin
 {
@@ -44,6 +46,21 @@ public class DhSupportBukkitPlugin extends JavaPlugin
     @Override
     public void onEnable()
     {
+        String pluginVersion = "N/A";
+        String mcVersion = "N/A";
+
+        try {
+            YamlConfiguration meta = new YamlConfiguration();
+            meta.load(new InputStreamReader(this.getResource("plugin.yml")));
+
+            pluginVersion = meta.getString("version");
+            mcVersion = meta.getString("mc-version");
+        } catch (Exception exception) {
+
+        }
+
+        this.getLogger().info("I am DHS " + pluginVersion + " for MC " + mcVersion + ".");
+
         this.dhSupport = new DhSupport();
         this.dhSupport.setLogger(this.getLogger());
         this.dhSupport.setDataDirectory(this.getDataFolder().getAbsolutePath());
