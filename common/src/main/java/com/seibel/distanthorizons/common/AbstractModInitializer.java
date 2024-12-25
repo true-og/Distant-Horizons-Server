@@ -81,6 +81,7 @@ public abstract class AbstractModInitializer
 		
 		// Client uses config for auto-updater, so it's initialized here instead of post-init stage
 		this.initConfig();
+		logModIncompatibilityWarnings(); // needs to be called after config loading
 		
 		this.subscribeClientStartedEvent(this::postInit);
 	}
@@ -132,7 +133,6 @@ public abstract class AbstractModInitializer
 		DependencySetup.createSharedBindings();
 		SharedApi.init();
 		this.createInitialBindings();
-		logModIncompatibilityWarnings();
 	}
 	
 	private void logBuildInfo()
