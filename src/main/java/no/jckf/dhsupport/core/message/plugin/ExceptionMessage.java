@@ -24,8 +24,9 @@ import no.jckf.dhsupport.core.bytestream.Encoder;
 public class ExceptionMessage extends TrackablePluginMessage
 {
     public static int TYPE_RATE_LIMITED = 0;
-    public static int TYPE_INVALID_LEVEL = 1;
+    public static int TYPE_REQUEST_OUT_OF_RANGE = 1;
     public static int TYPE_REQUEST_REJECTED = 2;
+    public static int TYPE_SECTION_REQUIRES_SPLITTING = 3;
 
     protected int typeId;
 

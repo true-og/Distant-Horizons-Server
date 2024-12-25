@@ -22,10 +22,20 @@ full_data_request_concurrency_limit: 20
 # Default: false
 real_time_updates_enabled: false
 
+# Currently unsupported.
+# Required.
+# Default: 128
+real_time_update_radius: 128
+
 # Let clients ask for updates to LODs they've previously downloaded.
 # Required.
 # Default: true
 login_data_sync_enabled: true
+
+# Currently unsupported.
+# Required.
+# Default: 128
+login_data_sync_radius: 128
 
 # Currently unsupported.
 # Required.

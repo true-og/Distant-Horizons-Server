@@ -192,6 +192,7 @@ public class BukkitWorldInterface implements WorldInterface
     public CompletableFuture<Boolean> loadChunkAsync(int x, int z)
     {
         if (this.getChunkAtAsync == null) {
+            // TODO: This must be queued for main thread :(
             return CompletableFuture.completedFuture(this.loadChunk(x, z));
         }
 

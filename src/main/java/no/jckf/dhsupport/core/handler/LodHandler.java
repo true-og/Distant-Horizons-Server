@@ -145,11 +145,11 @@ public class LodHandler
 
                             this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), chunkResponse);
                         }
+
+                        //this.dhSupport.info("LOD in " + chunkCount + " parts sent for " + requestMessage.getPosition().getX() + " x " + requestMessage.getPosition().getZ());
                     }
 
                     this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), responseMessage);
-
-                    //this.dhSupport.info("LOD in " + chunkCount + " parts sent for " + requestMessage.getPosition().getX() + " x " + requestMessage.getPosition().getZ());
                 })
                 .exceptionally((exception) -> {
                     exception.printStackTrace();
