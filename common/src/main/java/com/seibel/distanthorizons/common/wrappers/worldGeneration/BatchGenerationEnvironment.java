@@ -879,10 +879,10 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				throw new IllegalStateException("No chunk holder after ticket has been added");
 			}
 			
-			#if MC_VER <= MC_1_20_6
+			#if MC_VER <= MC_1_20_4
 			return holder.getOrScheduleFuture(ChunkStatus.FEATURES, level.getChunkSource().chunkMap)
 					.thenApply(result -> result.left().orElseThrow(() -> new RuntimeException(result.right().get().toString()))); // can throw if the server is shutting down
-			#elif MC_VER <= MC_1_20_4
+			#elif MC_VER <= MC_1_20_6
 			return holder.getOrScheduleFuture(ChunkStatus.FEATURES, level.getChunkSource().chunkMap)
 					.thenApply(result -> result.orElseThrow(() -> new RuntimeException(result.toString()))); // can throw if the server is shutting down
 			#else
