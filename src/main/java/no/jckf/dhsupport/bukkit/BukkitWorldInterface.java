@@ -195,7 +195,7 @@ public class BukkitWorldInterface implements WorldInterface
     public CompletableFuture<Boolean> loadChunkAsync(int x, int z)
     {
         if (this.getChunkAtAsync == null) {
-            this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadChunk(x, z));
+            return this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadChunk(x, z));
         }
 
         int chunkX = Coordinates.blockToChunk(x);
