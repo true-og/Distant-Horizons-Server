@@ -1,8 +1,9 @@
-package com.seibel.distanthorizons.fabric.mixins.server;
+package com.seibel.distanthorizons.neoforge.mixins.server;
 
 
 #if MC_VER < MC_1_21_3
 
+import net.minecraft.Util;
 import org.spongepowered.asm.mixin.Mixin;
 
 /**
@@ -11,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
  *
  * @see MixinUtilBackgroundThread
  */
-//@Mixin(net.minecraft.miminecraft.class) // TODO we should allow version specific mixins so we don't have to create dummy mixins that exist for all MC versions
+@Mixin(Util.class) // TODO we should allow version specific mixins so we don't have to create dummy mixins that exist for all MC versions
 public class MixinLevelTicks<T>
 {
 	

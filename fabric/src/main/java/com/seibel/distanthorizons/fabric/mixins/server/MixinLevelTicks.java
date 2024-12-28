@@ -3,6 +3,7 @@ package com.seibel.distanthorizons.fabric.mixins.server;
 
 #if MC_VER < MC_1_21_3
 
+import net.minecraft.Util;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
  * @see MixinUtilBackgroundThread
  */
 //@Mixin(net.minecraft.minecraft.class) // TODO we should allow version specific mixins so we don't have to create dummy mixins that exist for all MC versions
-@Mixin(Entity.class)
+@Mixin(Util.class)
 public class MixinLevelTicks
 {
 	
