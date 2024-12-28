@@ -108,7 +108,7 @@ public class LodHandler
                 }
             }
 
-            boolean generate = config.getBool(DhsConfig.GENERATE_NEW_CHUNKS);
+            /*boolean generate = config.getBool(DhsConfig.GENERATE_NEW_CHUNKS);
 
             if (!generate) {
                 for (int relativeChunkX = 0; relativeChunkX < Lod.width / 16; relativeChunkX++) {
@@ -123,7 +123,7 @@ public class LodHandler
                         }
                     }
                 }
-            }
+            }*/
 
             this.dhSupport.getLod(worldUuid, position)
                 .thenAccept((lodModel) -> {
