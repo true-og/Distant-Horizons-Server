@@ -91,6 +91,12 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	}
 	
 	@Override
+	public String getWorldFolderName()
+	{
+		return this.level.getServer().getWorldScreenshotFile().get().getParent().getFileName().toString();
+	}
+	
+	@Override
 	public DimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
 
 	@Override
