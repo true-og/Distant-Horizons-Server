@@ -57,7 +57,14 @@ public class ConfigCommand extends AbstractCommand
 			}
 			
 			LiteralArgumentBuilder<CommandSourceStack> subcommand = literal(configEntry.getServersideShortName())
-					.executes(commandContext -> this.sendSuccessResponse(commandContext, "Current value of ["+configEntry.getServersideShortName()+"] is ["+configEntry.get()+"]"));
+					.executes(commandContext -> this.sendSuccessResponse(commandContext,
+							"\n" +
+									"Description of §l" + configEntry.getServersideShortName() + "§r:\n" +
+									"§o" + configEntry.getComment().trim() + "§r\n" +
+									"§7Config file name: §f" + configEntry.name + "§7, category: §f" + configEntry.category + "\n" +
+									"\n" +
+									"Current value of " + configEntry.getServersideShortName() + " is §n" + configEntry.get() + "§r"
+					));
 			
 			ToIntBiFunction<CommandContext<CommandSourceStack>, Object> updateConfigValue = (commandContext, value) -> {
 				configEntry.set(value);
