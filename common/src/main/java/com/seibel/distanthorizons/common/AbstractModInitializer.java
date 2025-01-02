@@ -14,6 +14,7 @@ import com.seibel.distanthorizons.core.config.eventHandlers.presets.ThreadPreset
 import com.seibel.distanthorizons.core.dependencyInjection.ModAccessorInjector;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.jar.ModJarInfo;
+import com.seibel.distanthorizons.core.jar.updater.SelfUpdater;
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModAccessor;
 import com.seibel.distanthorizons.core.wrapperInterfaces.modAccessor.IModChecker;
@@ -118,6 +119,8 @@ public abstract class AbstractModInitializer
 			this.postInit();
 			this.commandInitializer.initCommands();
 			
+			this.checkForUpdates();
+			
 			LOGGER.info("Dedicated server initialized at " + server.getServerDirectory());
 		});
 	}
@@ -162,6 +165,20 @@ public abstract class AbstractModInitializer
 	{
 		ConfigBase.INSTANCE = new ConfigBase(ModInfo.ID, ModInfo.NAME, Config.class, ModInfo.CONFIG_FILE_VERSION);
 		Config.completeDelayedSetup();
+	}
+	
+	private void checkForUpdates()
+	{
+		if (Config.Client.Advanced.AutoUpdater.enableAutoUpdater.get())
+		{
+			if (Config.Client.Advanced.AutoUpdater.enableSilentUpdates.get())
+			{
+				LOGGER.info("Silent updates are not allowed for dedicated servers; force disabling.");
+				Config.Client.Advanced.AutoUpdater.enableSilentUpdates.set(false);
+			}
+			
+			SelfUpdater.onStart();
+		}
 	}
 	
 	private void postInit()
