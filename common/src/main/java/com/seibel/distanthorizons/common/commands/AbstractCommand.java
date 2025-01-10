@@ -33,11 +33,49 @@ public abstract class AbstractCommand
 	protected int sendSuccessResponse(CommandContext<CommandSourceStack> commandContext, String text)
 	{
 		#if MC_VER >= MC_1_20_1
-		commandContext.getSource().sendSuccess(() -> Component.literal(text), true);
+		commandContext.getSource().sendSuccess(() -> Component.literal(text), false);
 		#elif MC_VER >= MC_1_19_2
-		commandContext.getSource().sendSuccess(Component.literal(text), true);
+		commandContext.getSource().sendSuccess(Component.literal(text), false);
 		#else
-		commandContext.getSource().sendSuccess(new TranslatableComponent(text), true);
+		commandContext.getSource().sendSuccess(new TranslatableComponent(text), false);
+		#endif
+		return 1;
+	}
+	
+	/**
+	 * Sends a failure response to the player with the given text.
+	 *
+	 * @param commandContext The command context to send the response to.
+	 * @param text The text to display in the failure message.
+	 * @return 1, indicating that the command was successful.
+	 */
+	protected int sendFailureResponse(CommandContext<CommandSourceStack> commandContext, String text)
+	{
+		#if MC_VER >= MC_1_20_1
+		commandContext.getSource().sendFailure(Component.literal(text));
+		#elif MC_VER >= MC_1_19_2
+		commandContext.getSource().sendFailure(Component.literal(text));
+		#else
+		commandContext.getSource().sendFailure(new TranslatableComponent(text));
+		#endif
+		return 1;
+	}
+	
+	/**
+	 * Sends a failure response to the player with the given text.
+	 *
+	 * @param commandContext The command context to send the response to.
+	 * @param text The text to display in the failure message.
+	 * @return 1, indicating that the command was successful.
+	 */
+	protected int sendSystemMessage(CommandContext<CommandSourceStack> commandContext, String text)
+	{
+		#if MC_VER >= MC_1_20_1
+		commandContext.getSource().sendSystemMessage(Component.literal(text));
+		#elif MC_VER >= MC_1_19_2
+		commandContext.getSource().sendSystemMessage(Component.literal(text));
+		#else
+		commandContext.getSource().sendSuccess(new TranslatableComponent(text), false);
 		#endif
 		return 1;
 	}
