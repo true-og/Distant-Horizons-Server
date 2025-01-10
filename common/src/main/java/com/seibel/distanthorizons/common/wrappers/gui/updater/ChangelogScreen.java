@@ -3,6 +3,7 @@ package com.seibel.distanthorizons.common.wrappers.gui.updater;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.seibel.distanthorizons.common.wrappers.gui.DhScreen;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.distanthorizons.coreapi.ModInfo;
 import com.seibel.distanthorizons.core.jar.installer.MarkdownFormatter;
@@ -23,6 +24,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.GuiComponent;
 #else
 import net.minecraft.client.gui.GuiGraphics;
+import org.apache.logging.log4j.Logger;
 #endif
 
 
@@ -39,6 +41,9 @@ import java.util.*;
 // TODO: Make this
 public class ChangelogScreen extends DhScreen
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
+	
+	
 	private Screen parent;
 	private String versionID;
 	private List<String> changelog;
@@ -68,7 +73,7 @@ public class ChangelogScreen extends DhScreen
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			LOGGER.error("failed to setup changelog, error: ["+e.getMessage()+"].", e);
 		}
 	}
 	
