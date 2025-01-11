@@ -30,14 +30,14 @@ public abstract class AbstractCommand
 	 * @param text The text to display in the success message.
 	 * @return 1, indicating that the command was successful.
 	 */
-	protected int sendSuccessResponse(CommandContext<CommandSourceStack> commandContext, String text)
+	protected int sendSuccessResponse(CommandContext<CommandSourceStack> commandContext, String text, boolean notifyAdmins)
 	{
 		#if MC_VER >= MC_1_20_1
-		commandContext.getSource().sendSuccess(() -> Component.literal(text), false);
+		commandContext.getSource().sendSuccess(() -> Component.literal(text), notifyAdmins);
 		#elif MC_VER >= MC_1_19_2
-		commandContext.getSource().sendSuccess(Component.literal(text), false);
+		commandContext.getSource().sendSuccess(Component.literal(text), notifyAdmins);
 		#else
-		commandContext.getSource().sendSuccess(new TranslatableComponent(text), false);
+		commandContext.getSource().sendSuccess(new TranslatableComponent(text), notifyAdmins);
 		#endif
 		return 1;
 	}
@@ -57,25 +57,6 @@ public abstract class AbstractCommand
 		commandContext.getSource().sendFailure(Component.literal(text));
 		#else
 		commandContext.getSource().sendFailure(new TranslatableComponent(text));
-		#endif
-		return 1;
-	}
-	
-	/**
-	 * Sends a failure response to the player with the given text.
-	 *
-	 * @param commandContext The command context to send the response to.
-	 * @param text The text to display in the failure message.
-	 * @return 1, indicating that the command was successful.
-	 */
-	protected int sendSystemMessage(CommandContext<CommandSourceStack> commandContext, String text)
-	{
-		#if MC_VER >= MC_1_20_1
-		commandContext.getSource().sendSystemMessage(Component.literal(text));
-		#elif MC_VER >= MC_1_19_2
-		commandContext.getSource().sendSystemMessage(Component.literal(text));
-		#else
-		commandContext.getSource().sendSuccess(new TranslatableComponent(text), false);
 		#endif
 		return 1;
 	}
