@@ -12,6 +12,7 @@ import net.minecraft.commands.arguments.coordinates.ColumnPosArgument;
 import net.minecraft.server.level.ColumnPos;
 import net.minecraft.server.level.ServerLevel;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
@@ -47,19 +48,21 @@ public class PregenCommand extends AbstractCommand
 	
 	private int pregenStatus(CommandContext<CommandSourceStack> c)
 	{
-		if (this.pregenManager.getRunningPregen() != null)
+		String statusString = this.pregenManager.getStatusString();
+		//noinspection ReplaceNullCheck
+		if (statusString != null)
 		{
-			return this.sendSuccessResponse(c, "Pregen is running");
+			return this.sendSuccessResponse(c, statusString, false);
 		}
 		else
 		{
-			return this.sendSuccessResponse(c, "Pregen is not running");
+			return this.sendSuccessResponse(c, "Pregen is not running", false);
 		}
 	}
 	
 	private int pregenStart(CommandContext<CommandSourceStack> c) throws CommandSyntaxException
 	{
-		this.sendSuccessResponse(c, "Starting pregen");
+		this.sendSuccessResponse(c, "Starting pregen. Progress will be in the server console.", true);
 		
 		ServerLevel level = DimensionArgument.getDimension(c, "dimension");
 		ColumnPos origin = ColumnPosArgument.getColumnPos(c, "origin");
@@ -68,18 +71,22 @@ public class PregenCommand extends AbstractCommand
 		CompletableFuture<Void> future = this.pregenManager.startPregen(
 				ServerLevelWrapper.getWrapper(level),
 				new DhBlockPos2D(#if MC_VER >= MC_1_19_2 origin.x(), origin.z() #else origin.x, origin.z #endif),
-				chunkRadius,
-				update -> this.sendSystemMessage(c, update)
+				chunkRadius
 		);
 		
 		future.whenComplete((result, throwable) -> {
-			if (throwable != null)
+			if (throwable instanceof CancellationException)
+			{
+				this.sendSuccessResponse(c, "Pregen is cancelled", true);
+				return;
+			}
+			else if (throwable != null)
 			{
 				this.sendFailureResponse(c, "Pregen failed: " + throwable.getMessage() + "\n Check the logs for more details.");
 				return;
 			}
 			
-			this.sendSuccessResponse(c, "Pregen is complete");
+			this.sendSuccessResponse(c, "Pregen is complete", true);
 		});
 		
 		return 1;
@@ -88,11 +95,12 @@ public class PregenCommand extends AbstractCommand
 	private int pregenStop(CommandContext<CommandSourceStack> c)
 	{
 		CompletableFuture<Void> runningPregen = this.pregenManager.getRunningPregen();
-		if (runningPregen != null)
+		if (runningPregen == null)
 		{
-			runningPregen.cancel(true);
+			return this.sendFailureResponse(c, "Pregen is not running");
 		}
 		
+		runningPregen.cancel(true);
 		return 1;
 	}
 	
