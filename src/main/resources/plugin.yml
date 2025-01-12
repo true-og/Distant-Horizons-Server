@@ -2,6 +2,7 @@ name: DHSupport
 version: ${project.version}
 main: ${main.class}
 api-version: ${mc.api-version}
+mc-version: ${mc.api-version}${mc.api-version-patch}
 prefix: DHS
 folia-supported: true
 author: Jckf

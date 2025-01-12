@@ -30,7 +30,11 @@ public abstract class DhsConfig
 
     public static String REAL_TIME_UPDATES_ENABLED = "real_time_updates_enabled";
 
+    public static String REAL_TIME_UPDATE_RADIUS = "real_time_update_radius";
+
     public static String LOGIN_DATA_SYNC_ENABLED = "login_data_sync_enabled";
+
+    public static String LOGIN_DATA_SYNC_RADIUS = "login_data_sync_radius";
 
     public static String LOGIN_DATA_SYNC_RC_LIMIT = "login_data_sync_rc_limit";
 

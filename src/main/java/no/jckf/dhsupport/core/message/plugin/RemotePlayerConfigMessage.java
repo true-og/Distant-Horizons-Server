@@ -26,11 +26,13 @@ import no.jckf.dhsupport.core.configuration.DhsConfig;
 public class RemotePlayerConfigMessage extends PluginMessage
 {
     public static String[] KEYS = {
-        DhsConfig.RENDER_DISTANCE,
         DhsConfig.DISTANT_GENERATION_ENABLED,
+        DhsConfig.RENDER_DISTANCE,
         DhsConfig.FULL_DATA_REQUEST_CONCURRENCY_LIMIT,
         DhsConfig.REAL_TIME_UPDATES_ENABLED,
+        DhsConfig.REAL_TIME_UPDATE_RADIUS,
         DhsConfig.LOGIN_DATA_SYNC_ENABLED,
+        DhsConfig.LOGIN_DATA_SYNC_RADIUS,
         DhsConfig.LOGIN_DATA_SYNC_RC_LIMIT,
         DhsConfig.MAX_DATA_TRANSFER_SPEED,
     };
@@ -43,7 +45,11 @@ public class RemotePlayerConfigMessage extends PluginMessage
 
     protected boolean realTimeUpdatesEnabled;
 
+    protected int realTimeUpdateRadius;
+
     protected boolean loginDataSyncEnabled;
+
+    protected int loginDataSyncRadius;
 
     protected int loginDataSyncRcLimit;
 
@@ -89,6 +95,16 @@ public class RemotePlayerConfigMessage extends PluginMessage
         return this.realTimeUpdatesEnabled;
     }
 
+    public void setRealTimeUpdateRadius(int radius)
+    {
+        this.realTimeUpdateRadius = radius;
+    }
+
+    public int getRealTimeUpdateRadius()
+    {
+        return this.realTimeUpdateRadius;
+    }
+
     public void setLoginDataSyncEnabled(boolean enabled)
     {
         this.loginDataSyncEnabled = enabled;
@@ -97,6 +113,16 @@ public class RemotePlayerConfigMessage extends PluginMessage
     public boolean getLoginDataSyncEnabled()
     {
         return this.loginDataSyncEnabled;
+    }
+
+    public void setLoginDataSyncRadius(int radius)
+    {
+        this.loginDataSyncRadius = radius;
+    }
+
+    public int getLoginDataSyncRadius()
+    {
+        return this.loginDataSyncRadius;
     }
 
     public void setLoginDataSyncRcLimit(int limit)
@@ -122,11 +148,13 @@ public class RemotePlayerConfigMessage extends PluginMessage
     @Override
     public void encode(Encoder encoder)
     {
-        encoder.writeInt(this.renderDistance);
         encoder.writeBoolean(this.distantGenerationEnabled);
+        encoder.writeInt(this.renderDistance);
         encoder.writeInt(this.fullDataRequestConcurrencyLimit);
         encoder.writeBoolean(this.realTimeUpdatesEnabled);
+        encoder.writeInt(this.realTimeUpdateRadius);
         encoder.writeBoolean(this.loginDataSyncEnabled);
+        encoder.writeInt(this.loginDataSyncRadius);
         encoder.writeInt(this.loginDataSyncRcLimit);
         encoder.writeInt(this.maxDataTransferSpeed);
     }
@@ -134,35 +162,43 @@ public class RemotePlayerConfigMessage extends PluginMessage
     @Override
     public void decode(Decoder decoder)
     {
-        this.renderDistance = decoder.readInt();
         this.distantGenerationEnabled = decoder.readBoolean();
+        this.renderDistance = decoder.readInt();
         this.fullDataRequestConcurrencyLimit = decoder.readInt();
         this.realTimeUpdatesEnabled = decoder.readBoolean();
+        this.realTimeUpdateRadius = decoder.readInt();
         this.loginDataSyncEnabled = decoder.readBoolean();
+        this.loginDataSyncRadius = decoder.readInt();
         this.loginDataSyncRcLimit = decoder.readInt();
         this.maxDataTransferSpeed = decoder.readInt();
     }
 
     public void fromConfiguration(Configuration config)
     {
-        this.renderDistance = config.getInt(DhsConfig.RENDER_DISTANCE);
         this.distantGenerationEnabled = config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED);
+        this.renderDistance = config.getInt(DhsConfig.RENDER_DISTANCE);
         this.fullDataRequestConcurrencyLimit = config.getInt(DhsConfig.FULL_DATA_REQUEST_CONCURRENCY_LIMIT);
         this.realTimeUpdatesEnabled = config.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
+        this.realTimeUpdateRadius = config.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
         this.loginDataSyncEnabled = config.getBool(DhsConfig.LOGIN_DATA_SYNC_ENABLED);
+        this.loginDataSyncRadius = config.getInt(DhsConfig.LOGIN_DATA_SYNC_RADIUS);
         this.loginDataSyncRcLimit = config.getInt(DhsConfig.LOGIN_DATA_SYNC_RC_LIMIT);
+        this.maxDataTransferSpeed = config.getInt(DhsConfig.MAX_DATA_TRANSFER_SPEED);
     }
 
     public Configuration toConfiguration()
     {
         Configuration config = new Configuration();
 
-        config.set(DhsConfig.RENDER_DISTANCE, this.renderDistance);
         config.set(DhsConfig.DISTANT_GENERATION_ENABLED, this.distantGenerationEnabled);
+        config.set(DhsConfig.RENDER_DISTANCE, this.renderDistance);
         config.set(DhsConfig.FULL_DATA_REQUEST_CONCURRENCY_LIMIT, this.fullDataRequestConcurrencyLimit);
         config.set(DhsConfig.REAL_TIME_UPDATES_ENABLED, this.realTimeUpdatesEnabled);
+        config.set(DhsConfig.REAL_TIME_UPDATE_RADIUS, this.realTimeUpdateRadius);
         config.set(DhsConfig.LOGIN_DATA_SYNC_ENABLED, this.loginDataSyncEnabled);
+        config.set(DhsConfig.LOGIN_DATA_SYNC_RADIUS, this.loginDataSyncRadius);
         config.set(DhsConfig.LOGIN_DATA_SYNC_RC_LIMIT, this.loginDataSyncRcLimit);
+        config.set(DhsConfig.MAX_DATA_TRANSFER_SPEED, this.maxDataTransferSpeed);
 
         return config;
     }

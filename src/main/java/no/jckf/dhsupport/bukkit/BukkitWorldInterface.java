@@ -41,6 +41,8 @@ public class BukkitWorldInterface implements WorldInterface
 
     protected static boolean ASYNC_LOAD_WARNING_SENT = false;
 
+    protected DhSupportBukkitPlugin plugin;
+
     protected World world;
 
     protected Configuration config;
@@ -59,8 +61,9 @@ public class BukkitWorldInterface implements WorldInterface
     @Nullable
     protected Method getChunkAtAsync;
 
-    public BukkitWorldInterface(World world, Configuration config)
+    public BukkitWorldInterface(DhSupportBukkitPlugin plugin, World world, Configuration config)
     {
+        this.plugin = plugin;
         this.world = world;
         this.config = config;
         this.worldConfig = new WorldConfiguration(this, config);
@@ -108,7 +111,7 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public WorldInterface newInstance()
     {
-        BukkitWorldInterface newInstace = new BukkitWorldInterface(this.world, this.config);
+        BukkitWorldInterface newInstace = new BukkitWorldInterface(this.plugin, this.world, this.config);
 
         newInstace.setLogger(this.getLogger());
 
@@ -192,7 +195,7 @@ public class BukkitWorldInterface implements WorldInterface
     public CompletableFuture<Boolean> loadChunkAsync(int x, int z)
     {
         if (this.getChunkAtAsync == null) {
-            return CompletableFuture.completedFuture(this.loadChunk(x, z));
+            return this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadChunk(x, z));
         }
 
         int chunkX = Coordinates.blockToChunk(x);

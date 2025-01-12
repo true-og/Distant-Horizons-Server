@@ -1,6 +1,3 @@
-# Don't touch :)
-config_version: 2
-
 # Maximum supported render distance. Clients will be capped to this value.
 # Required.
 # Default: 1024
@@ -22,10 +19,20 @@ full_data_request_concurrency_limit: 20
 # Default: false
 real_time_updates_enabled: false
 
+# Currently unsupported.
+# Required.
+# Default: 128
+real_time_update_radius: 128
+
 # Let clients ask for updates to LODs they've previously downloaded.
 # Required.
 # Default: true
 login_data_sync_enabled: true
+
+# Currently unsupported.
+# Required.
+# Default: 128
+login_data_sync_radius: 128
 
 # Currently unsupported.
 # Required.
@@ -36,11 +43,6 @@ login_data_sync_rc_limit: 50
 # Required.
 # Default: 0
 max_data_transfer_speed: 0
-
-# If a client requests LODs with chunks that don't exist, should those chunks be generated?
-# Required.
-# Default: true
-generate_new_chunks: true
 
 # Select which LOD builder to use.
 # Required.
@@ -91,3 +93,6 @@ worlds:
 # Required.
 # Default: 4
 scheduler_threads: 4
+
+# Don't touch :)
+config_version: 3

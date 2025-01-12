@@ -55,6 +55,15 @@ public class LodHandler
         this.pluginMessageHandler.getEventBus().registerHandler(FullDataSourceRequestMessage.class, (requestMessage) -> {
             //this.dhSupport.info("LOD request for " + requestMessage.getPosition().getX() + " x " + requestMessage.getPosition().getZ());
 
+            if (requestMessage.getPosition().getDetailLevel() != 6) {
+                ExceptionMessage exceptionMessage = new ExceptionMessage();
+                exceptionMessage.isResponseTo(requestMessage);
+                exceptionMessage.setTypeId(ExceptionMessage.TYPE_SECTION_REQUIRES_SPLITTING);
+                exceptionMessage.setMessage("Only detail level 6 is supported");
+                this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                return;
+            }
+
             // TODO: Some sort of Player wrapper or interface object. Bukkit classes should not be imported here.
             UUID worldUuid = Bukkit.getPlayer(requestMessage.getSender()).getWorld().getUID();
 
@@ -99,7 +108,7 @@ public class LodHandler
                 }
             }
 
-            boolean generate = config.getBool(DhsConfig.GENERATE_NEW_CHUNKS);
+            /*boolean generate = config.getBool(DhsConfig.GENERATE_NEW_CHUNKS);
 
             if (!generate) {
                 for (int relativeChunkX = 0; relativeChunkX < Lod.width / 16; relativeChunkX++) {
@@ -114,7 +123,7 @@ public class LodHandler
                         }
                     }
                 }
-            }
+            }*/
 
             this.dhSupport.getLod(worldUuid, position)
                 .thenAccept((lodModel) -> {
@@ -145,11 +154,11 @@ public class LodHandler
 
                             this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), chunkResponse);
                         }
+
+                        //this.dhSupport.info("LOD in " + chunkCount + " parts sent for " + requestMessage.getPosition().getX() + " x " + requestMessage.getPosition().getZ());
                     }
 
                     this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), responseMessage);
-
-                    //this.dhSupport.info("LOD in " + chunkCount + " parts sent for " + requestMessage.getPosition().getX() + " x " + requestMessage.getPosition().getZ());
                 })
                 .exceptionally((exception) -> {
                     exception.printStackTrace();
