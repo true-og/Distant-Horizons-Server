@@ -424,7 +424,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 						
 						ChunkAccess centerChunk = regionChunks.stream()
 								.filter((chunk) -> chunk.getPos().x == centerX && chunk.getPos().z == centerZ)
-								.findFirst().get();
+								.findFirst()
+								.orElseGet(() -> regionChunks.getFirst());
 						
 						genEvent.refreshTimeout();
 						DhLitWorldGenRegion region = new DhLitWorldGenRegion(
