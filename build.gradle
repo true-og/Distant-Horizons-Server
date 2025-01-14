@@ -70,27 +70,27 @@ forgix {
     String loaderHyphenSeparatedList = ((String)gradle.builds_for).replaceAll(",", "-");
     
     group = "com.seibel.distanthorizons"
-    mergedJarName = "DistantHorizons-${rootProject.versionStr}-${loaderHyphenSeparatedList}.jar"
+    mergedJarName = "DistantHorizons-${loaderHyphenSeparatedList}-${rootProject.versionStr}.jar"
 
     if (findProject(":forge"))
         forge {
-            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-forge.jar"
+            jarLocation = "build/libs/DistantHorizons-forge-${rootProject.versionStr}.jar"
         }
     
     if (findProject(":neoforge"))
         custom {
             projectName = "neoforge"
-            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-neoforge.jar"
+            jarLocation = "build/libs/DistantHorizons-neoforge-${rootProject.versionStr}.jar"
         }
 
     if (findProject(":fabric"))
         fabric {
-            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-fabric.jar"
+            jarLocation = "build/libs/DistantHorizons-fabric-${rootProject.versionStr}.jar"
         }
 
     if (findProject(":quilt"))
         quilt {
-            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-quilt.jar"
+            jarLocation = "build/libs/DistantHorizons-quilt-${rootProject.versionStr}.jar"
         }
 
     removeDuplicate "com.seibel.distanthorizons"
