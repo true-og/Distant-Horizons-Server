@@ -74,23 +74,23 @@ forgix {
 
     if (findProject(":forge"))
         forge {
-            jarLocation = "build/libs/DistantHorizons-forge-${rootProject.versionStr}.jar"
+            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-forge.jar"
         }
     
     if (findProject(":neoforge"))
         custom {
             projectName = "neoforge"
-            jarLocation = "build/libs/DistantHorizons-neoforge-${rootProject.versionStr}.jar"
+            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-neoforge.jar"
         }
 
     if (findProject(":fabric"))
         fabric {
-            jarLocation = "build/libs/DistantHorizons-fabric-${rootProject.versionStr}.jar"
+            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-fabric.jar"
         }
 
     if (findProject(":quilt"))
         quilt {
-            jarLocation = "build/libs/DistantHorizons-quilt-${rootProject.versionStr}.jar"
+            jarLocation = "build/libs/DistantHorizons-${rootProject.versionStr}-quilt.jar"
         }
 
     removeDuplicate "com.seibel.distanthorizons"
