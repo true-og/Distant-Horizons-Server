@@ -1,3 +1,12 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.Transformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.TransformerContext
+import org.apache.tools.zip.ZipEntry
+
+import javax.annotation.Nonnull
+import org.apache.tools.zip.ZipOutputStream
+
+import java.nio.charset.StandardCharsets
+
 plugins {
     id "java"
 
@@ -95,6 +104,7 @@ forgix {
 
     removeDuplicate "com.seibel.distanthorizons"
 }
+
 
 subprojects { p ->
     // Does the same as "p == project(":common") || p == project(":fabric") || p == project(":quilt")  || p == project(":forge") || p == project("WhateverWeAddLaterOn")"
@@ -306,26 +316,98 @@ subprojects { p ->
         
         // Logging
         relocate "org.slf4j", "${librariesLocation}.slf4j"
-        
-//        // Sqlite Database
-//        // James can't determine how to relocate the library correctly so this is commented out
-//        relocate ("org.sqlite", "${librariesLocation}.sqlite") {
-//            exclude("org/sqlite/core/NativeDB/**")
-//
-//            exclude("org/sqlite/native/FreeBSD/**")
-//            exclude("org/sqlite/native/Linux-Android/**")
-//            exclude("org/sqlite/native/Linux-Musl/**")
-//            exclude("org/sqlite/native/Linux/arm/**")
-//            exclude("org/sqlite/native/Linux/aarch64/**")
-//            exclude("org/sqlite/native/Linux/armv6/**")
-//            exclude("org/sqlite/native/Linux/x86/**")
-//            exclude("org/sqlite/native/Linux/armv7/**")
-//            exclude("org/sqlite/native/Linux/ppc64/**")
-//            exclude("org/sqlite/native/Linux/riscv64/**")
-//            exclude("org/sqlite/native/Windows/armv7/**")
-//            exclude("org/sqlite/native/Windows/aarch64/**")
-//            exclude("org/sqlite/native/Windows/armv7/**")
-//        }
+
+        // Sqlite Database
+        relocate("org.xerial", "dh_sqlite.org.xerial")
+        relocate("org.sqlite", "dh_sqlite") {
+            // this is the exact list of classes referenced by native code
+//            exclude("org.sqlite.core.NativeDB")
+//            exclude("org.sqlite.Function")
+//            exclude("org.sqlite.Collation")
+//            exclude("org.sqlite.Function$Aggregate")
+//            exclude("org.sqlite.Function$Window")
+//            exclude("org.sqlite.core.DB$ProgressObserver")
+//            exclude("org.sqlite.ProgressHandler")
+//            exclude("org.sqlite.BusyHandlerh")
+
+            exclude("org/sqlite/native/**")
+        }
+
+        // "dh_sqlite" leaves just enough room for rewriting "org_sqlite" to "dh_1sqlite" in export tables
+        // https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/design.html
+        // Should be pretty much enough for Linux & Windows
+        // Probably won't work for Mac, because it requires signing native libs
+        transform(new Transformer() {
+            final String name = "RelocateSqliteNatives"
+
+            private HashMap<String, byte[]> rewrittenFiles = new HashMap()
+
+            // region thank you chatgpt
+            private static void replaceInByteArray(byte[] byteArray, String target, String replacement) {
+                if (target.length() < replacement.length()) {
+                    throw new IllegalArgumentException("Replacement must be the same length or shorter than the target.")
+                }
+
+                byte[] targetBytes = target.getBytes(StandardCharsets.US_ASCII)
+                byte[] replacementBytes = replacement.getBytes(StandardCharsets.US_ASCII)
+
+                int nullByte = 0
+
+                for (int endPos = 0; endPos < byteArray.length - targetBytes.length - 1; endPos++) {
+                    int startPos = endPos
+                    int targetPos = 0
+                    while (targetPos < targetBytes.length && byteArray[endPos] == targetBytes[targetPos]) {
+                        targetPos++
+                        endPos++
+                    }
+
+                    if (targetPos == targetBytes.length) {
+                        System.arraycopy(replacementBytes, 0, byteArray, startPos, replacementBytes.length)
+
+                        startPos = startPos + replacementBytes.length
+                        while (byteArray[endPos] != nullByte) {
+                            byteArray[startPos] = byteArray[endPos]
+                            endPos++
+                            startPos++
+                        }
+                        byteArray[startPos] = nullByte
+                    }
+                }
+            }
+            // endregion
+
+            @Override
+            boolean canTransformResource(@Nonnull FileTreeElement element) {
+                System.out.println("canTransformResource " + element.name)
+                return element.name.contains("sqlitejdbc")
+            }
+
+            @Override
+            void transform(@Nonnull TransformerContext context) {
+                System.out.println("transform " + context.path)
+
+                byte[] content = context.is.readAllBytes()
+                replaceInByteArray(content, "org_sqlite", "dh_1sqlite")
+                replaceInByteArray(content, "org/sqlite", "dh_sqlite")
+                rewrittenFiles.put(context.path.replace("org/sqlite", "dh_sqlite"), content)
+            }
+
+            @Override
+            boolean hasTransformedResource() {
+                System.out.println("hasTransformedResource")
+                return true
+            }
+
+            @Override
+            void modifyOutputStream(@Nonnull ZipOutputStream os, boolean preserveFileTimestamps) {
+                System.out.println("modifyOutputStream")
+
+                for (Map.Entry<String, byte[]> rewrittenFile : rewrittenFiles.entrySet()) {
+                    os.putNextEntry(new ZipEntry(rewrittenFile.key))
+                    os.write(rewrittenFile.value)
+                }
+            }
+        })
         
         
         // JOML
