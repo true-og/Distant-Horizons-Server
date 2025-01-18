@@ -237,7 +237,7 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public int getSeaLevel()
     {
-        return this.world.getSeaLevel();
+        return Math.min(Math.max(this.getMinY(), this.world.getSeaLevel()), this.getMaxY());
     }
 
     @Override
