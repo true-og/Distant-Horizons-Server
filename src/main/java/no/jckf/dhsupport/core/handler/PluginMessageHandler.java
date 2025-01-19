@@ -38,7 +38,7 @@ public class PluginMessageHandler
 
     public final String pluginChannel = "distant_horizons:message";
 
-    public final int protocolVersion = 8;
+    public final int protocolVersion = 9;
 
     private EventBus<PluginMessage> eventBus;
 

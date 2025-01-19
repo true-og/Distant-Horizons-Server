@@ -68,20 +68,25 @@ public class PlayerConfigHandler
 
                 Object dhsValue = dhsConfig.get(key);
                 Object clientValue = clientConfig.get(key);
-                Object keepValue;
+                Object keepValue = null;
 
-                if (dhsValue instanceof Boolean dhsBool && clientValue instanceof Boolean clientBool) {
-                    keepValue = dhsBool && clientBool;
+                // TODO: This is ugly. Move to comparator closures like in DH.
+                if (key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z) || key.equals(DhsConfig.BORDER_RADIUS)) {
+                    keepValue = dhsValue;
+                }
 
-                    //this.dhSupport.getLogger().info("    Server " + (dhsBool ? "Y" : "N") + " or client " + (clientBool ? "Y" : "N") + " = " + ((boolean) keepValue ? "Y" : "N"));
-                } else if (dhsValue instanceof Integer dhsInt && clientValue instanceof Integer clientInt) {
-                    keepValue = dhsInt < clientInt ? dhsInt : clientInt;
+                if (keepValue == null) {
+                    if (dhsValue instanceof Boolean dhsBool && clientValue instanceof Boolean clientBool) {
+                        keepValue = dhsBool && clientBool;
 
-                    //this.dhSupport.getLogger().info("    Server " + dhsInt + " or client " + clientInt + " = " + keepValue);
-                } else {
-                    keepValue = null;
+                        //this.dhSupport.getLogger().info("    Server " + (dhsBool ? "Y" : "N") + " or client " + (clientBool ? "Y" : "N") + " = " + ((boolean) keepValue ? "Y" : "N"));
+                    } else if (dhsValue instanceof Integer dhsInt && clientValue instanceof Integer clientInt) {
+                        keepValue = dhsInt < clientInt ? dhsInt : clientInt;
 
-                    //this.dhSupport.getLogger().info("    Uhh... 😵‍💫");
+                        //this.dhSupport.getLogger().info("    Server " + dhsInt + " or client " + clientInt + " = " + keepValue);
+                    } else {
+                        //this.dhSupport.getLogger().info("    Uhh... 😵‍💫");
+                    }
                 }
 
                 clientConfig.set(key, keepValue);
