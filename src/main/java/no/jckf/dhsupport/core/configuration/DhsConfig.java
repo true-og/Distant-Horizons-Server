@@ -42,11 +42,11 @@ public abstract class DhsConfig
 
     public static String SCHEDULER_THREADS = "scheduler_threads";
 
-    public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
-
     public static String LEVEL_KEY_PREFIX = "level_key_prefix";
 
-    public static String BORDER_CENTER = "border_center";
+    public static String BORDER_CENTER_X = "border_center_x";
+
+    public static String BORDER_CENTER_Z = "border_center_z";
 
     public static String BORDER_RADIUS = "border_radius";
 

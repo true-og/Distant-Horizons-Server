@@ -80,7 +80,8 @@ worlds:
 
     # Limit LOD generation to within this area.
     # Optional.
-    #border_center: 0,0
+    #border_center_x: 0
+    #border_center_z: 0
     #border_radius: 5000
 
   # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
@@ -95,4 +96,4 @@ worlds:
 scheduler_threads: 4
 
 # Don't touch :)
-config_version: 3
+config_version: 4
