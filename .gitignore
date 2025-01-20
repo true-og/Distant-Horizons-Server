@@ -26,6 +26,9 @@ Merged/
 # Folder created by the buildAll scripts
 buildAllJars/
 
+.venv
+relocate_natives/cache/
+
 # file from notepad++
 *.bak
 
