@@ -51,7 +51,15 @@ class RelocateNatives
 		
 		ProcessBuilder processBuilder = new ProcessBuilder();
 		processBuilder.directory(new File(System.getProperty("user.dir")));
-		processBuilder.command("./.venv/Scripts/python", "./relocate_natives/process.py", outputFilePath.toString());
+		
+		if (Path.of(System.getProperty("user.dir"), ".venv/Scripts").toFile().exists())
+		{
+			processBuilder.command("./.venv/Scripts/python", "./relocate_natives/process.py", outputFilePath.toString());
+		}
+		else
+		{
+			processBuilder.command("./.venv/bin/python", "./relocate_natives/process.py", outputFilePath.toString());
+		}
 		
 		Process process = processBuilder.start();
 		CompletableFuture<Void> outputFuture = CompletableFuture.runAsync(() -> {
