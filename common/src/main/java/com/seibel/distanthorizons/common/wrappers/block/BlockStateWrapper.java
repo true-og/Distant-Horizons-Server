@@ -59,6 +59,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.core.Holder;
+import org.jetbrains.annotations.Nullable;
 #endif
 
 public class BlockStateWrapper implements IBlockStateWrapper
@@ -90,6 +91,7 @@ public class BlockStateWrapper implements IBlockStateWrapper
 	
 	// properties //
 	
+	@Nullable
 	public final BlockState blockState;
 	/** technically final, but since it requires a method call to generate it can't be marked as such */
 	private String serialString;
@@ -350,25 +352,42 @@ public class BlockStateWrapper implements IBlockStateWrapper
 		}
 		
 		
+		// get block properties (default to the values used by air)
+		boolean canOcclude = false;
+		boolean propagatesSkyLightDown = true;
+		if (this.blockState != null)
+		{
+			canOcclude = this.blockState.canOcclude();
+			
+			#if MC_VER < MC_1_21_3
+			propagatesSkyLightDown = this.blockState.propagatesSkylightDown(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+			#else
+			propagatesSkyLightDown = this.blockState.propagatesSkylightDown();
+			#endif
+		}
+		
+		
+		
 		// this method isn't perfect, but works well enough for our use case
 		int opacity;
 		if (this.isAir())
 		{
 			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT;
 		}
-		else if (this.isLiquid() && !this.blockState.canOcclude())
+		else if (this.isLiquid() && !canOcclude)
 		{
 			// probably not a waterlogged block (which should block light entirely)
 			
 			// +1 to indicate that the block is translucent (in between transparent and opaque) 
 			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT + 1;
 		}
-		#if MC_VER < MC_1_21_3
-		else if (this.blockState.propagatesSkylightDown(EmptyBlockGetter.INSTANCE, BlockPos.ZERO))
-		#else
-		else if (this.blockState.propagatesSkylightDown())
-		#endif
+		else if (propagatesSkyLightDown && !canOcclude)
 		{
+			// probably glass or some other fully transparent block
+			
+			// !canOcclude is required to ignore stairs and slabs since
+			// propagateSkyLightDown is true for them, but they're solid and don't actually let light through
+			
 			opacity = LodUtil.BLOCK_FULLY_TRANSPARENT;
 		}
 		else
