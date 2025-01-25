@@ -36,6 +36,8 @@ public interface WorldInterface extends Configurable
 
     boolean chunkExists(int x, int z);
 
+    boolean isChunkLoaded(int x, int z);
+
     boolean loadChunk(int x, int z);
 
     CompletableFuture<Boolean> loadChunkAsync(int x, int z);
@@ -43,6 +45,8 @@ public interface WorldInterface extends Configurable
     boolean unloadChunk(int x, int z);
 
     boolean unloadChunkAsync(int x, int z);
+
+    boolean discardChunk(int x, int z);
 
     int getMinY();
 
