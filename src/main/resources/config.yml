@@ -61,6 +61,12 @@ builder_resolution: 2
 # Default: false
 #include_non-colliding_top_layer: true
 
+# Should beacons be included in LOD data?
+# It's recommended to leave this disabled for the initial LOD generation, then enable it afterward.
+# Optional.
+# Default: false
+#include_beacons: true
+
 # When running DHS on a proxied server, set this to a value that is unique to this specific server.
 # Optional.
 #level_key_prefix:
@@ -96,4 +102,4 @@ worlds:
 scheduler_threads: 4
 
 # Don't touch :)
-config_version: 4
+config_version: 5
