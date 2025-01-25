@@ -57,4 +57,6 @@ public abstract class DhsConfig
     public static String SCAN_TO_SEA_LEVEL= "scan_to_sea_level";
 
     public static String INCLUDE_NON_COLLIDING_TOP_LAYER = "include_non-colliding_top_layer";
+
+    public static String INCLUDE_BEACONS = "include_beacons";
 }

@@ -297,9 +297,13 @@ public class DhSupport implements Configurable
                         CompletableFuture<Collection<Beacon>> beaconFuture = this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
                             Collection<Beacon> accumulator = new ArrayList<>();
 
-                            for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                                for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
-                                    accumulator.addAll(world.getBeaconsInChunk(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplier));
+                            boolean includeBeacons = world.getConfig().getBool(DhsConfig.INCLUDE_BEACONS, false);
+
+                            if (includeBeacons) {
+                                for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
+                                    for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
+                                        accumulator.addAll(world.getBeaconsInChunk(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplier));
+                                    }
                                 }
                             }
 
