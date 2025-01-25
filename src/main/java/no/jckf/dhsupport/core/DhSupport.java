@@ -272,28 +272,34 @@ public class DhSupport implements Configurable
 
                 WorldInterface world = this.getWorldInterface(worldId).newInstance();
 
-                List<CompletableFuture<Boolean>> loads = new ArrayList<>();
+                Map<String, CompletableFuture<Boolean>> loads = new HashMap<>();
 
                 // Load all the chunks we need for this request.
                 for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                    for (int zMultiplayer = 0; zMultiplayer < 4; zMultiplayer++) {
-                        loads.add(world.loadChunkAsync(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplayer));
+                    for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
+                        int chunkX = worldX + 16 * xMultiplier;
+                        int chunkZ = worldZ + 16 * zMultiplier;
+
+                        if (world.isChunkLoaded(chunkX, chunkZ)) {
+                            loads.put(worldX + "x" + worldZ, world.loadChunkAsync(chunkX, chunkZ));
+                        }
                     }
                 }
 
                 // Wait for chunk loads, then...
-                return CompletableFuture.allOf(loads.toArray(new CompletableFuture[loads.size()]))
+                return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[loads.size()]))
                     .thenCompose((asd) -> {
                         // No LOD was found. Start building a new one.
                         CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
 
                         // Find any beacons that should appear in this LOD.
+                        // TODO: Config option to disable beacons?
                         CompletableFuture<Collection<Beacon>> beaconFuture = this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
                             Collection<Beacon> accumulator = new ArrayList<>();
 
                             for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                                for (int zMultiplayer = 0; zMultiplayer < 4; zMultiplayer++) {
-                                    accumulator.addAll(world.getBeaconsInChunk(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplayer));
+                                for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
+                                    accumulator.addAll(world.getBeaconsInChunk(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplier));
                                 }
                             }
 
@@ -302,13 +308,15 @@ public class DhSupport implements Configurable
 
                         // Combine the LOD and beacons and save the result in the database.
                         return lodFuture.thenCombine(beaconFuture, (lod, beacons) -> {
-                                // Ask for all the chunks in the area to be unloaded.
-                                // It's unlikely that they all should be, but we'll leave that up to the server.
+                                // Discard the chunks we loaded.
                                 this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
-                                    for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                                        for (int zMultiplayer = 0; zMultiplayer < 4; zMultiplayer++) {
-                                            world.unloadChunkAsync(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplayer);
-                                        }
+                                    for (String key : loads.keySet()) {
+                                        String[] xz = key.split("x", 2);
+
+                                        world.discardChunk(
+                                            Coordinates.chunkToBlock(Integer.parseInt(xz[0])),
+                                            Coordinates.chunkToBlock(Integer.parseInt(xz[1]))
+                                        );
                                     }
 
                                     return null;

@@ -181,6 +181,15 @@ public class BukkitWorldInterface implements WorldInterface
     }
 
     @Override
+    public boolean isChunkLoaded(int x, int z)
+    {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.isChunkLoaded(chunkX, chunkZ);
+    }
+
+    @Override
     public boolean loadChunk(int x, int z)
     {
         int chunkX = Coordinates.blockToChunk(x);
@@ -194,12 +203,16 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public CompletableFuture<Boolean> loadChunkAsync(int x, int z)
     {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        if (!this.world.isChunkLoaded(chunkX, chunkZ)) {
+            this.getLogger().info("Requested load of chunk " + chunkX + "," + chunkZ);
+        }
+
         if (this.getChunkAtAsync == null) {
             return this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadChunk(x, z));
         }
-
-        int chunkX = Coordinates.blockToChunk(x);
-        int chunkZ = Coordinates.blockToChunk(z);
 
         try {
             CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ);
@@ -213,13 +226,28 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public boolean unloadChunk(int x, int z)
     {
-        return this.world.unloadChunk(x, z);
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.unloadChunk(chunkX, chunkZ);
     }
 
     @Override
     public boolean unloadChunkAsync(int x, int z)
     {
-        return this.world.unloadChunkRequest(x, z);
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.unloadChunkRequest(chunkX, chunkZ);
+    }
+
+    @Override
+    public boolean discardChunk(int x, int z)
+    {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.unloadChunk(chunkX, chunkZ, false);
     }
 
     @Override
