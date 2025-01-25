@@ -203,16 +203,12 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public CompletableFuture<Boolean> loadChunkAsync(int x, int z)
     {
-        int chunkX = Coordinates.blockToChunk(x);
-        int chunkZ = Coordinates.blockToChunk(z);
-
-        if (!this.world.isChunkLoaded(chunkX, chunkZ)) {
-            this.getLogger().info("Requested load of chunk " + chunkX + "," + chunkZ);
-        }
-
         if (this.getChunkAtAsync == null) {
             return this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadChunk(x, z));
         }
+
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
 
         try {
             CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ);
