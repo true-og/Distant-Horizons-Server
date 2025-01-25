@@ -26,7 +26,8 @@ Merged/
 # Folder created by the buildAll scripts
 buildAllJars/
 
-.venv
+relocate_natives/.venv/
+relocate_natives/apple-codesign/
 relocate_natives/cache/
 
 # file from notepad++

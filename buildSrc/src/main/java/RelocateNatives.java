@@ -1,4 +1,3 @@
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -6,63 +5,16 @@ import java.util.concurrent.CompletableFuture;
 
 class RelocateNatives
 {
-	static boolean prepared = false;
+	private static boolean prepared = false;
 	
-	private static void ensurePrepared() throws Exception
-	{
-		if (prepared)
-		{
-			return;
-		}
-		prepared = true;
-		
-		ProcessBuilder processBuilder = new ProcessBuilder();
-		processBuilder.directory(new File(System.getProperty("user.dir")));
-		
-		String os = System.getProperty("os.name").toLowerCase();
-		if (os.contains("win"))
-		{
-			processBuilder.command("powershell", "./relocate_natives/prepare.ps1");
-		}
-		else if (os.contains("nix") || os.contains("nux") || os.contains("mac"))
-		{
-			processBuilder.command("./relocate_natives/prepare.sh");
-		}
-		else
-		{
-			throw new IllegalStateException("Unsupported operating system: " + os);
-		}
-		
-		Process process = processBuilder.start();
-		process.getInputStream().transferTo(System.out);
-		process.getErrorStream().transferTo(System.err);
-		
-		int exitCode = process.waitFor();
-		if (exitCode != 0)
-		{
-			throw new Exception("Prepare failed: " + exitCode);
-		}
-	}
+	private static final Path rootDirectory = Path.of(System.getProperty("user.dir"), "relocate_natives");
+	private static final Path cacheRoot = rootDirectory.resolve("cache");
+	
 	
 	@SuppressWarnings({"ResultOfMethodCallIgnored", "BusyWait"})
-	public static byte[] updateUsingLief(Path outputFilePath, byte[] content) throws Exception
+	private static CompletableFuture<Void> readOutputStreams(Process process)
 	{
-		ensurePrepared();
-		
-		ProcessBuilder processBuilder = new ProcessBuilder();
-		processBuilder.directory(new File(System.getProperty("user.dir")));
-		
-		if (Path.of(System.getProperty("user.dir"), ".venv/Scripts").toFile().exists())
-		{
-			processBuilder.command("./.venv/Scripts/python", "./relocate_natives/process.py", outputFilePath.toString());
-		}
-		else
-		{
-			processBuilder.command("./.venv/bin/python", "./relocate_natives/process.py", outputFilePath.toString());
-		}
-		
-		Process process = processBuilder.start();
-		CompletableFuture<Void> outputFuture = CompletableFuture.runAsync(() -> {
+		return CompletableFuture.runAsync(() -> {
 			try
 			{
 				while (process.isAlive() || process.getInputStream().available() > 0 || process.getErrorStream().available() > 0)
@@ -86,6 +38,62 @@ class RelocateNatives
 			{
 			}
 		});
+	}
+	
+	private static void ensurePrepared() throws Exception
+	{
+		if (prepared)
+		{
+			return;
+		}
+		prepared = true;
+		
+		ProcessBuilder processBuilder = new ProcessBuilder();
+		processBuilder.directory(rootDirectory.toFile());
+		
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("win"))
+		{
+			processBuilder.command("powershell", "./prepare.ps1");
+		}
+		else if (os.contains("nix") || os.contains("nux") || os.contains("mac"))
+		{
+			processBuilder.command("./prepare.sh");
+		}
+		else
+		{
+			throw new IllegalStateException("Unsupported operating system: " + os);
+		}
+		
+		Process process = processBuilder.start();
+		CompletableFuture<Void> outputFuture = readOutputStreams(process);
+		
+		int exitCode = process.waitFor();
+		outputFuture.get();
+		
+		if (exitCode != 0)
+		{
+			throw new Exception("Prepare failed: " + exitCode);
+		}
+	}
+	
+	public static byte[] updateUsingLief(Path outputFilePath, byte[] content) throws Exception
+	{
+		ensurePrepared();
+		
+		ProcessBuilder processBuilder = new ProcessBuilder();
+		processBuilder.directory(rootDirectory.toFile());
+		
+		processBuilder.command(
+				rootDirectory.resolve(".venv/Scripts").toFile().exists()
+						? rootDirectory.resolve(".venv/Scripts/python.exe").toString()
+						: rootDirectory.resolve(".venv/bin/python").toString(),
+				"./process.py",
+				outputFilePath.toString()
+		);
+		
+		Process process = processBuilder.start();
+		CompletableFuture<Void> outputFuture = readOutputStreams(process);
 		
 		process.getOutputStream().write(content);
 		process.getOutputStream().close();
@@ -141,7 +149,6 @@ class RelocateNatives
 	
 	public static byte[] processNative(String path, byte[] content) throws Exception
 	{
-		Path cacheRoot = Path.of(System.getProperty("user.dir"), "relocate_natives/cache/");
 		Path outputFilePath = cacheRoot.resolve(path);
 		outputFilePath.getParent().toFile().mkdirs();
 		

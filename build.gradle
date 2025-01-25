@@ -343,7 +343,12 @@ subprojects { p ->
                 String path = context.path.replace("org/sqlite", "dh_sqlite")
                 byte[] content = context.is.readAllBytes()
 
-                content = RelocateNatives.processNative(path, content)
+                try {
+                    content = RelocateNatives.processNative(path, content)
+                }
+                catch (Throwable e) {
+                    throw new GradleException("Failed to relocate", e)
+                }
                 rewrittenFiles.put(path, content)
             }
 

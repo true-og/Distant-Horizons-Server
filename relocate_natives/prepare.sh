@@ -4,4 +4,4 @@ set -e
 
 python -m venv .venv
 . ./.venv/bin/activate
-pip install lief
+pip install -r requirements.txt
