@@ -105,6 +105,76 @@ forgix {
 }
 
 
+class NativeTransformer implements Transformer {
+    private boolean enabled = false
+    private final HashMap<String, String> replacements = new HashMap()
+    private final HashMap<String, byte[]> rewrittenFiles = new HashMap()
+    private var nativeRelocator
+
+
+    NativeTransformer() {
+        try {
+            int exitCode = Runtime.getRuntime().exec(new String[]{"python", "--version"}).waitFor();
+            if (exitCode == 0) {
+                enabled = true
+            }
+        } catch (IOException e) {
+            println(e)
+        }
+    }
+
+    void relocateNative(String target, String replacement) {
+        if (replacement.length() > target.length()) {
+            throw new GradleException("Length of value \"${replacement}\" exceeds the length of \"${target}\": ${replacement.length()} > ${target.length()}")
+        }
+
+        replacements.put(target, replacement)
+    }
+
+
+    @Override
+    boolean canTransformResource(@Nonnull FileTreeElement element) {
+        return replacements.keySet().stream().anyMatch {
+            element.name.startsWith(it as String)
+        }
+    }
+
+    @Override
+    void transform(@Nonnull TransformerContext context) {
+        println("Transforming $context.path...")
+        byte[] content = context.is.readAllBytes()
+
+        if (nativeRelocator == null) {
+            nativeRelocator = new NativeRelocator()
+        }
+
+        try {
+            Map.Entry<String, String> pathReplacement = replacements.entrySet().stream().filter {
+                context.path.startsWith(it.key as String)
+            }.findFirst().orElseThrow()
+
+            String path = context.path.replace(pathReplacement.key as String, pathReplacement.value as String)
+            content = nativeRelocator.processBinary(path, content, replacements)
+
+            rewrittenFiles.put(path, content)
+        }
+        catch (Throwable e) {
+            throw new GradleException("Failed to relocate", e)
+        }
+    }
+
+    @Override
+    boolean hasTransformedResource() { return !rewrittenFiles.isEmpty() }
+
+    @Override
+    void modifyOutputStream(@Nonnull ZipOutputStream os, boolean preserveFileTimestamps) {
+        for (Map.Entry<String, byte[]> rewrittenFile : rewrittenFiles.entrySet()) {
+            os.putNextEntry(new ZipEntry(rewrittenFile.key))
+            os.write(rewrittenFile.value)
+        }
+    }
+}
+
 subprojects { p ->
     // Does the same as "p == project(":common") || p == project(":fabric") || p == project(":quilt")  || p == project(":forge") || p == project("WhateverWeAddLaterOn")"
     // Useful later on so we dont have duplicated code
@@ -317,57 +387,17 @@ subprojects { p ->
         relocate "org.slf4j", "${librariesLocation}.slf4j"
 
         // Sqlite Database
-        relocate("org.xerial", "dh_sqlite.org.xerial")
-        relocate("org.sqlite", "dh_sqlite") {
-            exclude("org/sqlite/native/**")
+        // librariesLocation isn't used because it's too long for replacing paths in native libraries
+        relocate "org.xerial", "dh_sqlite.org.xerial"
+        relocate "org.sqlite", "dh_sqlite", {
+            exclude "org/sqlite/native/**"
         }
-        relocate("jdbc:sqlite", "jdbc:dh_sqlite")
+        relocate "jdbc:sqlite", "jdbc:dh_sqlite"
 
-        // Should be pretty much enough for Linux & Windows
-        // Probably won't work for Mac, because it requires signing native libs
-        transform(new Transformer() {
-            final String name = "RelocateSqliteNatives"
-
-            private HashMap<String, byte[]> rewrittenFiles = new HashMap()
-
-            @Override
-            boolean canTransformResource(@Nonnull FileTreeElement element) {
-                System.out.println("canTransformResource " + element.name)
-                return element.name.contains("sqlitejdbc")
-            }
-
-            @Override
-            void transform(@Nonnull TransformerContext context) {
-                System.out.println("transform " + context.path)
-
-                String path = context.path.replace("org/sqlite", "dh_sqlite")
-                byte[] content = context.is.readAllBytes()
-
-                try {
-                    content = RelocateNatives.processNative(path, content)
-                }
-                catch (Throwable e) {
-                    throw new GradleException("Failed to relocate", e)
-                }
-                rewrittenFiles.put(path, content)
-            }
-
-            @Override
-            boolean hasTransformedResource() {
-                System.out.println("hasTransformedResource")
-                return true
-            }
-
-            @Override
-            void modifyOutputStream(@Nonnull ZipOutputStream os, boolean preserveFileTimestamps) {
-                System.out.println("modifyOutputStream")
-
-                for (Map.Entry<String, byte[]> rewrittenFile : rewrittenFiles.entrySet()) {
-                    os.putNextEntry(new ZipEntry(rewrittenFile.key))
-                    os.write(rewrittenFile.value)
-                }
-            }
-        })
+        transform(NativeTransformer) {
+            relocateNative "org/sqlite", "dh_sqlite"
+            relocateNative "org_sqlite", "dh_1sqlite"
+        }
         
         
         // JOML
