@@ -73,6 +73,17 @@ public class LodHandler
 
             SectionPosition position = requestMessage.getPosition();
 
+            String builderType = config.getString(DhsConfig.BUILDER_TYPE);
+
+            if (builderType.equalsIgnoreCase("none") && !this.dhSupport.getLodRepository().lodExists(worldUuid, position.getX(), position.getZ())) {
+                ExceptionMessage exceptionMessage = new ExceptionMessage();
+                exceptionMessage.isResponseTo(requestMessage);
+                exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
+                exceptionMessage.setMessage("Generation disabled");
+                this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                return;
+            }
+
             int worldX = Coordinates.sectionToBlock(position.getX());
             int worldZ = Coordinates.sectionToBlock(position.getZ());
 

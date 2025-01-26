@@ -3,7 +3,7 @@
 # Default: 1024
 render_distance: 1024
 
-# Is LOD generation enabled at all?
+# Are LOD features enabled at all?
 # Disable if you only want to use the plugin for level key info in a proxied setup.
 # Required.
 # Default: true
@@ -45,6 +45,7 @@ login_data_sync_rc_limit: 50
 max_data_transfer_speed: 0
 
 # Select which LOD builder to use.
+# Valid options are: FullBuilder, FastOverworldBuilder, and None.
 # Required.
 # Default: FullBuilder
 builder_type: FullBuilder
