@@ -134,7 +134,7 @@ class NativeTransformer implements Transformer {
 
     @Override
     boolean canTransformResource(@Nonnull FileTreeElement element) {
-        return replacements.keySet().stream().anyMatch {
+        return enabled && replacements.keySet().stream().anyMatch {
             element.name.startsWith(it as String)
         }
     }
