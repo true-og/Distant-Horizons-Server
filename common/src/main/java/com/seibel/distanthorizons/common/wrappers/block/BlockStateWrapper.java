@@ -43,6 +43,8 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jetbrains.annotations.Nullable;
+
 #if MC_VER == MC_1_16_5 || MC_VER == MC_1_17_1
 import net.minecraft.core.Registry;
 import net.minecraft.core.BlockPos;
@@ -59,7 +61,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.core.Holder;
-import org.jetbrains.annotations.Nullable;
 #endif
 
 public class BlockStateWrapper implements IBlockStateWrapper
