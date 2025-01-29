@@ -9,7 +9,12 @@ class NativeRelocator
 	private static final Path rootDirectory = Path.of(System.getProperty("user.dir"), "relocate_natives");
 	private static final Path cacheRoot = rootDirectory.resolve("cache");
 	
-	
+	/**
+	 * Initializes the NativeRelocator by preparing the environment if necessary.
+	 * Executes the appropriate preparation script based on the OS.
+	 *
+	 * @throws Exception if the preparation script fails or an unsupported OS is detected.
+	 */
 	NativeRelocator() throws Exception
 	{
 		if (rootDirectory.resolve(".venv").toFile().exists())
@@ -46,7 +51,12 @@ class NativeRelocator
 		}
 	}
 	
-	
+	/**
+	 * Reads and prints the output and error streams of a process asynchronously.
+	 *
+	 * @param process The process whose streams should be read.
+	 * @return A CompletableFuture that completes once all output has been processed.
+	 */
 	private static CompletableFuture<Void> readOutputStreams(Process process)
 	{
 		return CompletableFuture.runAsync(() -> {
@@ -79,6 +89,14 @@ class NativeRelocator
 		});
 	}
 	
+	/**
+	 * Replaces occurrences of a target string in a byte array, ensuring null termination.
+	 *
+	 * @param byteArray The byte array where replacements should occur.
+	 * @param target The string to replace.
+	 * @param replacement The replacement string (must not be longer than the target).
+	 * @throws IllegalArgumentException if the replacement is longer than the target.
+	 */
 	private void replaceInNullTerminatedStrings(byte[] byteArray, String target, String replacement)
 	{
 		if (target.length() < replacement.length())
@@ -117,6 +135,14 @@ class NativeRelocator
 		}
 	}
 	
+	/**
+	 * Runs an external script to fix a modified binary and returns the processed content.
+	 *
+	 * @param outputFilePath Path to store the processed binary.
+	 * @param content The original binary content.
+	 * @return The modified binary content.
+	 * @throws Exception if the process execution fails.
+	 */
 	public byte[] fixModifiedBinary(Path outputFilePath, byte[] content) throws Exception
 	{
 		ProcessBuilder processBuilder = new ProcessBuilder();
@@ -147,6 +173,15 @@ class NativeRelocator
 		return Files.readAllBytes(outputFilePath);
 	}
 	
+	/**
+	 * Processes a binary file, applying string replacements and fixing modifications.
+	 *
+	 * @param outputPath The output file path relative to the cache directory.
+	 * @param content The binary content to process.
+	 * @param replacements A map of string replacements to apply.
+	 * @return The modified binary content.
+	 * @throws Exception if processing fails.
+	 */
 	public byte[] processBinary(String outputPath, byte[] content, Map<String, String> replacements) throws Exception
 	{
 		Path outputFilePath = cacheRoot.resolve(outputPath);

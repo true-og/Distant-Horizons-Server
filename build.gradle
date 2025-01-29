@@ -393,6 +393,7 @@ subprojects { p ->
 
         // Sqlite Database
         // librariesLocation isn't used because it's too long for replacing paths in native libraries
+        // Allowing strings larger than the original string would require shifting the entire binary's contents
         transform(NativeTransformer) {
             before {
                 relocate "org.sqlite", "dh_sqlite", {
