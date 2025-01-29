@@ -131,6 +131,11 @@ class NativeTransformer implements Transformer {
         replacements.put(target, replacement)
     }
 
+    void before(Closure closure) {
+        if (enabled)
+            closure.run()
+    }
+
 
     @Override
     boolean canTransformResource(@Nonnull FileTreeElement element) {
@@ -388,13 +393,14 @@ subprojects { p ->
 
         // Sqlite Database
         // librariesLocation isn't used because it's too long for replacing paths in native libraries
-        relocate "org.xerial", "dh_sqlite.org.xerial"
-        relocate "org.sqlite", "dh_sqlite", {
-            exclude "org/sqlite/native/**"
-        }
-        relocate "jdbc:sqlite", "jdbc:dh_sqlite"
-
         transform(NativeTransformer) {
+            before {
+                relocate "org.sqlite", "dh_sqlite", {
+                    exclude "org/sqlite/native/**"
+                }
+                relocate "jdbc:sqlite", "jdbc:dh_sqlite"
+            }
+
             relocateNative "org/sqlite", "dh_sqlite"
             relocateNative "org_sqlite", "dh_1sqlite"
         }
