@@ -111,10 +111,11 @@ class NativeTransformer implements Transformer {
     private final HashMap<String, byte[]> rewrittenFiles = new HashMap()
     private var nativeRelocator
 
+    public File rootDir
 
     NativeTransformer() {
         try {
-            int exitCode = Runtime.getRuntime().exec(new String[]{"python", "--version"}).waitFor();
+            int exitCode = Runtime.getRuntime().exec(new String[]{"python", "--version"}).waitFor()
             if (exitCode == 0) {
                 enabled = true
             }
@@ -150,7 +151,7 @@ class NativeTransformer implements Transformer {
         byte[] content = context.is.readAllBytes()
 
         if (nativeRelocator == null) {
-            nativeRelocator = new NativeRelocator()
+            nativeRelocator = new NativeRelocator(rootDir.toPath().resolve("relocate_natives"))
         }
 
         try {
@@ -395,6 +396,8 @@ subprojects { p ->
         // librariesLocation isn't used because it's too long for replacing paths in native libraries
         // Allowing strings larger than the original string would require shifting the entire binary's contents
         transform(NativeTransformer) {
+            rootDir = project.rootDir
+
             before {
                 relocate "org.sqlite", "dh_sqlite", {
                     exclude "org/sqlite/native/**"

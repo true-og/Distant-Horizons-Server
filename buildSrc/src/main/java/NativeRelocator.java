@@ -6,8 +6,8 @@ import java.util.concurrent.CompletableFuture;
 
 class NativeRelocator
 {
-	private static final Path rootDirectory = Path.of(System.getProperty("user.dir"), "relocate_natives");
-	private static final Path cacheRoot = rootDirectory.resolve("cache");
+	private final Path rootDirectory;
+	private final Path cacheRoot;
 	
 	/**
 	 * Initializes the NativeRelocator by preparing the environment if necessary.
@@ -15,15 +15,18 @@ class NativeRelocator
 	 *
 	 * @throws Exception if the preparation script fails or an unsupported OS is detected.
 	 */
-	NativeRelocator() throws Exception
+	NativeRelocator(Path rootDirectory) throws Exception
 	{
-		if (rootDirectory.resolve(".venv").toFile().exists())
+		this.rootDirectory = rootDirectory;
+		this.cacheRoot = this.rootDirectory.resolve("cache");
+		
+		if (this.rootDirectory.resolve(".venv").toFile().exists())
 		{
 			return;
 		}
 		
 		ProcessBuilder processBuilder = new ProcessBuilder();
-		processBuilder.directory(rootDirectory.toFile());
+		processBuilder.directory(this.rootDirectory.toFile());
 		
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("win"))
@@ -146,12 +149,12 @@ class NativeRelocator
 	public byte[] fixModifiedBinary(Path outputFilePath, byte[] content) throws Exception
 	{
 		ProcessBuilder processBuilder = new ProcessBuilder();
-		processBuilder.directory(rootDirectory.toFile());
+		processBuilder.directory(this.rootDirectory.toFile());
 		
 		processBuilder.command(
-				rootDirectory.resolve(".venv/Scripts").toFile().exists()
-						? rootDirectory.resolve(".venv/Scripts/python.exe").toString()
-						: rootDirectory.resolve(".venv/bin/python").toString(),
+				this.rootDirectory.resolve(".venv/Scripts").toFile().exists()
+						? this.rootDirectory.resolve(".venv/Scripts/python.exe").toString()
+						: this.rootDirectory.resolve(".venv/bin/python").toString(),
 				"./fix_modified_binary.py",
 				outputFilePath.toString()
 		);
@@ -184,7 +187,7 @@ class NativeRelocator
 	 */
 	public byte[] processBinary(String outputPath, byte[] content, Map<String, String> replacements) throws Exception
 	{
-		Path outputFilePath = cacheRoot.resolve(outputPath);
+		Path outputFilePath = this.cacheRoot.resolve(outputPath);
 		//noinspection ResultOfMethodCallIgnored
 		outputFilePath.getParent().toFile().mkdirs();
 		
