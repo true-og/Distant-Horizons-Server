@@ -78,7 +78,7 @@ forgix {
     String loaderHyphenSeparatedList = ((String)gradle.builds_for).replaceAll(",", "-");
     
     group = "com.seibel.distanthorizons"
-    mergedJarName = "DistantHorizons-${rootProject.versionStr}-${loaderHyphenSeparatedList}.jar"
+    mergedJarName = "DistantHorizons-${loaderHyphenSeparatedList}-${rootProject.versionStr}.jar"
 
     if (findProject(":forge"))
         forge {
