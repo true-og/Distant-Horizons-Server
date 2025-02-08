@@ -583,6 +583,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				return newChunk;
 			});
 	}
+	// TODO FIXME this method can be called up to 25 times for the same chunk position, why?
 	private CompletableFuture<CompoundTag> getChunkNbtDataAsync(ChunkPos chunkPos)
 	{
 		ServerLevel level = this.params.level;
