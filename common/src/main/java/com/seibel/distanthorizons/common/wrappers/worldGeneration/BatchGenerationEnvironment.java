@@ -125,7 +125,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	 * pull chunks using their async method), or if there
 	 * was an issue with the sync pulling method.
 	 */
-	private boolean pullExistingChunkAsync = false;
+	private boolean pullExistingChunkUsingMcAsyncMethod = false;
 	
 	
 	
@@ -241,18 +241,9 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 		
 		if (MOD_CHECKER.isModLoaded("c2me"))
 		{
-			EVENT_LOGGER.info("C2ME detected: DH's pre-existing chunk accessing will use async methods handled by C2ME.");
-			this.pullExistingChunkAsync = true;
+			EVENT_LOGGER.info("C2ME detected: DH's pre-existing chunk accessing will use methods handled by C2ME.");
+			this.pullExistingChunkUsingMcAsyncMethod = true;
 		}
-		
-		//IOWorker ioWorker = level.getChunkSource().chunkMap.worker;
-		//	
-		//	#if MC_VER <= MC_1_18_2
-		//	return CompletableFuture.completedFuture(ioWorker.load(chunkPos));
-		//	#else
-		//
-		//// storage will be null if C2ME is installed
-		//if (ioWorker.storage != null)
 		
 		this.params = new GlobalParameters(serverlevel);
 	}
@@ -610,7 +601,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			#else
 			
 			// storage will be null if C2ME is installed
-			if (!this.pullExistingChunkAsync && ioWorker.storage != null)
+			if (!this.pullExistingChunkUsingMcAsyncMethod && ioWorker.storage != null)
 			{
 				try
 				{
@@ -624,7 +615,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 					// ioWorker.storage
 					// but just in case
 					EVENT_LOGGER.error("Unexpected issue pulling pre-existing chunk ["+chunkPos+"], falling back to async chunk pulling. This may cause server-tick lag.", e);
-					this.pullExistingChunkAsync = true;
+					this.pullExistingChunkUsingMcAsyncMethod = true;
 					
 					// try again now using the async method
 					return this.getChunkNbtDataAsync(chunkPos);
@@ -633,32 +624,43 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 			else
 			{
 				// log if we unexpectedly weren't able to run the sync chunk pulling
-				if (!this.pullExistingChunkAsync)
+				if (!this.pullExistingChunkUsingMcAsyncMethod)
 				{
 					// this shouldn't happen, but just in case
 					EVENT_LOGGER.info("Unable to pull pre-existing chunk using synchronous method. Falling back to async method. this may cause server-tick lag.");
-					this.pullExistingChunkAsync = true;
+					this.pullExistingChunkUsingMcAsyncMethod = true;
 				}
 				
+				//GET_CHUNK_COUNT_REF.incrementAndGet();
 				
 				// When running in vanilla MC on versions before 1.21.4,  
 				// DH would attempt to run loadAsync on this same thread via a threading mixin,
 				// to prevent causing lag on the server thread.
 				// However, if a mod like C2ME is installed this will run on a C2ME thread instead.
-				return ioWorker.loadAsync(chunkPos)
-					.thenApply(optional -> optional.orElse(null))
-					.exceptionally((throwable) ->
-					{
-						// unwrap the CompletionException if necessary
-						Throwable actualThrowable = throwable;
-						while (actualThrowable instanceof CompletionException completionException)
+				CompoundTag result = ioWorker.loadAsync(chunkPos)
+						.thenApply(optional ->
 						{
-							actualThrowable = completionException.getCause();
-						}
-						
-						LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
-						return null;
-					});
+							//GET_CHUNK_COUNT_REF.decrementAndGet();
+							//PREF_LOGGER.info("chunk getter count ["+F3Screen.NUMBER_FORMAT.format(GET_CHUNK_COUNT_REF.get())+"]");
+							return optional.orElse(null);
+						})
+						.exceptionally((throwable) ->
+						{
+							// unwrap the CompletionException if necessary
+							Throwable actualThrowable = throwable;
+							while (actualThrowable instanceof CompletionException completionException)
+							{
+								actualThrowable = completionException.getCause();
+							}
+							
+							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
+							return null;
+						})
+						// joining is necessary due to an issue with C2ME not handling large number of queued tasks well
+						// causing memory use to explode, breaking the G1 garbage collector
+						.join();
+				
+				return CompletableFuture.completedFuture(result);
 			}
 			#endif
 		}
