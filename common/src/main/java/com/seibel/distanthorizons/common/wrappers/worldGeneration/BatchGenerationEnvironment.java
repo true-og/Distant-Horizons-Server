@@ -333,6 +333,8 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 	// world generation //
 	//==================//
 	
+	// TODO this is already being run on a generator thread,
+	//  why are we passing in an executor?
 	/** @throws RejectedExecutionException if the given {@link Executor} is cancelled. */
 	public CompletableFuture<Void> generateLodFromListAsync(GenerationEvent genEvent, Executor executor) throws RejectedExecutionException, InterruptedException
 	{
@@ -376,10 +378,12 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				.map((chunkPos) -> this.createEmptyOrPreExistingChunkAsync(chunkPos.x, chunkPos.z, chunkSkyLightingByDhPos, chunkBlockLightingByDhPos, generatedChunkByDhPos))
 				.toArray(CompletableFuture[]::new);
 		
+		// join to prevent an issue where DH queues too many tasks or something(?)
+		// also allows file IO to run in parallel so no one thread is waiting on disk IO (this is only an issue when C2ME is present)
+		CompletableFuture.allOf(readFutures).join();
 		
 		// future chain for generation
-		return CompletableFuture.allOf(readFutures)
-			.thenRunAsync(() -> 
+		return CompletableFuture.runAsync(() -> 
 			{
 				// offset 1 chunk in both X and Z direction so we can generate an even number of chunks wide
 				// while still submitting an odd number width to MC's internal generators
@@ -638,9 +642,13 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 				// DH would attempt to run loadAsync on this same thread via a threading mixin,
 				// to prevent causing lag on the server thread.
 				// However, if a mod like C2ME is installed this will run on a C2ME thread instead.
-				CompoundTag result = ioWorker.loadAsync(chunkPos)
+				return ioWorker.loadAsync(chunkPos)
 						.thenApply(optional ->
 						{
+							// Debugging note:
+							// If there are reports of extreme memory use when C2ME is installed, that probably means
+							// this method is queuing a lot of tasks (1,000+), which causes C2ME to explode.
+							
 							//GET_CHUNK_COUNT_REF.decrementAndGet();
 							//PREF_LOGGER.info("chunk getter count ["+F3Screen.NUMBER_FORMAT.format(GET_CHUNK_COUNT_REF.get())+"]");
 							return optional.orElse(null);
@@ -656,12 +664,7 @@ public final class BatchGenerationEnvironment extends AbstractBatchGenerationEnv
 							
 							LOAD_LOGGER.warn("DistantHorizons: Couldn't load or make chunk ["+chunkPos+"], error: ["+actualThrowable.getMessage()+"].", actualThrowable);
 							return null;
-						})
-						// joining is necessary due to an issue with C2ME not handling large number of queued tasks well
-						// causing memory use to explode, breaking the G1 garbage collector
-						.join();
-				
-				return CompletableFuture.completedFuture(result);
+						});
 			}
 			#endif
 		}
