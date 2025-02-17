@@ -90,6 +90,10 @@ public class DhSupportBukkitPlugin extends JavaPlugin
     @Override
     public void onDisable()
     {
+        if (this.scheduler != null) {
+            this.scheduler.cancelTasks();
+        }
+
         if (this.pluginMessageProxy != null) {
             this.pluginMessageProxy.onDisable();
             this.pluginMessageProxy = null;
