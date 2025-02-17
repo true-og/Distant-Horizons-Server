@@ -31,4 +31,6 @@ public interface Scheduler
     <U> CompletableFuture<U> runOnRegionThread(UUID worldId, int x, int z, Supplier<U> supplier);
 
     <U> CompletableFuture<U> runOnSeparateThread(Supplier<U> supplier);
+
+    void cancelTasks();
 }
