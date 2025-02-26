@@ -93,6 +93,10 @@ public class DimensionTypeWrapper implements IDimensionTypeWrapper
 	@Override
 	public boolean isTheEnd() { return this.getName().equalsIgnoreCase("the_end"); }
 	
+	@Override
+	public double getCoordinateScale() { return this.dimensionType.coordinateScale(); }
+	
+	
 	
 	
 	//================//
