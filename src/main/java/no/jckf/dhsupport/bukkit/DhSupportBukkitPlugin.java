@@ -19,6 +19,7 @@
 package no.jckf.dhsupport.bukkit;
 
 import no.jckf.dhsupport.bukkit.handler.ConfigLoader;
+import no.jckf.dhsupport.bukkit.handler.PlayerHandler;
 import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
 import no.jckf.dhsupport.bukkit.handler.WorldHandler;
 import no.jckf.dhsupport.core.DhSupport;
@@ -83,6 +84,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         }, LOD_REFRESH_INTERVAL, LOD_REFRESH_INTERVAL);
 
         this.getServer().getPluginManager().registerEvents(new WorldHandler(this), this);
+        this.getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
 
         this.getLogger().info("Ready!");
     }
