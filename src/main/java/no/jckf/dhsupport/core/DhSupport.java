@@ -36,6 +36,8 @@ import no.jckf.dhsupport.core.lodbuilders.LodBuilder;
 import no.jckf.dhsupport.core.message.plugin.PluginMessageSender;
 import no.jckf.dhsupport.core.scheduling.Scheduler;
 import no.jckf.dhsupport.core.world.WorldInterface;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
@@ -397,7 +399,37 @@ public class DhSupport implements Configurable
                     position.setX(lodModel.getX());
                     position.setZ(lodModel.getZ());
 
-                    this.getLod(lodModel.getWorldId(), position);
+                    this.getLod(lodModel.getWorldId(), position)
+                        .thenAccept((newLodModel) -> {
+                            // If this is false, then it will be false for all players as well.
+                            boolean updatesEnabled = this.getConfig().getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
+
+                            if (!updatesEnabled) {
+                                return;
+                            }
+
+                            // TODO: Don't use Bukkit classes.
+                            for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
+                                Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
+
+                                // No config for this player? Probably not using DH.
+                                if (playerConfig == null) {
+                                    continue;
+                                }
+
+                                int updatesRadius = playerConfig.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
+
+                                int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
+                                int playerChunkZ = Coordinates.blockToChunk(player.getLocation().getBlockZ());
+
+                                // Update outside of player's range?
+                                if (Math.abs(playerChunkX) > updatesRadius || Math.abs(playerChunkZ) > updatesRadius) {
+                                    continue;
+                                }
+
+                                // TODO: Send
+                            }
+                        });
 
                     this.touchedLods.remove(key);
                 });
