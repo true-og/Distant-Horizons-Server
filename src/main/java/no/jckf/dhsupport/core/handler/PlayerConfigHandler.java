@@ -92,7 +92,7 @@ public class PlayerConfigHandler
                 clientConfig.set(key, keepValue);
             }
 
-            // TODO: Store the resulting config in some sort of context object for this player.
+            this.dhSupport.setPlayerConfiguration(configMessage.getSender(), clientConfig);
 
             RemotePlayerConfigMessage configResponse = new RemotePlayerConfigMessage();
             configResponse.fromConfiguration(clientConfig);

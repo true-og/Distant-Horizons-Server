@@ -69,6 +69,8 @@ public class DhSupport implements Configurable
 
     protected Map<String, LodModel> touchedLods = new ConcurrentHashMap<>();
 
+    protected Map<UUID, Configuration> playerConfigurations = new HashMap<>();
+
     public DhSupport()
     {
         this.configuration = new Configuration();
@@ -188,6 +190,21 @@ public class DhSupport implements Configurable
     public void warning(String message)
     {
         this.getLogger().warning(message);
+    }
+
+    public void setPlayerConfiguration(UUID playerId, Configuration playerConfiguration)
+    {
+        this.playerConfigurations.put(playerId, playerConfiguration);
+    }
+
+    public Configuration getPlayerConfiguration(UUID playerId)
+    {
+        return this.playerConfigurations.get(playerId);
+    }
+
+    public void clearPlayerConfiguration(UUID playerId)
+    {
+        this.playerConfigurations.remove(playerId);
     }
 
     public LodBuilder getBuilder(WorldInterface world, SectionPosition position)
