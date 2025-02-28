@@ -33,6 +33,8 @@ import no.jckf.dhsupport.core.handler.LodHandler;
 import no.jckf.dhsupport.core.handler.PlayerConfigHandler;
 import no.jckf.dhsupport.core.handler.PluginMessageHandler;
 import no.jckf.dhsupport.core.lodbuilders.LodBuilder;
+import no.jckf.dhsupport.core.message.plugin.FullDataChunkMessage;
+import no.jckf.dhsupport.core.message.plugin.FullDataPartialUpdateMessage;
 import no.jckf.dhsupport.core.message.plugin.PluginMessageSender;
 import no.jckf.dhsupport.core.scheduling.Scheduler;
 import no.jckf.dhsupport.core.world.WorldInterface;
@@ -428,6 +430,31 @@ public class DhSupport implements Configurable
                                 }
 
                                 // TODO: Send
+
+                                int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
+                                playerConfig.set("buffer-id", myBufferId);
+
+                                FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
+                                partialUpdateMessage.setBufferId(myBufferId);
+
+                                byte[] data = lodModel.getData();
+
+                                int chunkCount = (int) Math.ceil((double) data.length / LodHandler.CHUNK_SIZE);
+
+                                for (int chunkNo = 0; chunkNo < chunkCount; chunkNo++) {
+                                    FullDataChunkMessage chunkResponse = new FullDataChunkMessage();
+                                    chunkResponse.setBufferId(myBufferId);
+                                    chunkResponse.setIsFirst(chunkNo == 0);
+                                    chunkResponse.setData(Arrays.copyOfRange(
+                                            data,
+                                            LodHandler.CHUNK_SIZE * chunkNo,
+                                            Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
+                                    ));
+
+                                    this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), chunkResponse);
+                                }
+
+                                this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
                             }
                         });
 
