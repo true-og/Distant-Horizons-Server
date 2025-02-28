@@ -36,13 +36,11 @@ import java.util.UUID;
 
 public class LodHandler
 {
-    protected static int CHUNK_SIZE = 1024 * 16; // TODO: Configurable?
+    public static int CHUNK_SIZE = 1024 * 16; // TODO: Configurable?
 
     protected DhSupport dhSupport;
 
     protected PluginMessageHandler pluginMessageHandler;
-
-    protected int bufferId = 0; // TODO: Should be tracked per player instead of globally, and reset when a player disconnects.
 
     public LodHandler(DhSupport dhSupport, PluginMessageHandler pluginMessageHandler)
     {
@@ -136,7 +134,16 @@ public class LodHandler
                     boolean sendData = requestMessage.getTimestamp() == null || (requestMessage.getTimestamp() / 1000) < lodModel.getTimestamp();
 
                     if (sendData) {
-                        int myBufferId = this.bufferId++;
+                        Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
+
+                        if (playerConfig == null) {
+                            this.dhSupport.warning("LOD request from player without config? " + requestMessage.getSender());
+                            return;
+                        }
+
+                        int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
+
+                        playerConfig.set("buffer-id", myBufferId);
 
                         responseMessage.setBufferId(myBufferId);
                         responseMessage.setBeacons(lodModel.getBeacons());
