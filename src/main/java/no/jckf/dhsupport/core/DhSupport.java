@@ -441,7 +441,7 @@ public class DhSupport implements Configurable
                                 FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
                                 partialUpdateMessage.setBufferId(myBufferId);
 
-                                byte[] data = lodModel.getData();
+                                byte[] data = newLodModel.getData();
 
                                 int chunkCount = (int) Math.ceil((double) data.length / LodHandler.CHUNK_SIZE);
 
