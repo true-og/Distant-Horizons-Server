@@ -410,6 +410,9 @@ public class DhSupport implements Configurable
                                 return;
                             }
 
+                            int lodChunkX = Coordinates.sectionToChunk(lodModel.getX());
+                            int lodChunkZ = Coordinates.sectionToChunk(lodModel.getZ());
+
                             // TODO: Don't use Bukkit classes.
                             for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
                                 Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
@@ -424,12 +427,13 @@ public class DhSupport implements Configurable
                                 int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
                                 int playerChunkZ = Coordinates.blockToChunk(player.getLocation().getBlockZ());
 
+                                int distanceX = Math.abs(Math.max(lodChunkX, playerChunkX) - Math.min(lodChunkX, playerChunkX));
+                                int distanceZ = Math.abs(Math.max(lodChunkZ, playerChunkZ) - Math.min(lodChunkZ, playerChunkZ));
+
                                 // Update outside of player's range?
-                                if (Math.abs(playerChunkX) > updatesRadius || Math.abs(playerChunkZ) > updatesRadius) {
+                                if (distanceX > updatesRadius || distanceZ > updatesRadius) {
                                     continue;
                                 }
-
-                                // TODO: Send
 
                                 int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
                                 playerConfig.set("buffer-id", myBufferId);
