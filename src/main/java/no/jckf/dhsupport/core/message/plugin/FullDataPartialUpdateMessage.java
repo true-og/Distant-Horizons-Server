@@ -43,7 +43,7 @@ public class FullDataPartialUpdateMessage extends PluginMessage
     @Override
     public void encode(Encoder encoder)
     {
-        encoder.writeString(this.levelKey);
+        encoder.writeShortString(this.levelKey);
         encoder.writeInt(this.bufferId);
         encoder.write(this.beacons);
     }

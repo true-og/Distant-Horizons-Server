@@ -438,8 +438,21 @@ public class DhSupport implements Configurable
                                 int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
                                 playerConfig.set("buffer-id", myBufferId);
 
+                                // FIXME copied straight off PlayerConfigHandler
+                                Configuration dhsConfig = this.getWorldInterface(player.getWorld().getUID()).getConfig();
+
+                                String levelKeyPrefix = dhsConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
+                                String levelKey = player.getWorld().getName();
+
+                                if (levelKeyPrefix != null) {
+                                    levelKey = levelKeyPrefix + levelKey;
+                                }
+                                // end fixme
+
                                 FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
+                                partialUpdateMessage.setLevelKey(levelKey);
                                 partialUpdateMessage.setBufferId(myBufferId);
+                                partialUpdateMessage.setBeacons(newLodModel.getBeacons());
 
                                 byte[] data = newLodModel.getData();
 
