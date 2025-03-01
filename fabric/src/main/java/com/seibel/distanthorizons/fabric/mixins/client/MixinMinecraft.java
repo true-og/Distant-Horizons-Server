@@ -82,6 +82,7 @@ public abstract class MixinMinecraft
 						new TitleScreen(false), // We don't want to use the vanilla title screen as it would fade the buttons
 						(Config.Client.Advanced.AutoUpdater.updateBranch.get() == EDhApiUpdateBranch.STABLE ? ModrinthGetter.getLatestIDForVersion(SingletonInjector.INSTANCE.get(IVersionConstants.class).getMinecraftVersion()): GitlabGetter.INSTANCE.projectPipelines.get(0).get("sha"))
 				));
+				return;
 			}
 			catch (Exception e)
 			{
@@ -90,10 +91,10 @@ public abstract class MixinMinecraft
 				LOGGER.info("Unable to show DH update screen, reason: ["+e.getMessage()+"].");
 			}
 		}
-		else
-		{
-			instance.setScreen(guiScreen); // Sets the screen back to the vanilla screen as if nothing ever happened
-		}
+		
+		// Sets the screen back to the vanilla screen as if nothing ever happened
+		// if not done the game will crash
+		instance.setScreen(guiScreen);
 	}
 	#endif
 	
