@@ -14,10 +14,10 @@ distant_generation_enabled: true
 # Default: 20
 full_data_request_concurrency_limit: 20
 
-# Currently unsupported.
+# Send LOD updates to players in real-time?
 # Required.
-# Default: false
-real_time_updates_enabled: false
+# Default: true
+real_time_updates_enabled: true
 
 # Currently unsupported.
 # Required.
@@ -99,8 +99,8 @@ worlds:
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
 # Required.
-# Default: 4
-scheduler_threads: 4
+# Default: 2
+scheduler_threads: 2
 
 # Don't touch :)
 config_version: 5
