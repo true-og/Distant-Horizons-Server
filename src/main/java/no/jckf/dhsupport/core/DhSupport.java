@@ -388,9 +388,9 @@ public class DhSupport implements Configurable
     public void updateTouchedLods()
     {
         for (String key : this.touchedLods.keySet()) {
-            LodModel lodModel = this.touchedLods.get(key);
+            LodModel lodModelToDelete = this.touchedLods.get(key);
 
-            this.getLodRepository().deleteLodAsync(lodModel.getWorldId(), lodModel.getX(), lodModel.getZ())
+            this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
                 .thenAccept((deleted) -> {
                     if (!deleted) {
                         return;
@@ -398,20 +398,30 @@ public class DhSupport implements Configurable
 
                     SectionPosition position = new SectionPosition();
                     position.setDetailLevel(6);
-                    position.setX(lodModel.getX());
-                    position.setZ(lodModel.getZ());
+                    position.setX(lodModelToDelete.getX());
+                    position.setZ(lodModelToDelete.getZ());
 
-                    this.getLod(lodModel.getWorldId(), position)
+                    this.getLod(lodModelToDelete.getWorldId(), position)
                         .thenAccept((newLodModel) -> {
+                            WorldInterface world = this.getWorldInterface(newLodModel.getWorldId());
+                            Configuration worldConfig = world.getConfig();
+
                             // If this is false, then it will be false for all players as well.
-                            boolean updatesEnabled = this.getConfig().getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
+                            boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
 
                             if (!updatesEnabled) {
                                 return;
                             }
 
-                            int lodChunkX = Coordinates.sectionToChunk(lodModel.getX());
-                            int lodChunkZ = Coordinates.sectionToChunk(lodModel.getZ());
+                            String levelKeyPrefix = worldConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
+                            String levelKey = world.getName();
+
+                            if (levelKeyPrefix != null) {
+                                levelKey = levelKeyPrefix + levelKey;
+                            }
+
+                            int lodChunkX = Coordinates.sectionToChunk(lodModelToDelete.getX());
+                            int lodChunkZ = Coordinates.sectionToChunk(lodModelToDelete.getZ());
 
                             // TODO: Don't use Bukkit classes.
                             for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
@@ -437,17 +447,6 @@ public class DhSupport implements Configurable
 
                                 int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
                                 playerConfig.set("buffer-id", myBufferId);
-
-                                // FIXME copied straight off PlayerConfigHandler
-                                Configuration dhsConfig = this.getWorldInterface(player.getWorld().getUID()).getConfig();
-
-                                String levelKeyPrefix = dhsConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
-                                String levelKey = player.getWorld().getName();
-
-                                if (levelKeyPrefix != null) {
-                                    levelKey = levelKeyPrefix + levelKey;
-                                }
-                                // end fixme
 
                                 FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
                                 partialUpdateMessage.setLevelKey(levelKey);
