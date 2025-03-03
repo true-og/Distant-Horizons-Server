@@ -28,6 +28,9 @@ public class RemotePlayerConfigMessage extends PluginMessage
     public static String[] KEYS = {
         DhsConfig.DISTANT_GENERATION_ENABLED,
         DhsConfig.RENDER_DISTANCE,
+        DhsConfig.BORDER_CENTER_X,
+        DhsConfig.BORDER_CENTER_Z,
+        DhsConfig.BORDER_RADIUS,
         DhsConfig.FULL_DATA_REQUEST_CONCURRENCY_LIMIT,
         DhsConfig.REAL_TIME_UPDATES_ENABLED,
         DhsConfig.REAL_TIME_UPDATE_RADIUS,
@@ -54,6 +57,12 @@ public class RemotePlayerConfigMessage extends PluginMessage
     protected int loginDataSyncRcLimit;
 
     protected int maxDataTransferSpeed;
+
+    protected int borderCenterX;
+
+    protected int borderCenterZ;
+
+    protected int borderRadius;
 
     public void setRenderDistance(int distance)
     {
@@ -145,17 +154,55 @@ public class RemotePlayerConfigMessage extends PluginMessage
         return this.maxDataTransferSpeed;
     }
 
+    public void setBorderCenterX(int borderCenterX)
+    {
+        this.borderCenterX = borderCenterX;
+    }
+
+    public void setBorderCenterZ(int borderCenterZ)
+    {
+        this.borderCenterZ = borderCenterZ;
+    }
+
+    public void setBorderRadius(int borderRadius)
+    {
+        this.borderRadius = borderRadius;
+    }
+
+    public int getBorderCenterX()
+    {
+        return borderCenterX;
+    }
+
+    public int getBorderCenterZ()
+    {
+        return borderCenterZ;
+    }
+
+    public int getBorderRadius()
+    {
+        return borderRadius;
+    }
+
     @Override
     public void encode(Encoder encoder)
     {
         encoder.writeBoolean(this.distantGenerationEnabled);
         encoder.writeInt(this.renderDistance);
+
+        encoder.writeInt(this.borderCenterX);
+        encoder.writeInt(this.borderCenterZ);
+        encoder.writeInt(this.borderRadius);
+
         encoder.writeInt(this.fullDataRequestConcurrencyLimit);
+
         encoder.writeBoolean(this.realTimeUpdatesEnabled);
         encoder.writeInt(this.realTimeUpdateRadius);
+
         encoder.writeBoolean(this.loginDataSyncEnabled);
         encoder.writeInt(this.loginDataSyncRadius);
         encoder.writeInt(this.loginDataSyncRcLimit);
+
         encoder.writeInt(this.maxDataTransferSpeed);
     }
 
@@ -164,12 +211,20 @@ public class RemotePlayerConfigMessage extends PluginMessage
     {
         this.distantGenerationEnabled = decoder.readBoolean();
         this.renderDistance = decoder.readInt();
+
+        this.borderCenterX = decoder.readInt();
+        this.borderCenterZ = decoder.readInt();
+        this.borderRadius = decoder.readInt();
+
         this.fullDataRequestConcurrencyLimit = decoder.readInt();
+
         this.realTimeUpdatesEnabled = decoder.readBoolean();
         this.realTimeUpdateRadius = decoder.readInt();
+
         this.loginDataSyncEnabled = decoder.readBoolean();
         this.loginDataSyncRadius = decoder.readInt();
         this.loginDataSyncRcLimit = decoder.readInt();
+
         this.maxDataTransferSpeed = decoder.readInt();
     }
 
@@ -177,12 +232,24 @@ public class RemotePlayerConfigMessage extends PluginMessage
     {
         this.distantGenerationEnabled = config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED);
         this.renderDistance = config.getInt(DhsConfig.RENDER_DISTANCE);
+
+        Integer borderCenterX = config.getInt(DhsConfig.BORDER_CENTER_X);
+        Integer borderCenterZ = config.getInt(DhsConfig.BORDER_CENTER_Z);
+        Integer borderRadius = config.getInt(DhsConfig.BORDER_RADIUS);
+
+        this.borderCenterX = borderCenterX == null ? 0 : borderCenterX;
+        this.borderCenterZ = borderCenterZ == null ? 0 : borderCenterZ;
+        this.borderRadius = borderRadius == null ? 0 : borderRadius;
+
         this.fullDataRequestConcurrencyLimit = config.getInt(DhsConfig.FULL_DATA_REQUEST_CONCURRENCY_LIMIT);
+
         this.realTimeUpdatesEnabled = config.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
         this.realTimeUpdateRadius = config.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
+
         this.loginDataSyncEnabled = config.getBool(DhsConfig.LOGIN_DATA_SYNC_ENABLED);
         this.loginDataSyncRadius = config.getInt(DhsConfig.LOGIN_DATA_SYNC_RADIUS);
         this.loginDataSyncRcLimit = config.getInt(DhsConfig.LOGIN_DATA_SYNC_RC_LIMIT);
+
         this.maxDataTransferSpeed = config.getInt(DhsConfig.MAX_DATA_TRANSFER_SPEED);
     }
 
@@ -192,12 +259,20 @@ public class RemotePlayerConfigMessage extends PluginMessage
 
         config.set(DhsConfig.DISTANT_GENERATION_ENABLED, this.distantGenerationEnabled);
         config.set(DhsConfig.RENDER_DISTANCE, this.renderDistance);
+
+        config.set(DhsConfig.BORDER_CENTER_X, this.borderCenterX);
+        config.set(DhsConfig.BORDER_CENTER_Z, this.borderCenterZ);
+        config.set(DhsConfig.BORDER_RADIUS, this.borderRadius);
+
         config.set(DhsConfig.FULL_DATA_REQUEST_CONCURRENCY_LIMIT, this.fullDataRequestConcurrencyLimit);
+
         config.set(DhsConfig.REAL_TIME_UPDATES_ENABLED, this.realTimeUpdatesEnabled);
         config.set(DhsConfig.REAL_TIME_UPDATE_RADIUS, this.realTimeUpdateRadius);
+
         config.set(DhsConfig.LOGIN_DATA_SYNC_ENABLED, this.loginDataSyncEnabled);
         config.set(DhsConfig.LOGIN_DATA_SYNC_RADIUS, this.loginDataSyncRadius);
         config.set(DhsConfig.LOGIN_DATA_SYNC_RC_LIMIT, this.loginDataSyncRcLimit);
+
         config.set(DhsConfig.MAX_DATA_TRANSFER_SPEED, this.maxDataTransferSpeed);
 
         return config;

@@ -111,13 +111,13 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public WorldInterface newInstance()
     {
-        BukkitWorldInterface newInstace = new BukkitWorldInterface(this.plugin, this.world, this.config);
+        BukkitWorldInterface newInstance = new BukkitWorldInterface(this.plugin, this.world, this.config);
 
-        newInstace.setLogger(this.getLogger());
+        newInstance.setLogger(this.getLogger());
 
-        newInstace.doUnsafeThings();
+        newInstance.doUnsafeThings();
 
-        return newInstace;
+        return newInstance;
     }
 
     protected ChunkSnapshot getChunk(int x, int z)
@@ -181,6 +181,15 @@ public class BukkitWorldInterface implements WorldInterface
     }
 
     @Override
+    public boolean isChunkLoaded(int x, int z)
+    {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.isChunkLoaded(chunkX, chunkZ);
+    }
+
+    @Override
     public boolean loadChunk(int x, int z)
     {
         int chunkX = Coordinates.blockToChunk(x);
@@ -213,13 +222,28 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public boolean unloadChunk(int x, int z)
     {
-        return this.world.unloadChunk(x, z);
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.unloadChunk(chunkX, chunkZ);
     }
 
     @Override
     public boolean unloadChunkAsync(int x, int z)
     {
-        return this.world.unloadChunkRequest(x, z);
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.unloadChunkRequest(chunkX, chunkZ);
+    }
+
+    @Override
+    public boolean discardChunk(int x, int z)
+    {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.unloadChunk(chunkX, chunkZ, false);
     }
 
     @Override
@@ -237,7 +261,7 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public int getSeaLevel()
     {
-        return this.world.getSeaLevel();
+        return Math.min(Math.max(this.getMinY(), this.world.getSeaLevel()), this.getMaxY());
     }
 
     @Override

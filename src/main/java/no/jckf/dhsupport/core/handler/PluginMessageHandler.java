@@ -38,7 +38,7 @@ public class PluginMessageHandler
 
     public final String pluginChannel = "distant_horizons:message";
 
-    public final int protocolVersion = 8;
+    public final int protocolVersion = 10;
 
     private EventBus<PluginMessage> eventBus;
 
@@ -58,7 +58,7 @@ public class PluginMessageHandler
         this.messageTypeRegistry.registerMessageType(5, ExceptionMessage.class);
         this.messageTypeRegistry.registerMessageType(6, FullDataSourceRequestMessage.class);
         this.messageTypeRegistry.registerMessageType(7, FullDataSourceResponseMessage.class);
-        this.messageTypeRegistry.registerMessageType(8, /*FullDataPartialUpdateMessage.class*/ null);
+        this.messageTypeRegistry.registerMessageType(8, FullDataPartialUpdateMessage.class);
         this.messageTypeRegistry.registerMessageType(9, FullDataChunkMessage.class);
     }
 
@@ -83,7 +83,7 @@ public class PluginMessageHandler
         PluginMessage message;
 
         try {
-            message = this.readPluginMessage(data);
+            message = this.readPluginMessage(senderUuid, data);
         } catch (Exception exception) {
             this.dhSupport.warning("Error while parsing incoming plugin message: " + exception.getClass() + " - " + exception.getMessage());
             this.dhSupport.warning("Data was: " + Utils.bytesToHex(data));
@@ -99,7 +99,7 @@ public class PluginMessageHandler
         this.eventBus.dispatch(message);
     }
 
-    protected PluginMessage readPluginMessage(byte[] data)
+    protected PluginMessage readPluginMessage(UUID senderUuid, byte[] data)
     {
         //this.dhSupport.info("Plugin message received. Length: " + data.length);
 
@@ -113,7 +113,9 @@ public class PluginMessageHandler
         short protocolVersion = decoder.readShort();
 
         if (protocolVersion != this.protocolVersion) {
-            this.dhSupport.warning("Unsupported protocol version: " + protocolVersion);
+            CloseReasonMessage closeReasonMessage = new CloseReasonMessage();
+            closeReasonMessage.setReason((protocolVersion > this.protocolVersion ? "Server" : "Client") + " is outdated.");
+            this.sendPluginMessage(senderUuid, closeReasonMessage);
             return null;
         }
 

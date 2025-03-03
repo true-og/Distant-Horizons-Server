@@ -36,13 +36,11 @@ import java.util.UUID;
 
 public class LodHandler
 {
-    protected static int CHUNK_SIZE = 1024 * 16; // TODO: Configurable?
+    public static int CHUNK_SIZE = 1024 * 16; // TODO: Configurable?
 
     protected DhSupport dhSupport;
 
     protected PluginMessageHandler pluginMessageHandler;
-
-    protected int bufferId = 0; // TODO: Should be tracked per player instead of globally, and reset when a player disconnects.
 
     public LodHandler(DhSupport dhSupport, PluginMessageHandler pluginMessageHandler)
     {
@@ -73,38 +71,41 @@ public class LodHandler
 
             SectionPosition position = requestMessage.getPosition();
 
+            String builderType = config.getString(DhsConfig.BUILDER_TYPE);
+
+            if (builderType.equalsIgnoreCase("none") && !this.dhSupport.getLodRepository().lodExists(worldUuid, position.getX(), position.getZ())) {
+                ExceptionMessage exceptionMessage = new ExceptionMessage();
+                exceptionMessage.isResponseTo(requestMessage);
+                exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
+                exceptionMessage.setMessage("Generation disabled");
+                this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                return;
+            }
+
             int worldX = Coordinates.sectionToBlock(position.getX());
             int worldZ = Coordinates.sectionToBlock(position.getZ());
 
-            String borderCenter = config.getString(DhsConfig.BORDER_CENTER);
+            Integer borderCenterX = config.getInt(DhsConfig.BORDER_CENTER_X);
+            Integer borderCenterZ = config.getInt(DhsConfig.BORDER_CENTER_Z);
             Integer borderRadius = config.getInt(DhsConfig.BORDER_RADIUS);
 
-            if (borderCenter != null && borderRadius != null) {
-                String[] centerXz = borderCenter.split(",");
+            if (borderCenterX != null && borderCenterZ != null && borderRadius != null) {
+                int minX = borderCenterX - borderRadius;
+                int maxX = borderCenterX + borderRadius;
 
-                if (centerXz.length != 2) {
-                    this.dhSupport.warning("Border for world " + world.getName() + " is misconfigured.");
-                } else {
-                    int centerX = Integer.parseInt(centerXz[0]);
-                    int centerZ = Integer.parseInt(centerXz[1]);
+                int minZ = borderCenterZ - borderRadius;
+                int maxZ = borderCenterZ + borderRadius;
 
-                    int minX = centerX - borderRadius;
-                    int maxX = centerX + borderRadius;
+                int higherLodX = worldX + 64;
+                int higherLodZ = worldZ + 64;
 
-                    int minZ = centerZ - borderRadius;
-                    int maxZ = centerZ + borderRadius;
-
-                    int higherLodX = worldX + 64;
-                    int higherLodZ = worldZ + 64;
-
-                    if (higherLodX < minX || worldX > maxX || higherLodZ < minZ || worldZ > maxZ) {
-                        ExceptionMessage exceptionMessage = new ExceptionMessage();
-                        exceptionMessage.isResponseTo(requestMessage);
-                        exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
-                        exceptionMessage.setMessage("World border");
-                        this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
-                        return;
-                    }
+                if (higherLodX < minX || worldX > maxX || higherLodZ < minZ || worldZ > maxZ) {
+                    ExceptionMessage exceptionMessage = new ExceptionMessage();
+                    exceptionMessage.isResponseTo(requestMessage);
+                    exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
+                    exceptionMessage.setMessage("World border");
+                    this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                    return;
                 }
             }
 
@@ -133,7 +134,16 @@ public class LodHandler
                     boolean sendData = requestMessage.getTimestamp() == null || (requestMessage.getTimestamp() / 1000) < lodModel.getTimestamp();
 
                     if (sendData) {
-                        int myBufferId = this.bufferId++;
+                        Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
+
+                        if (playerConfig == null) {
+                            // Player disconnected before delivery.
+                            return;
+                        }
+
+                        int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
+
+                        playerConfig.set("buffer-id", myBufferId);
 
                         responseMessage.setBufferId(myBufferId);
                         responseMessage.setBeacons(lodModel.getBeacons());

@@ -26,7 +26,7 @@ import org.bukkit.Location;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
@@ -36,7 +36,7 @@ public class BukkitScheduler implements Scheduler
 
     protected FoliaLib foliaLib;
 
-    protected Executor executor;
+    protected ExecutorService executor;
 
     public BukkitScheduler(DhSupportBukkitPlugin plugin)
     {
@@ -111,6 +111,13 @@ public class BukkitScheduler implements Scheduler
         });
 
         return future;
+    }
+
+    @Override
+    public void cancelTasks()
+    {
+        this.executor.shutdown();
+        this.foliaLib.getScheduler().cancelAllTasks();
     }
 
     public void runTimer(Runnable runnable, long initialDelay, long interval)

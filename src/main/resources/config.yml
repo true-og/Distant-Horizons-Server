@@ -3,7 +3,7 @@
 # Default: 1024
 render_distance: 1024
 
-# Is LOD generation enabled at all?
+# Are LOD features enabled at all?
 # Disable if you only want to use the plugin for level key info in a proxied setup.
 # Required.
 # Default: true
@@ -14,10 +14,10 @@ distant_generation_enabled: true
 # Default: 20
 full_data_request_concurrency_limit: 20
 
-# Currently unsupported.
+# Send LOD updates to players in real-time?
 # Required.
-# Default: false
-real_time_updates_enabled: false
+# Default: true
+real_time_updates_enabled: true
 
 # Currently unsupported.
 # Required.
@@ -45,6 +45,7 @@ login_data_sync_rc_limit: 50
 max_data_transfer_speed: 0
 
 # Select which LOD builder to use.
+# Valid options are: FullBuilder, FastOverworldBuilder, and None.
 # Required.
 # Default: FullBuilder
 builder_type: FullBuilder
@@ -60,6 +61,12 @@ builder_resolution: 2
 # Optional.
 # Default: false
 #include_non-colliding_top_layer: true
+
+# Should beacons be included in LOD data?
+# It's recommended to leave this disabled for the initial LOD generation, then enable it afterward.
+# Optional.
+# Default: false
+#include_beacons: true
 
 # When running DHS on a proxied server, set this to a value that is unique to this specific server.
 # Optional.
@@ -80,7 +87,8 @@ worlds:
 
     # Limit LOD generation to within this area.
     # Optional.
-    #border_center: 0,0
+    #border_center_x: 0
+    #border_center_z: 0
     #border_radius: 5000
 
   # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
@@ -91,8 +99,8 @@ worlds:
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
 # Required.
-# Default: 4
-scheduler_threads: 4
+# Default: 2
+scheduler_threads: 2
 
 # Don't touch :)
-config_version: 3
+config_version: 5

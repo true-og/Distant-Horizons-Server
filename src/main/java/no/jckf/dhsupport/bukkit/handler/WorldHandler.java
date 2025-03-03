@@ -24,8 +24,9 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.inventory.FurnaceBurnEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 
@@ -84,4 +85,105 @@ public class WorldHandler implements Listener
     {
         this.touchLod(blockBreak.getBlock().getLocation());
     }
+
+// FIXME messes with 1.16.5 compilation
+//    @EventHandler
+//    public void onTNTPrime(TNTPrimeEvent blockBreak)
+//    {
+//        this.touchLod(blockBreak.getBlock().getLocation());
+//    }
+
+    @EventHandler
+    public void onBlockExplode(BlockExplodeEvent blockExplode)
+    {
+        for (var block : blockExplode.blockList()) {
+            this.touchLod(block.getLocation());
+        }
+    }
+
+
+    @EventHandler
+    public void onBlockIgnite(BlockIgniteEvent blockIgnite)
+    {
+        this.touchLod(blockIgnite.getBlock().getLocation());
+    }
+
+    @EventHandler
+    public void onBlockBurn(BlockBurnEvent blockBurn)
+    {
+        this.touchLod(blockBurn.getBlock().getLocation());
+    }
+
+    @EventHandler
+    public void onLeavesDecay(LeavesDecayEvent leavesDecay)
+    {
+        this.touchLod(leavesDecay.getBlock().getLocation());
+    }
+
+    @EventHandler
+    public void onBlockFade(BlockFadeEvent blockFade)
+    {
+        this.touchLod(blockFade.getBlock().getLocation());
+    }
+
+
+    @EventHandler
+    public void onBlockGrow(BlockGrowEvent blockGrow)
+    {
+        this.touchLod(blockGrow.getBlock().getLocation());
+    }
+
+    @EventHandler
+    public void onMoistureChange(MoistureChangeEvent moistureChange)
+    {
+        this.touchLod(moistureChange.getBlock().getLocation());
+    }
+
+
+    @EventHandler
+    public void onFurnaceBurn(FurnaceBurnEvent furnaceBurn)
+    {
+        this.touchLod(furnaceBurn.getBlock().getLocation());
+    }
+
+
+    @EventHandler
+    public void onBlockRedstone(BlockRedstoneEvent blockRedstone)
+    {
+        this.touchLod(blockRedstone.getBlock().getLocation());
+    }
+
+    @EventHandler
+    public void onBlockPistonExtend(BlockPistonExtendEvent blockPistonExtend)
+    {
+        for (var block : blockPistonExtend.getBlocks()) {
+            this.touchLod(block.getLocation());
+        }
+    }
+
+    @EventHandler
+    public void onBlockPistonRetract(BlockPistonRetractEvent blockPistonRetract)
+    {
+        for (var block : blockPistonRetract.getBlocks()) {
+            this.touchLod(block.getLocation());
+        }
+    }
+
+
+    @EventHandler
+    public void onStructureGrow(StructureGrowEvent structureGrow)
+    {
+        for (var blockState : structureGrow.getBlocks()) {
+            this.touchLod(blockState.getLocation());
+        }
+    }
+
+    @EventHandler
+    public void onSpongeAbsorb(SpongeAbsorbEvent spongeAbsorb)
+    {
+        for (var blockState : spongeAbsorb.getBlocks()) {
+            this.touchLod(blockState.getLocation());
+        }
+    }
+
 }
