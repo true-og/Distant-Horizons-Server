@@ -111,13 +111,13 @@ public class BukkitWorldInterface implements WorldInterface
     @Override
     public WorldInterface newInstance()
     {
-        BukkitWorldInterface newInstace = new BukkitWorldInterface(this.plugin, this.world, this.config);
+        BukkitWorldInterface newInstance = new BukkitWorldInterface(this.plugin, this.world, this.config);
 
-        newInstace.setLogger(this.getLogger());
+        newInstance.setLogger(this.getLogger());
 
-        newInstace.doUnsafeThings();
+        newInstance.doUnsafeThings();
 
-        return newInstace;
+        return newInstance;
     }
 
     protected ChunkSnapshot getChunk(int x, int z)
