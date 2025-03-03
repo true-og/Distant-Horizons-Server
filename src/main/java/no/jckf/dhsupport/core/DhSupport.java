@@ -301,7 +301,7 @@ public class DhSupport implements Configurable
                         int chunkX = worldX + 16 * xMultiplier;
                         int chunkZ = worldZ + 16 * zMultiplier;
 
-                        if (world.isChunkLoaded(chunkX, chunkZ)) {
+                        if (!world.isChunkLoaded(chunkX, chunkZ)) {
                             loads.put(worldX + "x" + worldZ, world.loadChunkAsync(chunkX, chunkZ));
                         }
                     }
@@ -314,7 +314,6 @@ public class DhSupport implements Configurable
                         CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
 
                         // Find any beacons that should appear in this LOD.
-                        // TODO: Config option to disable beacons?
                         CompletableFuture<Collection<Beacon>> beaconFuture = this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
                             Collection<Beacon> accumulator = new ArrayList<>();
 
