@@ -132,8 +132,10 @@ public class Lod extends DataObject
         encoder.writeBoolean(true); // Apply to parent
         encoder.writeBoolean(false); // Apply to children
 
-        encoder.writeLong(0); // TODO: Last modified TS.
-        encoder.writeLong(0); // TODO: Created TS.
+        long now = System.currentTimeMillis();
+
+        encoder.writeLong(now);
+        encoder.writeLong(now);
     }
 
     protected byte[] compress(byte[] uncompressedData)
