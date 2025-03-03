@@ -137,9 +137,9 @@ public class LodRepository
             statement.setInt(2, sectionX);
             statement.setInt(3, sectionZ);
 
-            statement.executeUpdate();
+            int affectedRows = statement.executeUpdate();
 
-            return true;
+            return affectedRows > 0;
         } catch (SQLException exception) {
             this.getLogger().warning("Could not delete LOD: " + exception);
 
