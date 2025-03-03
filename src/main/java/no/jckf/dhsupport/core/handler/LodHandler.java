@@ -137,7 +137,7 @@ public class LodHandler
                         Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
 
                         if (playerConfig == null) {
-                            this.dhSupport.warning("LOD request from player without config? " + requestMessage.getSender());
+                            // Player disconnected before delivery.
                             return;
                         }
 
