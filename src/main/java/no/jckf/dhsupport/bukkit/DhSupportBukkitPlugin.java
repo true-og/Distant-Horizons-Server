@@ -32,7 +32,7 @@ import java.io.InputStreamReader;
 
 public class DhSupportBukkitPlugin extends JavaPlugin
 {
-    protected static int LOD_REFRESH_INTERVAL = 60 * 20;
+    protected static int LOD_REFRESH_INTERVAL = 30 * 20;
 
     protected DhSupport dhSupport;
 
@@ -81,6 +81,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.scheduler.runTimer(() -> {
             this.dhSupport.updateTouchedLods();
+            this.dhSupport.printGenerationCount();
         }, LOD_REFRESH_INTERVAL, LOD_REFRESH_INTERVAL);
 
         this.getServer().getPluginManager().registerEvents(new WorldHandler(this), this);

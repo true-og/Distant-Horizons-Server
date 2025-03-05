@@ -118,7 +118,9 @@ public class Lod extends DataObject
     {
         this.position.encode(encoder);
 
-        encoder.writeInt(0); // TODO: Checksum.
+        long now = System.currentTimeMillis();
+
+        encoder.writeInt(0); // Checksum
 
         this.encodeData(encoder);
         this.encodeColumnGenerationStep(encoder);
@@ -132,10 +134,8 @@ public class Lod extends DataObject
         encoder.writeBoolean(true); // Apply to parent
         encoder.writeBoolean(false); // Apply to children
 
-        long now = System.currentTimeMillis();
-
-        encoder.writeLong(now);
-        encoder.writeLong(now);
+        encoder.writeLong(now); // Created at
+        encoder.writeLong(now); // Updated at
     }
 
     protected byte[] compress(byte[] uncompressedData)
