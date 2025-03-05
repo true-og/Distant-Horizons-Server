@@ -63,6 +63,10 @@ public class DhSupport implements Configurable
 
     protected Scheduler scheduler;
 
+    protected int generationCount;
+
+    protected long generationCountStartTime;
+
     protected Map<UUID, WorldInterface> worldInterfaces = new HashMap<>();
 
     protected PluginMessageHandler pluginMessageHandler;
@@ -133,6 +137,26 @@ public class DhSupport implements Configurable
         return this.scheduler;
     }
 
+    protected void resetGenerationCount()
+    {
+        this.generationCount = 0;
+        this.generationCountStartTime = System.currentTimeMillis();
+    }
+
+    public void printGenerationCount()
+    {
+        if (this.generationCount == 0) {
+            return;
+        }
+
+        int secondsElapsed = (int) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
+        int lodsPerSecond = this.generationCount / secondsElapsed;
+
+        this.debug("Generation running: " + this.queuedBuilders.size() + " in queue. " + lodsPerSecond + " per second.");
+
+        this.resetGenerationCount();
+    }
+
     public void setWorldInterface(UUID id, @Nullable WorldInterface worldInterface)
     {
         if (worldInterface == null) {
@@ -194,6 +218,11 @@ public class DhSupport implements Configurable
     public void warning(String message)
     {
         this.getLogger().warning(message);
+    }
+
+    public void debug(String message)
+    {
+        //this.getLogger().info("[DEBUG] " + message);
     }
 
     public void setPlayerConfiguration(UUID playerId, Configuration playerConfiguration)
@@ -352,6 +381,8 @@ public class DhSupport implements Configurable
                                 Encoder beaconEncoder = new Encoder();
                                 beaconEncoder.writeCollection(beacons);
 
+                                this.generationCount++;
+
                                 return this.lodRepository.saveLodAsync(
                                     worldId,
                                     position.getX(),
@@ -388,10 +419,16 @@ public class DhSupport implements Configurable
     {
         for (String key : this.touchedLods.keySet()) {
             LodModel lodModelToDelete = this.touchedLods.get(key);
+            this.touchedLods.remove(key);
+
+            WorldInterface world = this.getWorldInterface(lodModelToDelete.getWorldId());
+
+            this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
 
             this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
                 .thenAccept((deleted) -> {
                     if (!deleted) {
+                        this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
                         return;
                     }
 
@@ -402,13 +439,13 @@ public class DhSupport implements Configurable
 
                     this.getLod(lodModelToDelete.getWorldId(), position)
                         .thenAccept((newLodModel) -> {
-                            WorldInterface world = this.getWorldInterface(newLodModel.getWorldId());
                             Configuration worldConfig = world.getConfig();
 
                             // If this is false, then it will be false for all players as well.
                             boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
 
                             if (!updatesEnabled) {
+                                this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
                                 return;
                             }
 
@@ -422,12 +459,17 @@ public class DhSupport implements Configurable
                             int lodChunkX = Coordinates.sectionToChunk(lodModelToDelete.getX());
                             int lodChunkZ = Coordinates.sectionToChunk(lodModelToDelete.getZ());
 
+                            int playersInRangeCount = 0;
+                            int playersOutOfRangeCount = 0;
+                            int playersWithoutDhCount = 0;
+
                             // TODO: Don't use Bukkit classes.
                             for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
                                 Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
 
                                 // No config for this player? Probably not using DH.
                                 if (playerConfig == null) {
+                                    playersWithoutDhCount++;
                                     continue;
                                 }
 
@@ -441,8 +483,11 @@ public class DhSupport implements Configurable
 
                                 // Update outside of player's range?
                                 if (distanceX > updatesRadius || distanceZ > updatesRadius) {
+                                    playersOutOfRangeCount++;
                                     continue;
                                 }
+
+                                playersInRangeCount++;
 
                                 int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
                                 playerConfig.set("buffer-id", myBufferId);
@@ -461,9 +506,9 @@ public class DhSupport implements Configurable
                                     chunkResponse.setBufferId(myBufferId);
                                     chunkResponse.setIsFirst(chunkNo == 0);
                                     chunkResponse.setData(Arrays.copyOfRange(
-                                            data,
-                                            LodHandler.CHUNK_SIZE * chunkNo,
-                                            Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
+                                        data,
+                                        LodHandler.CHUNK_SIZE * chunkNo,
+                                        Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
                                     ));
 
                                     this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), chunkResponse);
@@ -471,9 +516,9 @@ public class DhSupport implements Configurable
 
                                 this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
                             }
-                        });
 
-                    this.touchedLods.remove(key);
+                            this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
+                        });
                 });
         }
     }
