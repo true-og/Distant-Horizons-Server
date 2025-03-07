@@ -59,8 +59,8 @@ builder_resolution: 2
 # Whether to include non-colliding blocks when they are the top-most block.
 # True means tall grass, flowers, and snow will color the block below them.
 # Optional.
-# Default: false
-#include_non-colliding_top_layer: true
+# Default: true
+#include_non-colliding_top_layer: false
 
 # Should beacons be included in LOD data?
 # It's recommended to leave this disabled for the initial LOD generation, then enable it afterward.
