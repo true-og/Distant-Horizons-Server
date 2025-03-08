@@ -44,6 +44,11 @@ login_data_sync_rc_limit: 50
 # Default: 0
 max_data_transfer_speed: 0
 
+# Output builder activity to the server console.
+# Optional.
+# Default: true
+#show_builder_activity: false
+
 # Select which LOD builder to use.
 # Valid options are: FullBuilder, FastOverworldBuilder, and None.
 # Required.

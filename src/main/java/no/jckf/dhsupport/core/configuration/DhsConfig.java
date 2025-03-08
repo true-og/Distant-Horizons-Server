@@ -52,6 +52,8 @@ public abstract class DhsConfig
 
     public static String BORDER_RADIUS = "border_radius";
 
+    public static String SHOW_BUILDER_ACTIVITY = "show_builder_activity";
+
     public static String BUILDER_TYPE = "builder_type";
 
     public static String BUILDER_RESOLUTION = "builder_resolution";
