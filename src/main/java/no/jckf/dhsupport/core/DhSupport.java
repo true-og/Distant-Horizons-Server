@@ -145,21 +145,22 @@ public class DhSupport implements Configurable
 
     public void printGenerationCount()
     {
-        if (this.generationCount == 0) {
+        boolean showActivity = this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true);
+
+        if (!showActivity || this.generationCount == 0) {
+            this.resetGenerationCount();
             return;
         }
 
-        if (this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true)) {
-            double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
+        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
 
-            if (secondsElapsed < 60) {
-                return;
-            }
-
-            int lodsPerSecond = (int) (this.generationCount / secondsElapsed);
-
-            this.info("Generation in progress: " + this.queuedBuilders.size() + " in queue, " + lodsPerSecond + " per second.");
+        if (secondsElapsed < 60) {
+            return;
         }
+
+        double lodsPerSecond = (double) this.generationCount / secondsElapsed;
+
+        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", lodsPerSecond) + " per second.");
 
         this.resetGenerationCount();
     }
