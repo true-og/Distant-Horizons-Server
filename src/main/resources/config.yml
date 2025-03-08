@@ -29,12 +29,12 @@ real_time_update_radius: 128
 # Default: true
 login_data_sync_enabled: true
 
-# Currently unsupported.
+# How far away can a player request updates for during login sync?
 # Required.
 # Default: 128
 login_data_sync_radius: 128
 
-# Currently unsupported.
+# How many login sync requests can a client send at once?
 # Required.
 # Default: 50
 login_data_sync_rc_limit: 50
