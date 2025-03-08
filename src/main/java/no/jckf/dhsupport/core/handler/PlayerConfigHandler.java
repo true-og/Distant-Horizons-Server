@@ -77,7 +77,7 @@ public class PlayerConfigHandler
 
                 // Hack to scale border center position.
                 if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && dhsValue != null) {
-                    dhsValue = ((int) dhsValue) * coordinateScale;
+                    dhsValue = (int) (((Integer) dhsValue).doubleValue() * coordinateScale);
                 }
 
                 // TODO: This is ugly. Move to comparator closures like in DH.
