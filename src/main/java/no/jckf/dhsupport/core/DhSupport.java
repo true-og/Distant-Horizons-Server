@@ -149,10 +149,17 @@ public class DhSupport implements Configurable
             return;
         }
 
-        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
-        int lodsPerSecond = (int) (this.generationCount / secondsElapsed);
+        if (this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true)) {
+            double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
 
-        this.debug("Generation running: " + this.queuedBuilders.size() + " in queue. " + lodsPerSecond + " per second.");
+            if (secondsElapsed < 60) {
+                return;
+            }
+
+            int lodsPerSecond = (int) (this.generationCount / secondsElapsed);
+
+            this.info("Generation in progress: " + this.queuedBuilders.size() + " in queue, " + lodsPerSecond + " per second.");
+        }
 
         this.resetGenerationCount();
     }
