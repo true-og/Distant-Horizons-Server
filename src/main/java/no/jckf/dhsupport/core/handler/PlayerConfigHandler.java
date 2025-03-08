@@ -23,6 +23,7 @@ import no.jckf.dhsupport.core.configuration.Configuration;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.message.plugin.LevelInitMessage;
 import no.jckf.dhsupport.core.message.plugin.RemotePlayerConfigMessage;
+import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -44,7 +45,11 @@ public class PlayerConfigHandler
             // TODO: Some sort of Player wrapper or interface object. Bukkit classes should not be imported here.
             Player player = Bukkit.getPlayer(configMessage.getSender());
 
-            Configuration dhsConfig = this.dhSupport.getWorldInterface(player.getWorld().getUID()).getConfig();
+            WorldInterface world = this.dhSupport.getWorldInterface(player.getWorld().getUID());
+
+            double coordinateScale = world.getCoordinateScale();
+
+            Configuration dhsConfig = world.getConfig();
 
             String levelKeyPrefix = dhsConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
             String levelKey = player.getWorld().getName();
@@ -69,6 +74,11 @@ public class PlayerConfigHandler
                 Object dhsValue = dhsConfig.get(key);
                 Object clientValue = clientConfig.get(key);
                 Object keepValue = null;
+
+                // Hack to scale border center position.
+                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && dhsValue != null) {
+                    dhsValue = ((int) dhsValue) * coordinateScale;
+                }
 
                 // TODO: This is ugly. Move to comparator closures like in DH.
                 if (key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z) || key.equals(DhsConfig.BORDER_RADIUS)) {

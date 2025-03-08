@@ -56,6 +56,9 @@ public class BukkitWorldInterface implements WorldInterface
     protected UnsafeValues unsafeValues;
 
     @Nullable
+    protected Method getCoordinateScale;
+
+    @Nullable
     protected Method getBiomeKey;
 
     @Nullable
@@ -82,6 +85,13 @@ public class BukkitWorldInterface implements WorldInterface
     public void doUnsafeThings()
     {
         this.unsafeValues = Bukkit.getUnsafe();
+
+        // Does not exist for 1.16.5.
+        try {
+            this.getCoordinateScale = this.world.getClass().getMethod("getCoordinateScale");
+        } catch (NoSuchMethodException e) {
+
+        }
 
         // Detect if we're running under Paper (or a Paper fork) that has this patch:
         // https://github.com/PaperMC/Paper/commit/5bf259115c1ce29dd96df5fcf53739c94d39f902
@@ -148,6 +158,22 @@ public class BukkitWorldInterface implements WorldInterface
     public String getName()
     {
         return this.world.getName();
+    }
+
+    @Override
+    public double getCoordinateScale()
+    {
+        if (this.getCoordinateScale == null) {
+            boolean isNether = this.world.getEnvironment().equals(World.Environment.NETHER);
+
+            return isNether ? 8 : 1;
+        }
+
+        try {
+            return (double) this.getCoordinateScale.invoke(this.world);
+        } catch (InvocationTargetException | IllegalAccessException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     @Override
