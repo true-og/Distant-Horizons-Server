@@ -79,7 +79,7 @@ public class Lod extends DataObject
     protected void encodeColumnGenerationStep(Encoder encoder)
     {
         byte[] bytesToCompress = new byte[Lod.width * Lod.width];
-        Arrays.fill(bytesToCompress, (byte) GenerationStep.STRUCTURE_START.value);
+        Arrays.fill(bytesToCompress, (byte) GenerationStep.LIGHT.value);
 
         byte[] compressed = this.compress(bytesToCompress);
 
