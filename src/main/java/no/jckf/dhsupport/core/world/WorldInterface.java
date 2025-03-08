@@ -34,6 +34,8 @@ public interface WorldInterface extends Configurable
 
     String getName();
 
+    double getCoordinateScale();
+
     boolean chunkExists(int x, int z);
 
     boolean isChunkLoaded(int x, int z);
