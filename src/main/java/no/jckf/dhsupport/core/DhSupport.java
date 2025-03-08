@@ -149,8 +149,8 @@ public class DhSupport implements Configurable
             return;
         }
 
-        int secondsElapsed = (int) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
-        int lodsPerSecond = this.generationCount / secondsElapsed;
+        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
+        int lodsPerSecond = (int) (this.generationCount / secondsElapsed);
 
         this.debug("Generation running: " + this.queuedBuilders.size() + " in queue. " + lodsPerSecond + " per second.");
 
