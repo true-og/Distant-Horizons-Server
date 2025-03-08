@@ -32,7 +32,7 @@ import java.io.InputStreamReader;
 
 public class DhSupportBukkitPlugin extends JavaPlugin
 {
-    protected static int LOD_REFRESH_INTERVAL = 30 * 20;
+    protected static int LOD_REFRESH_INTERVAL = 5 * 20;
 
     protected DhSupport dhSupport;
 
