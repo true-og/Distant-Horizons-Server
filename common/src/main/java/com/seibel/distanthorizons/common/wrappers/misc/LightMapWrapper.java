@@ -21,8 +21,10 @@ package com.seibel.distanthorizons.common.wrappers.misc;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftGLWrapper;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL32;
 
 import java.nio.ByteBuffer;
@@ -30,6 +32,7 @@ import java.nio.ByteBuffer;
 public class LightMapWrapper implements ILightMapWrapper
 {
 	private static final IMinecraftGLWrapper GLMC = SingletonInjector.INSTANCE.get(IMinecraftGLWrapper.class);
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	
 	private int textureId = 0;
 	
@@ -59,7 +62,13 @@ public class LightMapWrapper implements ILightMapWrapper
 			GLMC.glBindTexture(this.textureId);
 		}
 		image.upload(0, 0, 0, false);
-		GLMC.glBindTexture(currentTexture);
+		
+		// getActiveTexture() may return textures that aren't valid and attempting to bind them will
+		// throw a GL error
+		if (GL32.glIsTexture(currentTexture))
+		{
+			GLMC.glBindTexture(currentTexture);
+		}
 	}
 	private void createLightmap(NativeImage image)
 	{
