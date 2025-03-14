@@ -433,101 +433,107 @@ public class DhSupport implements Configurable
 
             this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
 
-            this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
-                .thenAccept((deleted) -> {
-                    if (!deleted) {
-                        this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
-                        return;
-                    }
+            this.getLodRepository().lodExistsAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ()).thenAccept((exists) -> {
+                if (!exists) {
+                    return;
+                }
 
-                    SectionPosition position = new SectionPosition();
-                    position.setDetailLevel(6);
-                    position.setX(lodModelToDelete.getX());
-                    position.setZ(lodModelToDelete.getZ());
+                this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
+                    .thenAccept((deleted) -> {
+                        if (!deleted) {
+                            this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
+                            return;
+                        }
 
-                    this.getLod(lodModelToDelete.getWorldId(), position)
-                        .thenAccept((newLodModel) -> {
-                            Configuration worldConfig = world.getConfig();
+                        SectionPosition position = new SectionPosition();
+                        position.setDetailLevel(6);
+                        position.setX(lodModelToDelete.getX());
+                        position.setZ(lodModelToDelete.getZ());
 
-                            // If this is false, then it will be false for all players as well.
-                            boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
+                        this.getLod(lodModelToDelete.getWorldId(), position)
+                            .thenAccept((newLodModel) -> {
+                                Configuration worldConfig = world.getConfig();
 
-                            if (!updatesEnabled) {
-                                this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
-                                return;
-                            }
+                                // If this is false, then it will be false for all players as well.
+                                boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
 
-                            String levelKeyPrefix = worldConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
-                            String levelKey = world.getName();
-
-                            if (levelKeyPrefix != null) {
-                                levelKey = levelKeyPrefix + levelKey;
-                            }
-
-                            int lodChunkX = Coordinates.sectionToChunk(lodModelToDelete.getX());
-                            int lodChunkZ = Coordinates.sectionToChunk(lodModelToDelete.getZ());
-
-                            int playersInRangeCount = 0;
-                            int playersOutOfRangeCount = 0;
-                            int playersWithoutDhCount = 0;
-
-                            // TODO: Don't use Bukkit classes.
-                            for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
-                                Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
-
-                                // No config for this player? Probably not using DH.
-                                if (playerConfig == null) {
-                                    playersWithoutDhCount++;
-                                    continue;
+                                if (!updatesEnabled) {
+                                    this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
+                                    return;
                                 }
 
-                                int updatesRadius = playerConfig.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
+                                String levelKeyPrefix = worldConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
+                                String levelKey = world.getName();
 
-                                int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
-                                int playerChunkZ = Coordinates.blockToChunk(player.getLocation().getBlockZ());
-
-                                int distanceX = Math.abs(Math.max(lodChunkX, playerChunkX) - Math.min(lodChunkX, playerChunkX));
-                                int distanceZ = Math.abs(Math.max(lodChunkZ, playerChunkZ) - Math.min(lodChunkZ, playerChunkZ));
-
-                                // Update outside of player's range?
-                                if (distanceX > updatesRadius || distanceZ > updatesRadius) {
-                                    playersOutOfRangeCount++;
-                                    continue;
+                                if (levelKeyPrefix != null) {
+                                    levelKey = levelKeyPrefix + levelKey;
                                 }
 
-                                playersInRangeCount++;
+                                int lodChunkX = Coordinates.sectionToChunk(lodModelToDelete.getX());
+                                int lodChunkZ = Coordinates.sectionToChunk(lodModelToDelete.getZ());
 
-                                int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
-                                playerConfig.set("buffer-id", myBufferId);
+                                int playersInRangeCount = 0;
+                                int playersOutOfRangeCount = 0;
+                                int playersWithoutDhCount = 0;
 
-                                FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
-                                partialUpdateMessage.setLevelKey(levelKey);
-                                partialUpdateMessage.setBufferId(myBufferId);
-                                partialUpdateMessage.setBeacons(newLodModel.getBeacons());
+                                // TODO: Don't use Bukkit classes.
+                                for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
+                                    Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
 
-                                byte[] data = newLodModel.getData();
+                                    // No config for this player? Probably not using DH.
+                                    if (playerConfig == null) {
+                                        playersWithoutDhCount++;
+                                        continue;
+                                    }
 
-                                int chunkCount = (int) Math.ceil((double) data.length / LodHandler.CHUNK_SIZE);
+                                    int updatesRadius = playerConfig.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
 
-                                for (int chunkNo = 0; chunkNo < chunkCount; chunkNo++) {
-                                    FullDataChunkMessage chunkResponse = new FullDataChunkMessage();
-                                    chunkResponse.setBufferId(myBufferId);
-                                    chunkResponse.setIsFirst(chunkNo == 0);
-                                    chunkResponse.setData(Arrays.copyOfRange(
-                                        data,
-                                        LodHandler.CHUNK_SIZE * chunkNo,
-                                        Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
-                                    ));
+                                    int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
+                                    int playerChunkZ = Coordinates.blockToChunk(player.getLocation().getBlockZ());
 
-                                    this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), chunkResponse);
+                                    int distanceX = Math.abs(Math.max(lodChunkX, playerChunkX) - Math.min(lodChunkX, playerChunkX));
+                                    int distanceZ = Math.abs(Math.max(lodChunkZ, playerChunkZ) - Math.min(lodChunkZ, playerChunkZ));
+
+                                    // Update outside of player's range?
+                                    if (distanceX > updatesRadius || distanceZ > updatesRadius) {
+                                        playersOutOfRangeCount++;
+                                        continue;
+                                    }
+
+                                    playersInRangeCount++;
+
+                                    int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
+                                    playerConfig.set("buffer-id", myBufferId);
+
+                                    FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
+                                    partialUpdateMessage.setLevelKey(levelKey);
+                                    partialUpdateMessage.setBufferId(myBufferId);
+                                    partialUpdateMessage.setBeacons(newLodModel.getBeacons());
+
+                                    byte[] data = newLodModel.getData();
+
+                                    int chunkCount = (int) Math.ceil((double) data.length / LodHandler.CHUNK_SIZE);
+
+                                    for (int chunkNo = 0; chunkNo < chunkCount; chunkNo++) {
+                                        FullDataChunkMessage chunkResponse = new FullDataChunkMessage();
+                                        chunkResponse.setBufferId(myBufferId);
+                                        chunkResponse.setIsFirst(chunkNo == 0);
+                                        chunkResponse.setData(Arrays.copyOfRange(
+                                            data,
+                                            LodHandler.CHUNK_SIZE * chunkNo,
+                                            Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
+                                        ));
+
+                                        this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), chunkResponse);
+                                    }
+
+                                    this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
                                 }
 
-                                this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
-                            }
-
-                            this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
-                        });
-                });
+                                this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
+                            });
+                    });
+            });
         }
     }
 }
