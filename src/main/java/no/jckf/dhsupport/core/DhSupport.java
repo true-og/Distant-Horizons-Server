@@ -431,6 +431,10 @@ public class DhSupport implements Configurable
 
             WorldInterface world = this.getWorldInterface(lodModelToDelete.getWorldId());
 
+            if (!world.getConfig().getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED)) {
+                continue;
+            }
+
             this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
 
             this.getLodRepository().lodExistsAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ()).thenAccept((exists) -> {
