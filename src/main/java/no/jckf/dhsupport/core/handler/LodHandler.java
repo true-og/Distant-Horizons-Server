@@ -69,6 +69,15 @@ public class LodHandler
 
             Configuration config = world.getConfig();
 
+            if (!config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED)) {
+                ExceptionMessage exceptionMessage = new ExceptionMessage();
+                exceptionMessage.isResponseTo(requestMessage);
+                exceptionMessage.setTypeId(ExceptionMessage.TYPE_SECTION_REQUIRES_SPLITTING);
+                exceptionMessage.setMessage("Server has disabled distant generation");
+                this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                return;
+            }
+
             SectionPosition position = requestMessage.getPosition();
 
             String builderType = config.getString(DhsConfig.BUILDER_TYPE);
@@ -77,7 +86,7 @@ public class LodHandler
                 ExceptionMessage exceptionMessage = new ExceptionMessage();
                 exceptionMessage.isResponseTo(requestMessage);
                 exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
-                exceptionMessage.setMessage("Generation disabled");
+                exceptionMessage.setMessage("Server has disabled LOD builder");
                 this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
                 return;
             }
