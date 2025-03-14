@@ -19,7 +19,7 @@ full_data_request_concurrency_limit: 20
 # Default: true
 real_time_updates_enabled: true
 
-# Currently unsupported.
+# How close to an update players have to be in order to receive it.
 # Required.
 # Default: 128
 real_time_update_radius: 128
