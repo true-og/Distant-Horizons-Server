@@ -18,6 +18,7 @@
 
 package no.jckf.dhsupport.bukkit;
 
+import no.jckf.dhsupport.bukkit.commands.DhsCommand;
 import no.jckf.dhsupport.bukkit.handler.ConfigLoader;
 import no.jckf.dhsupport.bukkit.handler.PlayerHandler;
 import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
@@ -68,8 +69,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.metrics = new Metrics(this, 21843);
 
-        this.configLoader = new ConfigLoader(this);
-        this.configLoader.onEnable();
+        this.reloadConfig();
 
         this.pluginMessageProxy = new PluginMessageProxy(this);
         this.pluginMessageProxy.onEnable();
@@ -86,6 +86,8 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.getServer().getPluginManager().registerEvents(new WorldHandler(this), this);
         this.getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
+
+        this.getCommand("dhs").setExecutor(new DhsCommand(this));
 
         this.getLogger().info("Ready!");
     }
@@ -113,6 +115,16 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         }
 
         this.getLogger().info("Lights out!");
+    }
+
+    public void reloadConfig()
+    {
+        if (this.configLoader != null) {
+            this.configLoader.onDisable();
+        }
+
+        this.configLoader = new ConfigLoader(this);
+        this.configLoader.onEnable();
     }
 
     @Nullable
