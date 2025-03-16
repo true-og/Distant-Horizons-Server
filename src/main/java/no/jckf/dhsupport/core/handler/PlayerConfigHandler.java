@@ -50,7 +50,7 @@ public class PlayerConfigHandler
             WorldInterface world = this.dhSupport.getWorldInterface(player.getWorld().getUID());
 
             String permission = USAGE_PERMISSION.formatted(world.getName());
-            boolean dhUseIsAllowed = player.isPermissionSet(permission) && player.hasPermission(permission);
+            boolean dhUseIsAllowed = !player.isPermissionSet(permission) || player.hasPermission(permission);
 
             double coordinateScale = world.getCoordinateScale();
 
