@@ -70,6 +70,10 @@ public class ConfigLoader extends Handler
     @Override
     public void onDisable()
     {
+        FileConfiguration pluginConfig = this.plugin.getConfig();
 
+        pluginConfig.getKeys(false).forEach((key) -> {
+            pluginConfig.set(key, null);
+        });
     }
 }
