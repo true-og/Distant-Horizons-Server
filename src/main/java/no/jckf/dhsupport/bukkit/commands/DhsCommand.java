@@ -34,7 +34,7 @@ public class DhsCommand implements CommandExecutor
     {
         sender.sendMessage("Reloading config...");
 
-        this.plugin.reloadConfig();
+        this.plugin.loadDhsConfig();
 
         sender.sendMessage("Reload complete.");
 

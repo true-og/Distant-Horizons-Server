@@ -69,7 +69,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.metrics = new Metrics(this, 21843);
 
-        this.reloadConfig();
+        this.loadDhsConfig();
 
         this.pluginMessageProxy = new PluginMessageProxy(this);
         this.pluginMessageProxy.onEnable();
@@ -117,7 +117,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         this.getLogger().info("Lights out!");
     }
 
-    public void reloadConfig()
+    public void loadDhsConfig()
     {
         if (this.configLoader != null) {
             this.configLoader.onDisable();
