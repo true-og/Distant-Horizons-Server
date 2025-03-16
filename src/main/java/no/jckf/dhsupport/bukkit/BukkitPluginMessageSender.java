@@ -38,7 +38,7 @@ public class BukkitPluginMessageSender implements PluginMessageSender
     {
         Player player = this.plugin.getServer().getPlayer(recipientUuid);
 
-        if (player == null) {
+        if (player == null || !player.isOnline()) {
             return;
         }
 

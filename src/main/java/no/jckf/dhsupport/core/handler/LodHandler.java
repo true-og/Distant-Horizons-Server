@@ -22,7 +22,6 @@ import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.DhSupport;
 import no.jckf.dhsupport.core.configuration.Configuration;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import no.jckf.dhsupport.core.dataobject.Lod;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
 import no.jckf.dhsupport.core.message.plugin.ExceptionMessage;
 import no.jckf.dhsupport.core.message.plugin.FullDataChunkMessage;
@@ -68,8 +67,9 @@ public class LodHandler
             WorldInterface world = this.dhSupport.getWorldInterface(worldUuid);
 
             Configuration config = world.getConfig();
+            Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
 
-            if (!config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED)) {
+            if (!config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) || !playerConfig.getBool(DhsConfig.DISTANT_GENERATION_ENABLED)) {
                 ExceptionMessage exceptionMessage = new ExceptionMessage();
                 exceptionMessage.isResponseTo(requestMessage);
                 exceptionMessage.setTypeId(ExceptionMessage.TYPE_SECTION_REQUIRES_SPLITTING);
@@ -143,13 +143,6 @@ public class LodHandler
                     boolean sendData = requestMessage.getTimestamp() == null || (requestMessage.getTimestamp() / 1000) < lodModel.getTimestamp();
 
                     if (sendData) {
-                        Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
-
-                        if (playerConfig == null) {
-                            // Player disconnected before delivery.
-                            return;
-                        }
-
                         int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
 
                         playerConfig.set("buffer-id", myBufferId);

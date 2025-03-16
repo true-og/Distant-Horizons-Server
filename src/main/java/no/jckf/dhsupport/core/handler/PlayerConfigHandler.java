@@ -29,6 +29,8 @@ import org.bukkit.entity.Player;
 
 public class PlayerConfigHandler
 {
+    public final static String USAGE_PERMISSION = "distant_horizons.worlds.%s";
+
     protected DhSupport dhSupport;
 
     protected PluginMessageHandler pluginMessageHandler;
@@ -46,6 +48,9 @@ public class PlayerConfigHandler
             Player player = Bukkit.getPlayer(configMessage.getSender());
 
             WorldInterface world = this.dhSupport.getWorldInterface(player.getWorld().getUID());
+
+            String permission = USAGE_PERMISSION.formatted(world.getName());
+            boolean dhUseIsAllowed = player.isPermissionSet(permission) && player.hasPermission(permission);
 
             double coordinateScale = world.getCoordinateScale();
 
@@ -74,6 +79,10 @@ public class PlayerConfigHandler
                 Object dhsValue = dhsConfig.get(key);
                 Object clientValue = clientConfig.get(key);
                 Object keepValue = null;
+
+                if (key.equals(DhsConfig.DISTANT_GENERATION_ENABLED) && !dhUseIsAllowed) {
+                    keepValue = false;
+                }
 
                 // Hack to scale border center position.
                 if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && dhsValue != null) {

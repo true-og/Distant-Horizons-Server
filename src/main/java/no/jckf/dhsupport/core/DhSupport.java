@@ -490,6 +490,10 @@ public class DhSupport implements Configurable
                                         continue;
                                     }
 
+                                    if (!playerConfig.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) || !playerConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED)) {
+                                        continue;
+                                    }
+
                                     int updatesRadius = playerConfig.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
 
                                     int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
