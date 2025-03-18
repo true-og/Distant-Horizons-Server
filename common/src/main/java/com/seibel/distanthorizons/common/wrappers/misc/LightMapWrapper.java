@@ -64,8 +64,8 @@ public class LightMapWrapper implements ILightMapWrapper
 		image.upload(0, 0, 0, false);
 		
 		// getActiveTexture() may return textures that aren't valid and attempting to bind them will
-		// throw a GL error
 		if (GL32.glIsTexture(currentTexture))
+		// throw a GL error in MC 1.21.1
 		{
 			GLMC.glBindTexture(currentTexture);
 		}
