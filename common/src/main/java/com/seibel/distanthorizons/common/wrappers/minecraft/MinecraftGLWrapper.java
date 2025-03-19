@@ -180,7 +180,15 @@ public class MinecraftGLWrapper implements IMinecraftGLWrapper
 	/** @see GL32#glDeleteBuffers(int)  */
 	@Override
 	public void glDeleteBuffers(int buffer)
-	{ GlStateManager._glDeleteBuffers(buffer); }
+	{
+		GL32.glDeleteBuffers(buffer);
+		
+		// MC's implementation has a bug where it will throw:
+		// GL_INVALID_OPERATION in glBufferData(immutable)
+		// when attempting to delete Storage Buffers
+		// So we need to manually delete the buffers ourselves
+		//GlStateManager._glDeleteBuffers(buffer); 
+	}
 	
 	
 	// culling //
