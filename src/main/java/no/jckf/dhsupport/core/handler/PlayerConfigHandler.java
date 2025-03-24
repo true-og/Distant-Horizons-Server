@@ -84,11 +84,6 @@ public class PlayerConfigHandler
                     keepValue = false;
                 }
 
-                // Hack to scale border center position.
-                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && dhsValue != null) {
-                    dhsValue = (int) (((Integer) dhsValue).doubleValue() * coordinateScale);
-                }
-
                 // TODO: This is ugly. Move to comparator closures like in DH.
                 if (key.equals(DhsConfig.BORDER_CENTER_X)) {
                     keepValue = world.getWorldBorderX();
@@ -96,6 +91,11 @@ public class PlayerConfigHandler
                     keepValue = world.getWorldBorderZ();
                 } else if(key.equals(DhsConfig.BORDER_RADIUS)) {
                     keepValue = world.getWorldBorderRadius();
+                }
+
+                // Hack to scale border center position.
+                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && keepValue != null) {
+                    keepValue = (int) (((Integer) keepValue).doubleValue() * coordinateScale);
                 }
 
                 if (keepValue == null) {
