@@ -51,6 +51,10 @@ public abstract class DhsConfig
     public static String BORDER_CENTER_Z = "border_center_z";
 
     public static String BORDER_RADIUS = "border_radius";
+    
+    public static String USE_VANILLA_WORLD_BORDER = "use_vanilla_world_border";
+    
+    public static String VANILLA_WORLD_BORDER_EXPANSION = "vanilla_world_border_expansion";
 
     public static String SHOW_BUILDER_ACTIVITY = "show_builder_activity";
 

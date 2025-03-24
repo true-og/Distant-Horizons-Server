@@ -1,6 +1,7 @@
 package no.jckf.dhsupport.core.configuration;
 
 import no.jckf.dhsupport.core.world.WorldInterface;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +32,7 @@ public class WorldConfiguration extends Configuration
     }
 
     @Override
-    public @Nullable Object get(String key, @Nullable Object defaultValue)
+    public @PolyNull Object get(String key, @PolyNull Object defaultValue)
     {
         Object specific = this.config.get(WORLD_PREFIX.formatted(this.world.getName()) + key);
 

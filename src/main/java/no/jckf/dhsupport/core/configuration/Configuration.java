@@ -18,6 +18,8 @@
 
 package no.jckf.dhsupport.core.configuration;
 
+import org.checkerframework.checker.nullness.qual.PolyNull;
+
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +38,7 @@ public class Configuration
         this.variables.remove(key);
     }
 
-    public @Nullable Object get(String key, @Nullable Object defaultValue)
+    public @PolyNull Object get(String key, @PolyNull Object defaultValue)
     {
         return this.variables.getOrDefault(key, defaultValue);
     }
@@ -46,7 +48,7 @@ public class Configuration
         return this.get(key, null);
     }
 
-    public @Nullable Boolean getBool(String key, @Nullable Boolean defaultValue)
+    public @PolyNull Boolean getBool(String key, @PolyNull Boolean defaultValue)
     {
         return (Boolean) this.get(key, defaultValue);
     }
@@ -56,7 +58,7 @@ public class Configuration
         return this.getBool(key, null);
     }
 
-    public @Nullable Integer getInt(String key, @Nullable Integer defaultValue)
+    public @PolyNull Integer getInt(String key, @PolyNull Integer defaultValue)
     {
         return (Integer) this.get(key, defaultValue);
     }
@@ -66,7 +68,7 @@ public class Configuration
         return this.getInt(key, null);
     }
 
-    public @Nullable String getString(String key, @Nullable String defaultValue)
+    public @PolyNull String getString(String key, @PolyNull String defaultValue)
     {
         return (String) this.get(key, defaultValue);
     }

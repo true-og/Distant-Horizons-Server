@@ -20,6 +20,7 @@ package no.jckf.dhsupport.bukkit;
 
 import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.Configuration;
+import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.configuration.WorldConfiguration;
 import no.jckf.dhsupport.core.dataobject.Beacon;
 import no.jckf.dhsupport.core.world.WorldInterface;
@@ -173,6 +174,49 @@ public class BukkitWorldInterface implements WorldInterface
             return (double) this.getCoordinateScale.invoke(this.world);
         } catch (InvocationTargetException | IllegalAccessException exception) {
             throw new RuntimeException(exception);
+        }
+    }
+    
+    protected boolean useVanillaWorldBorder()
+    {
+        return this.worldConfig.getBool(DhsConfig.USE_VANILLA_WORLD_BORDER, true);
+    }
+
+    @Override
+    public Integer getWorldBorderX()
+    {
+        if (this.useVanillaWorldBorder()) {
+            return this.world.getWorldBorder().getCenter().getBlockX();
+        } else {
+            return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_X);
+        }
+    }
+
+    @Override
+    public Integer getWorldBorderZ()
+    {
+        if (this.useVanillaWorldBorder()) {
+            return this.world.getWorldBorder().getCenter().getBlockZ();
+        } else {
+            return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_Z);
+        }
+    }
+
+    @Override
+    public Integer getWorldBorderRadius()
+    {
+        if (this.useVanillaWorldBorder()) {
+            int borderRadius = (int) (this.world.getWorldBorder().getSize() / 2.0);
+
+            if (this.worldConfig.getString(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, "auto").equals("auto")) {
+                borderRadius += Coordinates.chunkToBlock(this.world.getViewDistance());
+            } else {
+                borderRadius += Coordinates.chunkToBlock(this.worldConfig.getInt(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, 0));
+            }
+            
+            return borderRadius;
+        } else {
+            return this.worldConfig.getInt(DhsConfig.BORDER_RADIUS);
         }
     }
 

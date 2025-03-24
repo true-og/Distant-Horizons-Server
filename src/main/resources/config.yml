@@ -77,6 +77,18 @@ builder_resolution: 2
 # Optional.
 #level_key_prefix:
 
+# Use the vanilla world border of the respective world.
+# Optional.
+# Default: true
+# use_vanilla_world_border: false
+
+# How many chunks beyond the vanilla world border can we see (if it's enabled)?. If set to auto, it uses the server's
+# view distance, which effectively means that if standing at the border you can see as far as the server would generate
+# chunks naturally.
+# Optional.
+# Default: auto
+# vanilla_world_border_expansion: 12
+
 # World specific settings.
 # You can override any of the above settings on a per-world basis.
 worlds:
@@ -108,4 +120,4 @@ worlds:
 scheduler_threads: 2
 
 # Don't touch :)
-config_version: 5
+config_version: 6

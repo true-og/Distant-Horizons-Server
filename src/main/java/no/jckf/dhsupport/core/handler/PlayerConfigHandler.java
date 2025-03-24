@@ -90,8 +90,12 @@ public class PlayerConfigHandler
                 }
 
                 // TODO: This is ugly. Move to comparator closures like in DH.
-                if (key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z) || key.equals(DhsConfig.BORDER_RADIUS)) {
-                    keepValue = dhsValue;
+                if (key.equals(DhsConfig.BORDER_CENTER_X)) {
+                    keepValue = world.getWorldBorderX();
+                } else if (key.equals(DhsConfig.BORDER_CENTER_Z)) {
+                    keepValue = world.getWorldBorderZ();
+                } else if(key.equals(DhsConfig.BORDER_RADIUS)) {
+                    keepValue = world.getWorldBorderRadius();
                 }
 
                 if (keepValue == null) {

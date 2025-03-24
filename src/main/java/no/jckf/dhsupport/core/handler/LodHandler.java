@@ -94,9 +94,9 @@ public class LodHandler
             int worldX = Coordinates.sectionToBlock(position.getX());
             int worldZ = Coordinates.sectionToBlock(position.getZ());
 
-            Integer borderCenterX = config.getInt(DhsConfig.BORDER_CENTER_X);
-            Integer borderCenterZ = config.getInt(DhsConfig.BORDER_CENTER_Z);
-            Integer borderRadius = config.getInt(DhsConfig.BORDER_RADIUS);
+            Integer borderCenterX = world.getWorldBorderX();
+            Integer borderCenterZ = world.getWorldBorderZ();
+            Integer borderRadius = world.getWorldBorderRadius();
 
             if (borderCenterX != null && borderCenterZ != null && borderRadius != null) {
                 int minX = borderCenterX - borderRadius;

@@ -35,6 +35,12 @@ public interface WorldInterface extends Configurable
     String getName();
 
     double getCoordinateScale();
+    
+    Integer getWorldBorderX();
+
+    Integer getWorldBorderZ();
+
+    Integer getWorldBorderRadius();
 
     boolean chunkExists(int x, int z);
 
