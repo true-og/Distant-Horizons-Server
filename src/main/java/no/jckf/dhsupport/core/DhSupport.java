@@ -345,7 +345,7 @@ public class DhSupport implements Configurable
                 }
 
                 // Wait for chunk loads, then...
-                return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[loads.size()]))
+                return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[0]))
                     .thenCompose((asd) -> {
                         // No LOD was found. Start building a new one.
                         CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
@@ -539,5 +539,16 @@ public class DhSupport implements Configurable
                     });
             });
         }
+    }
+
+    public void preGenerate(WorldInterface world, int centerX, int centerZ, int radius)
+    {
+        this.getScheduler().runOnSeparateThread(() -> {
+            PreGenerator pregen = new PreGenerator(this, world, centerX, centerZ, radius);
+
+            pregen.run();
+
+            return null;
+        });
     }
 }
