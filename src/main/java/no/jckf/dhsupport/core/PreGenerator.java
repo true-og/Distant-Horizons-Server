@@ -39,7 +39,13 @@ public class PreGenerator implements Runnable
 
     protected int centerZ;
 
+    protected int totalSteps;
+
+    protected int stepsSoFar = 0;
+
     protected int inFlight = 0;
+
+    protected boolean run = true;
 
     public PreGenerator(DhSupport dhSupport, WorldInterface world, int centerX, int centerZ, int radius)
     {
@@ -48,6 +54,8 @@ public class PreGenerator implements Runnable
         this.centerX = centerX;
         this.centerZ = centerZ;
         this.radius = radius;
+
+        this.totalSteps = (int) Math.pow(this.radius * 2, 2);
     }
 
     public void run()
@@ -57,24 +65,25 @@ public class PreGenerator implements Runnable
         int currentX = this.centerX;
         int currentZ = this.centerZ;
 
-        int totalSteps = this.radius * 4;
-        int stepsSoFar = 0;
-
         int[][] directions = {{ 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 }};
         int dirIndex = 0;
 
         List<CompletableFuture<LodModel>> requests = new ArrayList<>();
 
         // Vibe code :>
-        OUTER: for (int step = 1; stepsSoFar < totalSteps; step++) {
+        OUTER: for (int step = 1; this.stepsSoFar < totalSteps; step++) {
             for (int directionChanges = 0; directionChanges < 2; directionChanges++) {
                 for (int stepsOnThisSide = 0; stepsOnThisSide < step; stepsOnThisSide++) {
+                    if (!this.run) {
+                        break OUTER;
+                    }
+
                     currentX += directions[dirIndex][0];
                     currentZ += directions[dirIndex][1];
 
-                    stepsSoFar++;
+                    this.stepsSoFar++;
 
-                    if (stepsSoFar == totalSteps) {
+                    if (this.stepsSoFar >= this.totalSteps) {
                         break OUTER;
                     }
 
@@ -100,5 +109,32 @@ public class PreGenerator implements Runnable
                 dirIndex = (dirIndex + 1) % 4; // Change direction
             }
         }
+
+        this.run = false;
+    }
+
+    public int getCompletedRequests()
+    {
+        return this.stepsSoFar - this.inFlight;
+    }
+
+    public int getTargetRequests()
+    {
+        return this.totalSteps;
+    }
+
+    public float getProgress()
+    {
+        return (float) this.getCompletedRequests() / this.getTargetRequests();
+    }
+
+    public boolean isRunning()
+    {
+        return this.run;
+    }
+
+    public void stop()
+    {
+        this.run = false;
     }
 }

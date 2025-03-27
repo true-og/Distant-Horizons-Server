@@ -79,6 +79,8 @@ public class DhSupport implements Configurable
 
     protected Map<UUID, Configuration> playerConfigurations = new HashMap<>();
 
+    protected Map<UUID, PreGenerator> preGenerators = new HashMap<>();
+
     public DhSupport()
     {
         this.configuration = new Configuration();
@@ -143,6 +145,13 @@ public class DhSupport implements Configurable
         this.generationCountStartTime = System.currentTimeMillis();
     }
 
+    public double getGenerationPerSecondStat()
+    {
+        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
+
+        return (double) this.generationCount / secondsElapsed;
+    }
+
     public void printGenerationCount()
     {
         boolean showActivity = this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true);
@@ -158,9 +167,7 @@ public class DhSupport implements Configurable
             return;
         }
 
-        double lodsPerSecond = (double) this.generationCount / secondsElapsed;
-
-        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", lodsPerSecond) + " per second.");
+        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", this.getGenerationPerSecondStat()) + " per second.");
 
         this.resetGenerationCount();
     }
@@ -541,14 +548,39 @@ public class DhSupport implements Configurable
         }
     }
 
+    public boolean isPreGenerating(WorldInterface world)
+    {
+        return this.preGenerators.containsKey(world.getId()) && this.getPreGenerator(world).isRunning();
+    }
+
     public void preGenerate(WorldInterface world, int centerX, int centerZ, int radius)
     {
-        this.getScheduler().runOnSeparateThread(() -> {
-            PreGenerator pregen = new PreGenerator(this, world, centerX, centerZ, radius);
+        if (this.isPreGenerating(world)) {
+            this.info("Cannot run multiple pre-generators in the same world. Stopping current task for " + world.getName() + "...");
 
-            pregen.run();
+            this.stopPreGenerator(world);
+        }
+
+        this.preGenerators.put(world.getId(), new PreGenerator(this, world, centerX, centerZ, radius));
+
+        this.getScheduler().runOnSeparateThread(() -> {
+            this.preGenerators.get(world.getId()).run();
 
             return null;
         });
+    }
+
+    public @Nullable PreGenerator getPreGenerator(WorldInterface world)
+    {
+        return this.preGenerators.get(world.getId());
+    }
+
+    public void stopPreGenerator(WorldInterface world)
+    {
+        if (this.isPreGenerating(world)) {
+            this.getPreGenerator(world).stop();
+
+            this.preGenerators.remove(world.getId());
+        }
     }
 }

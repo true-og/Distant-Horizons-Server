@@ -19,6 +19,7 @@
 package no.jckf.dhsupport.bukkit.commands;
 
 import no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin;
+import no.jckf.dhsupport.core.PreGenerator;
 import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -73,6 +74,29 @@ public class DhsCommand implements CommandExecutor
 
     protected boolean pregen(CommandSender sender, String[] args)
     {
+        if (args.length < 1) {
+            sender.sendMessage(ChatColor.RED + "Missing action.");
+            return true;
+        }
+
+        switch (args[0]) {
+            case "start":
+                return this.pregenStart(sender, Arrays.copyOfRange(args, 1, args.length));
+
+            case "stop":
+                return this.pregenStop(sender, Arrays.copyOfRange(args, 1, args.length));
+
+            case "status":
+                return this.pregenStatus(sender, Arrays.copyOfRange(args, 1, args.length));
+        }
+
+        sender.sendMessage(ChatColor.RED + "Unknown action.");
+
+        return true;
+    }
+
+    protected boolean pregenStart(CommandSender sender, String[] args)
+    {
         WorldInterface world;
         Integer centerX;
         Integer centerZ;
@@ -125,6 +149,80 @@ public class DhsCommand implements CommandExecutor
         sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
 
         this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius);
+
+        return true;
+    }
+
+    protected boolean pregenStop(CommandSender sender, String[] args)
+    {
+        WorldInterface world;
+
+        if (args.length >= 1) {
+            World bukkitWorld = this.plugin.getServer().getWorld(args[0]);
+
+            if (bukkitWorld == null) {
+                sender.sendMessage(ChatColor.RED + "Unknown world.");
+                return true;
+            }
+
+            world = this.plugin.getDhSupport().getWorldInterface(bukkitWorld.getUID());
+        } else if (sender instanceof Player) {
+            world = this.plugin.getDhSupport().getWorldInterface(((Player) sender).getWorld().getUID());
+        } else {
+            world = null;
+        }
+
+        if (world == null) {
+            sender.sendMessage(ChatColor.RED + "No world specified.");
+            return true;
+        }
+
+        if (!this.plugin.getDhSupport().isPreGenerating(world)) {
+            sender.sendMessage(ChatColor.RED + "No pre-generator running in world " + ChatColor.YELLOW + world.getName() + ChatColor.RED + ".");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "Stopping pre-generation in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + "...");
+
+        this.plugin.getDhSupport().stopPreGenerator(world);
+
+        return true;
+    }
+
+    protected boolean pregenStatus(CommandSender sender, String[] args)
+    {
+        WorldInterface world;
+
+        if (args.length >= 1) {
+            World bukkitWorld = this.plugin.getServer().getWorld(args[0]);
+
+            if (bukkitWorld == null) {
+                sender.sendMessage(ChatColor.RED + "Unknown world.");
+                return true;
+            }
+
+            world = this.plugin.getDhSupport().getWorldInterface(bukkitWorld.getUID());
+        } else if (sender instanceof Player) {
+            world = this.plugin.getDhSupport().getWorldInterface(((Player) sender).getWorld().getUID());
+        } else {
+            world = null;
+        }
+
+        if (world == null) {
+            sender.sendMessage(ChatColor.RED + "No world specified.");
+            return true;
+        }
+
+        if (!this.plugin.getDhSupport().isPreGenerating(world)) {
+            sender.sendMessage(ChatColor.RED + "No pre-generator running in world " + ChatColor.YELLOW + world.getName() + ChatColor.RED + ".");
+            return true;
+        }
+
+        PreGenerator generator = this.plugin.getDhSupport().getPreGenerator(world);
+
+        sender.sendMessage(ChatColor.GREEN + "Generation progress: " + ChatColor.YELLOW + String.format("%.2f", generator.getProgress() * 100f) + "%");
+        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests());
+        sender.sendMessage(ChatColor.GREEN + "Time estimate: " + ChatColor.YELLOW + String.format("%.2f", (generator.getTargetRequests() - generator.getCompletedRequests()) / this.plugin.getDhSupport().getGenerationPerSecondStat() / 60 / 60) + ChatColor.GREEN + " hours.");
 
         return true;
     }
