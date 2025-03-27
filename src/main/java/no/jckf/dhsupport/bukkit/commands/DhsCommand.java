@@ -20,6 +20,7 @@ package no.jckf.dhsupport.bukkit.commands;
 
 import no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin;
 import no.jckf.dhsupport.core.world.WorldInterface;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -42,7 +43,8 @@ public class DhsCommand implements CommandExecutor
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args)
     {
         if (args.length < 1) {
-            return false;
+            sender.sendMessage(ChatColor.RED + "Missing sub-command.");
+            return true;
         }
 
         switch (args[0]) {
@@ -53,16 +55,18 @@ public class DhsCommand implements CommandExecutor
                 return this.pregen(sender, Arrays.copyOfRange(args, 1, args.length));
         }
 
-        return false;
+        sender.sendMessage(ChatColor.RED + "Unknown sub-command.");
+
+        return true;
     }
 
     protected boolean reload(CommandSender sender)
     {
-        sender.sendMessage("Reloading config...");
+        sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
 
         this.plugin.loadDhsConfig();
 
-        sender.sendMessage("Reload complete.");
+        sender.sendMessage(ChatColor.GREEN + "Reload complete.");
 
         return true;
     }
@@ -78,7 +82,8 @@ public class DhsCommand implements CommandExecutor
             World bukkitWorld = this.plugin.getServer().getWorld(args[0]);
 
             if (bukkitWorld == null) {
-                return false;
+                sender.sendMessage(ChatColor.RED + "Unknown world.");
+                return true;
             }
 
             world = this.plugin.getDhSupport().getWorldInterface(bukkitWorld.getUID());
@@ -89,7 +94,8 @@ public class DhsCommand implements CommandExecutor
         }
 
         if (world == null) {
-            return false;
+            sender.sendMessage(ChatColor.RED + "No world specified.");
+            return true;
         }
 
         if (args.length >= 3) {
@@ -101,7 +107,8 @@ public class DhsCommand implements CommandExecutor
         }
 
         if (centerX == null || centerZ == null) {
-            return false;
+            sender.sendMessage(ChatColor.RED + "No center coordinates specified.");
+            return true;
         }
 
         if (args.length >= 4) {
@@ -111,10 +118,11 @@ public class DhsCommand implements CommandExecutor
         }
 
         if (radius == null) {
-            return false;
+            sender.sendMessage(ChatColor.RED + "No radius specified.");
+            return true;
         }
 
-        sender.sendMessage("Generating LODs for view distance of " + radius + " chunks in world " + world.getName() + " starting at center " + centerX + " x " + centerZ + "...");
+        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
 
         this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius);
 
