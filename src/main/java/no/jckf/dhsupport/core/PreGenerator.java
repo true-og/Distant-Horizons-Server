@@ -55,7 +55,7 @@ public class PreGenerator implements Runnable
         this.centerZ = centerZ;
         this.radius = radius;
 
-        this.totalSteps = (int) Math.pow(this.radius * 2, 2);
+        this.totalSteps = (int) Math.pow((double) this.radius / 2, 2);
     }
 
     public void run()
