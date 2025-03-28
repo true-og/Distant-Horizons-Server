@@ -20,6 +20,7 @@ package no.jckf.dhsupport.core.scheduling;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 public interface Scheduler
@@ -33,4 +34,6 @@ public interface Scheduler
     <U> CompletableFuture<U> runOnSeparateThread(Supplier<U> supplier);
 
     void cancelTasks();
+
+    Executor getExecutor();
 }

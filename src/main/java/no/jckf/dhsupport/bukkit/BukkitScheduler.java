@@ -120,6 +120,12 @@ public class BukkitScheduler implements Scheduler
         this.foliaLib.getScheduler().cancelAllTasks();
     }
 
+    @Override
+    public ExecutorService getExecutor()
+    {
+        return this.executor;
+    }
+
     public void runTimer(Runnable runnable, long initialDelay, long interval)
     {
         this.foliaLib.getScheduler().runTimer(runnable, initialDelay, interval);

@@ -329,8 +329,8 @@ public class DhSupport implements Configurable
 
         return this.getLodRepository()
             .loadLodAsync(worldId, position.getX(), position.getZ())
-            .thenCompose((modelFromDb) -> {
-                // If a LOD was found in the database, return it.
+            .thenComposeAsync((modelFromDb) -> {
+                // If an LOD was found in the database, return it.
                 if (modelFromDb != null) {
                     return CompletableFuture.completedFuture(modelFromDb);
                 }
@@ -353,7 +353,7 @@ public class DhSupport implements Configurable
 
                 // Wait for chunk loads, then...
                 return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[0]))
-                    .thenCompose((asd) -> {
+                    .thenComposeAsync((asd) -> {
                         // No LOD was found. Start building a new one.
                         CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
 
@@ -375,7 +375,7 @@ public class DhSupport implements Configurable
                         });
 
                         // Combine the LOD and beacons and save the result in the database.
-                        return lodFuture.thenCombine(beaconFuture, (lod, beacons) -> {
+                        return lodFuture.thenCombineAsync(beaconFuture, (lod, beacons) -> {
                                 // Discard the chunks we loaded.
                                 this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
                                     for (String key : loads.keySet()) {
@@ -405,10 +405,10 @@ public class DhSupport implements Configurable
                                     lodEncoder.toByteArray(),
                                     beaconEncoder.toByteArray()
                                 );
-                            })
+                            }, this.getScheduler().getExecutor())
                             .thenCompose((f) -> f); // Unwrap the nested future.
-                    });
-            });
+                    }, this.getScheduler().getExecutor());
+            }, this.getScheduler().getExecutor());
     }
 
     public void touchLod(UUID worldId, int x, int z)
@@ -458,7 +458,7 @@ public class DhSupport implements Configurable
                         position.setZ(lodModelToDelete.getZ());
 
                         this.getLod(lodModelToDelete.getWorldId(), position)
-                            .thenAccept((newLodModel) -> {
+                            .thenAcceptAsync((newLodModel) -> {
                                 Configuration worldConfig = world.getConfig();
 
                                 // If this is false, then it will be false for all players as well.
@@ -542,7 +542,7 @@ public class DhSupport implements Configurable
                                 }
 
                                 this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
-                            });
+                            }, this.getScheduler().getExecutor());
                     });
             });
         }
