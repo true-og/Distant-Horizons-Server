@@ -405,10 +405,10 @@ public class DhSupport implements Configurable
                                     lodEncoder.toByteArray(),
                                     beaconEncoder.toByteArray()
                                 );
-                            }, this.getScheduler().getExecutor())
+                            })
                             .thenCompose((f) -> f); // Unwrap the nested future.
-                    }, this.getScheduler().getExecutor());
-            }, this.getScheduler().getExecutor());
+                    });
+            });
     }
 
     public void touchLod(UUID worldId, int x, int z)
@@ -542,7 +542,7 @@ public class DhSupport implements Configurable
                                 }
 
                                 this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
-                            }, this.getScheduler().getExecutor());
+                            });
                     });
             });
         }
