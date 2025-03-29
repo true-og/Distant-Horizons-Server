@@ -72,6 +72,8 @@ public class VersionConstants implements IVersionConstants
 			return "1.21.3";
 		#elif MC_VER == MC_1_21_4
 			return "1.21_4";
+		#elif MC_VER == MC_1_21_5
+			return "1.21_5";
 		#else
 			ERROR MC version constant missing
 		#endif

@@ -19,7 +19,11 @@
 
 package com.seibel.distanthorizons.common.wrappers.minecraft;
 
+#if MC_VER < MC_1_21_5
 import com.mojang.blaze3d.platform.GlStateManager;
+#elif MC_VER == MC_1_21_5
+import com.mojang.blaze3d.opengl.GlStateManager;
+#endif
 
 import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftGLWrapper;
@@ -148,7 +152,10 @@ public class MinecraftGLWrapper implements IMinecraftGLWrapper
 	public void glBlendFunc(int sfactor, int dfactor) 
 	{
 		GL32.glBlendFunc(sfactor, dfactor);
-		GlStateManager._blendFunc(sfactor, dfactor); 
+		
+		#if MC_VER < MC_1_21_5
+		GlStateManager._blendFunc(sfactor, dfactor);
+		#endif
 	}
 	/** @see GL32#glBlendFuncSeparate */
 	@Override
