@@ -19,21 +19,16 @@
 
 package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGenerationEnvironment;
 
 import com.seibel.distanthorizons.core.logging.ConfigBasedLogger;
-import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
-import it.unimi.dsi.fastutil.shorts.ShortList;
 import net.minecraft.core.Registry;
 #if MC_VER >= MC_1_19_4
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,19 +36,11 @@ import net.minecraft.core.registries.Registries;
 #endif
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.*;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
 
 #if MC_VER < MC_1_21_3
-import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 #else
 #endif
 
@@ -90,7 +77,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class ChunkLoader
 {
-	private static boolean zeroChunkPosErrorLogged = false;
+	private static final AtomicBoolean ZERO_CHUNK_POS_ERROR_LOGGED_REF = new AtomicBoolean(false);
+	
 	
 	#if MC_VER >= MC_1_19_2
 	private static final Codec<PalettedContainer<BlockState>> BLOCK_STATE_CODEC = PalettedContainer.codecRW(Block.BLOCK_STATE_REGISTRY, BlockState.CODEC, PalettedContainer.Strategy.SECTION_STATES, Blocks.AIR.defaultBlockState());
@@ -122,19 +110,16 @@ public class ChunkLoader
 		CompoundTag tagLevel = chunkData;
 		#endif
 		
-		ChunkPos actualPos = new ChunkPos(tagGetInt(tagLevel,"xPos"), tagGetInt(tagLevel, "zPos"));
+		int chunkX = tagGetInt(tagLevel,"xPos");
+		int chunkZ = tagGetInt(tagLevel, "zPos");
+		ChunkPos actualPos = new ChunkPos(chunkX, chunkZ);
+		
 		if (!Objects.equals(chunkPos, actualPos))
 		{
-			#if MC_VER >= MC_1_18_2
-			if (actualPos.equals(ChunkPos.ZERO))
-			#else
-			if (actualPos.equals(ChunkPos.INVALID_CHUNK_POS))
-			#endif
+			if (chunkX == 0 && chunkZ == 0)
 			{
-				if (!zeroChunkPosErrorLogged)
+				if (!ZERO_CHUNK_POS_ERROR_LOGGED_REF.getAndSet(true))
 				{
-					zeroChunkPosErrorLogged = true;
-					
 					// explicit chunkPos toString is necessary otherwise the JDK 17 compiler breaks
 					LOGGER.warn("Chunk file at ["+chunkPos.toString()+"] doesn't have a chunk pos. \n" +
 						"This might happen if the world was created using an external program. \n" +
