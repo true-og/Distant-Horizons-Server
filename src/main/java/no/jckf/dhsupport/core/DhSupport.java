@@ -382,8 +382,8 @@ public class DhSupport implements Configurable
                                         String[] xz = key.split("x", 2);
 
                                         world.discardChunk(
-                                            Coordinates.chunkToBlock(Integer.parseInt(xz[0])),
-                                            Coordinates.chunkToBlock(Integer.parseInt(xz[1]))
+                                            Integer.parseInt(xz[0]),
+                                            Integer.parseInt(xz[1])
                                         );
                                     }
 
