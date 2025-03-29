@@ -3,7 +3,6 @@ package com.seibel.distanthorizons.fabric.mixins.client;
 #if MC_VER < MC_1_21_5
 import com.mojang.blaze3d.platform.GlStateManager;
 #endif
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.seibel.distanthorizons.core.config.Config;
 import org.spongepowered.asm.mixin.Mixin;
