@@ -20,6 +20,10 @@
 package com.seibel.distanthorizons.common.wrappers.world;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiLevelType;
@@ -57,7 +61,11 @@ import org.apache.logging.log4j.Logger;
 public class ServerLevelWrapper implements IServerLevelWrapper
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
-	private static final ConcurrentHashMap<ServerLevel, ServerLevelWrapper> LEVEL_WRAPPER_BY_SERVER_LEVEL = new ConcurrentHashMap<>();
+	/** 
+	 * weak references are to prevent rare issues
+	 * where, upon world closure, some levels aren't shutdown/removed properly
+	 */
+	private static final Map<ServerLevel, WeakReference<ServerLevelWrapper>> LEVEL_WRAPPER_REF_BY_SERVER_LEVEL = Collections.synchronizedMap(new WeakHashMap<>());
 	
 	private final ServerLevel level;
 	@Deprecated // TODO circular references are bad
@@ -70,15 +78,29 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	//==============//
 	
 	public static ServerLevelWrapper getWrapper(ServerLevel level) 
-	{ return LEVEL_WRAPPER_BY_SERVER_LEVEL.computeIfAbsent(level, ServerLevelWrapper::new); }
+	{
+		return LEVEL_WRAPPER_REF_BY_SERVER_LEVEL.compute(level, (newLevel, levelRef) ->
+		{
+			if (levelRef != null)
+			{
+				ServerLevelWrapper oldLevelWrapper = levelRef.get();
+				if (oldLevelWrapper != null)
+				{
+					return levelRef;
+				}
+			}
+			
+			return new WeakReference<>(new ServerLevelWrapper(newLevel));
+		}).get();
+	}
 	
 	public ServerLevelWrapper(ServerLevel level) { this.level = level; }
 	
 	
 	
-	//=========//
-	// methods //
-	//=========//
+	//==================//
+	// instance methods //
+	//==================//
 	
 	@Override
 	public File getMcSaveFolder() 
@@ -179,7 +201,7 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	public ServerLevel getWrappedMcObject() { return this.level; }
 	
 	@Override
-	public void onUnload() { LEVEL_WRAPPER_BY_SERVER_LEVEL.remove(this.level); }
+	public void onUnload() { LEVEL_WRAPPER_REF_BY_SERVER_LEVEL.remove(this.level); }
 	
 	
 	@Override
