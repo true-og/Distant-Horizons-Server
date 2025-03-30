@@ -369,7 +369,7 @@ public class DhSupport implements Configurable
                                 try {
                                     return loadRequest.get();
                                 } catch (InterruptedException | ExecutionException exception) {
-                                    return CompletableFuture.completedFuture(null);
+                                    return false;
                                 }
                             })
                             .anyMatch(Predicate.isEqual(false));
