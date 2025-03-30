@@ -52,6 +52,9 @@ public class DhsCommand implements CommandExecutor
             case "reload":
                 return this.reload(sender);
 
+            case "worlds":
+                return this.worlds(sender);
+
             case "pregen":
                 return this.pregen(sender, Arrays.copyOfRange(args, 1, args.length));
         }
@@ -68,6 +71,17 @@ public class DhsCommand implements CommandExecutor
         this.plugin.loadDhsConfig();
 
         sender.sendMessage(ChatColor.GREEN + "Reload complete.");
+
+        return true;
+    }
+
+    protected boolean worlds(CommandSender sender)
+    {
+        sender.sendMessage(ChatColor.GREEN + "World list:");
+
+        for (World bukkitWorld : this.plugin.getServer().getWorlds()) {
+            sender.sendMessage(ChatColor.YELLOW + " - " + ChatColor.GREEN + bukkitWorld.getName() + " " + ChatColor.GRAY + "(" + bukkitWorld.getUID() + ")");
+        }
 
         return true;
     }
