@@ -19,16 +19,22 @@
 
 package com.seibel.distanthorizons.common.wrappers.worldGeneration.mimicObject;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
 import com.seibel.distanthorizons.common.wrappers.worldGeneration.BatchGenerationEnvironment;
 
 import com.seibel.distanthorizons.core.logging.ConfigBasedLogger;
+import com.seibel.distanthorizons.core.util.LodUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.chunk.ChunkLightStorage;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
+import it.unimi.dsi.fastutil.shorts.ShortList;
 import net.minecraft.core.Registry;
 #if MC_VER >= MC_1_19_4
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -36,11 +42,19 @@ import net.minecraft.core.registries.Registries;
 #endif
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.*;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
 
 #if MC_VER < MC_1_21_3
+import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 #else
 #endif
 
@@ -307,7 +321,7 @@ public class ChunkLoader
 					#if MC_VER < MC_1_20_6 
 					blockStateContainer = BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, tagGetCompoundTag(tagSection, "block_states"))
 						.promotePartial(string -> logBlockDeserializationWarning(chunkPos, sectionYPos, string))
-						.getOrThrow(false, (message) -> logWarningOnce(message));
+						.getOrThrow(false, (message) -> logParsingWarningOnce(message));
 					#else
 						blockStateContainer = BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, tagGetCompoundTag(tagSection, "block_states"))
 								.promotePartial(string -> logBlockDeserializationWarning(chunkPos, sectionYPos, string))
@@ -339,7 +353,7 @@ public class ChunkLoader
 					#if MC_VER < MC_1_20_6 
 					biomeContainer = biomeCodec.parse(NbtOps.INSTANCE, tagGetCompoundTag(tagSection, "biomes"))
 						.promotePartial(string -> logBiomeDeserializationWarning(chunkPos, sectionYIndex, (String) string))
-						.getOrThrow(false, (message) -> logWarningOnce(message));
+						.getOrThrow(false, (message) -> logParsingWarningOnce(message));
 					#else
 						biomeContainer = biomeCodec.parse(NbtOps.INSTANCE, tagGetCompoundTag(tagSection, "biomes"))
 								.promotePartial(string -> logBiomeDeserializationWarning(chunkPos, sectionYIndex, (String) string))
@@ -450,7 +464,7 @@ public class ChunkLoader
 			try
 			{
 				#if MC_VER < MC_1_21_3
-				blendingData = BlendingData.CODEC.parse(blendingDataTag).resultOrPartial((message) -> logWarningOnce(message)).orElse(null);
+				blendingData = BlendingData.CODEC.parse(blendingDataTag).resultOrPartial((message) -> logParsingWarningOnce(message)).orElse(null);
 				#else
 				blendingData = BlendingData.unpack(BlendingData.Packed.CODEC.parse(blendingDataTag).resultOrPartial((message) -> logParsingWarningOnce(message)).orElse(null));
 				#endif
