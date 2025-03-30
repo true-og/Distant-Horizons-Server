@@ -44,6 +44,11 @@ login_data_sync_rc_limit: 50
 # Default: 0
 max_data_transfer_speed: 0
 
+# Should new chunks be generated to build LODs?
+# If you disable this, the plugin will not be able to create LODs in areas where chunks don't already exist.
+# Default: true
+#generate_new_chunks: false
+
 # Output builder activity to the server console.
 # Optional.
 # Default: true

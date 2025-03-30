@@ -109,7 +109,7 @@ public class BukkitWorldInterface implements WorldInterface
         }
 
         try {
-            this.getChunkAtAsync = this.world.getClass().getMethod("getChunkAtAsyncUrgently", int.class, int.class);
+            this.getChunkAtAsync = this.world.getClass().getMethod("getChunkAtAsync", int.class, int.class, boolean.class);
         } catch (NoSuchMethodException exception) {
             if (!ASYNC_LOAD_WARNING_SENT) {
                 this.getLogger().warning("Async chunk loading is not supported on this server. Performance will suffer.");
@@ -265,9 +265,16 @@ public class BukkitWorldInterface implements WorldInterface
         int chunkX = Coordinates.blockToChunk(x);
         int chunkZ = Coordinates.blockToChunk(z);
 
-        this.world.loadChunk(chunkX, chunkZ);
+        return this.world.loadChunk(chunkX, chunkZ, false);
+    }
 
-        return true;
+    @Override
+    public boolean loadOrGenerateChunk(int x, int z)
+    {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.loadChunk(chunkX, chunkZ, true);
     }
 
     @Override
@@ -281,9 +288,28 @@ public class BukkitWorldInterface implements WorldInterface
         int chunkZ = Coordinates.blockToChunk(z);
 
         try {
-            CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ);
+            CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ, false);
 
-            return chunkFuture.thenApply((chunk) -> true);
+            return chunkFuture.thenApply(Objects::nonNull);
+        } catch (InvocationTargetException | IllegalAccessException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Boolean> loadOrGenerateChunkAsync(int x, int z)
+    {
+        if (this.getChunkAtAsync == null) {
+            return this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadOrGenerateChunk(x, z));
+        }
+
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        try {
+            CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ, true);
+
+            return chunkFuture.thenApply(Objects::nonNull);
         } catch (InvocationTargetException | IllegalAccessException exception) {
             throw new RuntimeException(exception);
         }

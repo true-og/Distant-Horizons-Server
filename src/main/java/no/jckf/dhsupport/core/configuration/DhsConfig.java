@@ -58,6 +58,8 @@ public abstract class DhsConfig
 
     public static String SHOW_BUILDER_ACTIVITY = "show_builder_activity";
 
+    public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
+
     public static String BUILDER_TYPE = "builder_type";
 
     public static String BUILDER_RESOLUTION = "builder_resolution";

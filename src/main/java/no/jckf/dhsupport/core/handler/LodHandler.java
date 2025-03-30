@@ -137,6 +137,15 @@ public class LodHandler
 
             this.dhSupport.getLod(worldUuid, position)
                 .thenAccept((lodModel) -> {
+                    if (lodModel == null) {
+                        ExceptionMessage exceptionMessage = new ExceptionMessage();
+                        exceptionMessage.isResponseTo(requestMessage);
+                        exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
+                        exceptionMessage.setMessage("No LOD available");
+                        this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                        return;
+                    }
+
                     FullDataSourceResponseMessage responseMessage = new FullDataSourceResponseMessage();
                     responseMessage.isResponseTo(requestMessage);
 
