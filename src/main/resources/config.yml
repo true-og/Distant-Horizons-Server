@@ -46,6 +46,7 @@ max_data_transfer_speed: 0
 
 # Should new chunks be generated to build LODs?
 # If you disable this, the plugin will not be able to create LODs in areas where chunks don't already exist.
+# Optional.
 # Default: true
 #generate_new_chunks: false
 
@@ -85,14 +86,14 @@ builder_resolution: 2
 # Use the vanilla world border of the respective world.
 # Optional.
 # Default: true
-# use_vanilla_world_border: false
+#use_vanilla_world_border: false
 
 # How many chunks beyond the vanilla world border can we see (if it's enabled)?. If set to auto, it uses the server's
 # view distance, which effectively means that if standing at the border you can see as far as the server would generate
 # chunks naturally.
 # Optional.
 # Default: auto
-# vanilla_world_border_expansion: 12
+#vanilla_world_border_expansion: 12
 
 # World specific settings.
 # You can override any of the above settings on a per-world basis.

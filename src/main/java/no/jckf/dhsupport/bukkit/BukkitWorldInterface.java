@@ -187,9 +187,9 @@ public class BukkitWorldInterface implements WorldInterface
     {
         if (this.useVanillaWorldBorder()) {
             return this.world.getWorldBorder().getCenter().getBlockX();
-        } else {
-            return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_X);
         }
+
+        return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_X);
     }
 
     @Override
@@ -197,27 +197,27 @@ public class BukkitWorldInterface implements WorldInterface
     {
         if (this.useVanillaWorldBorder()) {
             return this.world.getWorldBorder().getCenter().getBlockZ();
-        } else {
-            return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_Z);
         }
+
+        return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_Z);
     }
 
     @Override
     public Integer getWorldBorderRadius()
     {
-        if (this.useVanillaWorldBorder()) {
-            int borderRadius = (int) (this.world.getWorldBorder().getSize() / 2.0);
-
-            if (this.worldConfig.getString(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, "auto").equals("auto")) {
-                borderRadius += Coordinates.chunkToBlock(this.world.getViewDistance());
-            } else {
-                borderRadius += Coordinates.chunkToBlock(this.worldConfig.getInt(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, 0));
-            }
-            
-            return borderRadius;
-        } else {
+        if (!this.useVanillaWorldBorder()) {
             return this.worldConfig.getInt(DhsConfig.BORDER_RADIUS);
         }
+
+        int borderRadius = (int) (this.world.getWorldBorder().getSize() / 2.0);
+
+        if (this.worldConfig.getString(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, "auto").equals("auto")) {
+            borderRadius += Coordinates.chunkToBlock(this.world.getViewDistance());
+        } else {
+            borderRadius += Coordinates.chunkToBlock(this.worldConfig.getInt(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, 0));
+        }
+
+        return borderRadius;
     }
 
     @Override
