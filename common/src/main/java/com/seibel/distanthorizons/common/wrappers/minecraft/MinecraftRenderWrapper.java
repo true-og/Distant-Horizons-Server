@@ -272,6 +272,16 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 	}
 	
 	@Override
+	public boolean runningLegacyOpenGL()
+	{
+		#if MC_VER <= MC_1_16_5
+		return true;
+		#else
+		return false;
+		#endif
+	}
+	
+	@Override
 	public int getTargetFrameBuffer()
 	{
 		// used so we can access the framebuffer shaders end up rendering to
