@@ -51,8 +51,8 @@ public class PreGenerator implements Runnable
     {
         this.dhSupport = dhSupport;
         this.world = world;
-        this.centerX = centerX;
-        this.centerZ = centerZ;
+        this.centerX = Coordinates.blockToSection(centerX);
+        this.centerZ = Coordinates.blockToSection(centerZ);
         this.radius = radius;
 
         this.totalSteps = (int) Math.pow((double) this.radius / 2, 2);
