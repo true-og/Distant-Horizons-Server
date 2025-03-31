@@ -75,7 +75,7 @@ public class DhSupport implements Configurable
 
     protected PluginMessageSender pluginMessageSender;
 
-    protected Map<String, CompletableFuture<Lod>> queuedBuilders = new HashMap<>();
+    protected Map<String, CompletableFuture<Lod>> queuedBuilders = new ConcurrentHashMap<>();
 
     protected Map<String, LodModel> touchedLods = new ConcurrentHashMap<>();
 
