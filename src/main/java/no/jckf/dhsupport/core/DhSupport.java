@@ -112,6 +112,11 @@ public class DhSupport implements Configurable
         (new LodHandler(this, this.pluginMessageHandler)).register();
 
         this.pluginMessageHandler.onEnable();
+
+        if (this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true) && this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS_WARNING, true)) {
+            this.warning("Chunk generation is enabled. New chunks will be generated as needed to complete LOD generation. This could significantly increase the size of your world.");
+            this.warning("If you understand what this means and would like to disable this warning, set " + DhsConfig.GENERATE_NEW_CHUNKS_WARNING + " to false in your config.");
+        }
     }
 
     public void onDisable()

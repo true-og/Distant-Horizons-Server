@@ -60,6 +60,8 @@ public abstract class DhsConfig
 
     public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
 
+    public static String GENERATE_NEW_CHUNKS_WARNING = "generate_new_chunks_warning";
+
     public static String BUILDER_TYPE = "builder_type";
 
     public static String BUILDER_RESOLUTION = "builder_resolution";

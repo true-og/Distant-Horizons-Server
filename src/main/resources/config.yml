@@ -50,6 +50,11 @@ max_data_transfer_speed: 0
 # Default: true
 #generate_new_chunks: false
 
+# Show warning during startup if chunk generation is enabled?
+# Optional.
+# Default: true
+#generate_new_chunks_warning: false
+
 # Output builder activity to the server console.
 # Optional.
 # Default: true
