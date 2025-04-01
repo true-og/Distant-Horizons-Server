@@ -57,7 +57,7 @@ public class PlayerConfigHandler
             Configuration dhsConfig = world.getConfig();
 
             String levelKeyPrefix = dhsConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
-            String levelKey = player.getWorld().getName();
+            String levelKey = player.getWorld().getKey();
 
             if (levelKeyPrefix != null) {
                 levelKey = levelKeyPrefix + levelKey;

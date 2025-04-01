@@ -162,6 +162,12 @@ public class BukkitWorldInterface implements WorldInterface
     }
 
     @Override
+    public String getKey()
+    {
+        return this.getName().replaceAll("[^a-zA-Z0-9_-]", "");
+    }
+
+    @Override
     public double getCoordinateScale()
     {
         if (this.getCoordinateScale == null) {
@@ -176,7 +182,7 @@ public class BukkitWorldInterface implements WorldInterface
             throw new RuntimeException(exception);
         }
     }
-    
+
     protected boolean useVanillaWorldBorder()
     {
         return this.worldConfig.getBool(DhsConfig.USE_VANILLA_WORLD_BORDER, true);

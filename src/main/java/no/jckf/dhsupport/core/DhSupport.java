@@ -499,7 +499,7 @@ public class DhSupport implements Configurable
                                 }
 
                                 String levelKeyPrefix = worldConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
-                                String levelKey = world.getName();
+                                String levelKey = world.getKey();
 
                                 if (levelKeyPrefix != null) {
                                     levelKey = levelKeyPrefix + levelKey;
