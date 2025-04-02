@@ -70,11 +70,13 @@ public class Configuration
 
     public @PolyNull String getString(String key, @PolyNull String defaultValue)
     {
-        return (String) this.get(key, defaultValue);
+        Object raw = this.get(key, defaultValue);
+
+        return raw == null ? null : String.valueOf(raw);
     }
 
     public @Nullable String getString(String key)
     {
-        return (String) this.get(key, null);
+        return this.getString(key, null);
     }
 }
