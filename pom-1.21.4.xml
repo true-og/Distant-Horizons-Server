@@ -13,6 +13,7 @@
     <properties>
         <skip-copy>false</skip-copy>
         <mc.api-version>1.21.4</mc.api-version>
+        <mc.plugin-api>Bukkit-Paper</mc.plugin-api>
     </properties>
 
     <dependencies>
