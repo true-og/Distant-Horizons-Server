@@ -115,6 +115,8 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	@Override
 	public String getWorldFolderName()
 	{
+		// TODO can we just replace this with getMcSaveFolder()? Why are we using the screenshot file anyway?
+		//  this can have issues when the screenshot file is null/missing
 		#if MC_VER >= MC_1_17_1
 		return this.level.getServer().getWorldScreenshotFile().get().getParent().getFileName().toString();
 		#else // <= 1.16.5
