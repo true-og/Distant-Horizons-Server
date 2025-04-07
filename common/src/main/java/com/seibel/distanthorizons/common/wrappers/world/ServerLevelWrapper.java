@@ -57,7 +57,6 @@ import java.nio.file.Path;
 #endif
 
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 public class ServerLevelWrapper implements IServerLevelWrapper
 {
@@ -71,9 +70,6 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	private final ServerLevel level;
 	@Deprecated // TODO circular references are bad
 	private IDhLevel parentDhLevel;
-	
-	@Nullable
-	private String worldFolderName = null;
 	
 	
 	
@@ -119,33 +115,12 @@ public class ServerLevelWrapper implements IServerLevelWrapper
 	@Override
 	public String getWorldFolderName()
 	{
-		// there's a bug with Forge 1.20.1 where the screenshot folder can be null
-		// hopefully the first time we get this it will be valid so any changes afterwards can be ignored
-		// TODO can we just replace this with getMcSaveFolder()? Why are we using the screenshot file anyway?
-		if (this.worldFolderName == null)
-		{
-			this.worldFolderName = this.tryGetWorldFolderName();
-		}
-		
-		return this.worldFolderName;
+		#if MC_VER >= MC_1_17_1
+		return this.level.getServer().getWorldScreenshotFile().get().getParent().getFileName().toString();
+		#else // <= 1.16.5
+		return this.level.getServer().getWorldScreenshotFile().getParentFile().getName();
+		#endif
 	}
-	@Nullable
-	private String tryGetWorldFolderName()
-	{
-		try
-		{
-			#if MC_VER >= MC_1_17_1
-			return this.level.getServer().getWorldScreenshotFile().get().getParent().getFileName().toString();
-			#else // <= 1.16.5
-			return this.level.getServer().getWorldScreenshotFile().getParentFile().getName();
-			#endif
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
-	}
-	
 	
 	@Override
 	public DimensionTypeWrapper getDimensionType() { return DimensionTypeWrapper.getDimensionTypeWrapper(this.level.dimensionType()); }
