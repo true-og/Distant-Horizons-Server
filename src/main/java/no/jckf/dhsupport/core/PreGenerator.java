@@ -18,6 +18,7 @@
 
 package no.jckf.dhsupport.core;
 
+import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.database.models.LodModel;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
@@ -55,7 +56,7 @@ public class PreGenerator implements Runnable
         this.centerZ = Coordinates.blockToSection(centerZ);
         this.radius = radius;
 
-        this.totalSteps = (int) Math.pow((double) this.radius / 2, 2);
+        this.totalSteps = (int) Math.pow((double) Coordinates.blockToChunk(this.radius) / 2, 2);
     }
 
     public void run()

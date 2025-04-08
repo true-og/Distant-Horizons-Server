@@ -160,7 +160,7 @@ public class DhsCommand implements CommandExecutor
             return true;
         }
 
-        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
 
         this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius);
 
