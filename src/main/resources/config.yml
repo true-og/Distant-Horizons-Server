@@ -125,8 +125,9 @@ worlds:
     render_distance: 64
 
     # This is a hack to prevent light from shining through ceilings, mostly noticeable on the nether ceiling.
-    # Only works with the FullBuilder, and does have some side effects.
-    perform_underglow_hack: true
+    # Only works with the FullBuilder, should only be used with builder_resolution=1, and does have some side effects.
+    #perform_underglow_hack: true
+    #builder_resolution: 1
 
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
