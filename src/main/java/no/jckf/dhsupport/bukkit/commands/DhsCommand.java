@@ -117,7 +117,7 @@ public class DhsCommand implements CommandExecutor
         Integer radius;
 
         if (args.length >= 1) {
-            World bukkitWorld = this.plugin.getServer().getWorld(args[0]);
+            World bukkitWorld = this.plugin.getWorld(args[0]);
 
             if (bukkitWorld == null) {
                 sender.sendMessage(ChatColor.RED + "Unknown world.");
@@ -172,7 +172,7 @@ public class DhsCommand implements CommandExecutor
         WorldInterface world;
 
         if (args.length >= 1) {
-            World bukkitWorld = this.plugin.getServer().getWorld(args[0]);
+            World bukkitWorld = this.plugin.getWorld(args[0]);
 
             if (bukkitWorld == null) {
                 sender.sendMessage(ChatColor.RED + "Unknown world.");
@@ -208,7 +208,7 @@ public class DhsCommand implements CommandExecutor
         WorldInterface world;
 
         if (args.length >= 1) {
-            World bukkitWorld = this.plugin.getServer().getWorld(args[0]);
+            World bukkitWorld = this.plugin.getWorld(args[0]);
 
             if (bukkitWorld == null) {
                 sender.sendMessage(ChatColor.RED + "Unknown world.");

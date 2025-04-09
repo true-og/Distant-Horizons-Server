@@ -25,6 +25,7 @@ import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
 import no.jckf.dhsupport.bukkit.handler.WorldHandler;
 import no.jckf.dhsupport.core.DhSupport;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -125,6 +126,17 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.configLoader = new ConfigLoader(this);
         this.configLoader.onEnable();
+    }
+
+    public @Nullable World getWorld(String name)
+    {
+        for (World world : this.getServer().getWorlds()) {
+            if (world.getName().replace(' ', '_').equals(name)) {
+                return world;
+            }
+        }
+
+        return null;
     }
 
     @Nullable
