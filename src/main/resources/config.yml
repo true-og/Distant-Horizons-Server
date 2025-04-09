@@ -119,10 +119,14 @@ worlds:
     #border_center_z: 0
     #border_radius: 5000
 
-  # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
-  # the level design anyway.
   world_nether:
+    # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
+    # the level design anyway.
     render_distance: 64
+
+    # This is a hack to prevent light from shining through ceilings, mostly noticeable on the nether ceiling.
+    # Only works with the FullBuilder, and does have some side effects.
+    perform_underglow_hack: true
 
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.

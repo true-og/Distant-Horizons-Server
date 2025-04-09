@@ -51,6 +51,7 @@ public class FullBuilder extends LodBuilder
         int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
 
         boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, true);
+        boolean performUnderglowHack = this.worldInterface.getConfig().getBool(DhsConfig.PERFORM_UNDERGLOW_HACK, false);
 
         List<IdMapping> idMappings = new ArrayList<>();
         Map<String, Integer> mapMap = new HashMap<>();
@@ -159,6 +160,23 @@ public class FullBuilder extends LodBuilder
                             } else {
                                 // Encountered air that is below a non-air block. Set yStep=1 to avoid stretching the air into the ground or sea.
                                 yStep = 1;
+
+                                if (performUnderglowHack && previous != null && previous.getHeight() > 2) {
+                                    // Retract 2 block. We need a gap between the end of the top data point and the bottom one to prevent DH from merging them.
+                                    previous.setStartY(previous.getStartY() + 2);
+                                    previous.setHeight(previous.getHeight() - 2);
+
+                                    DataPoint bottomBlock = new DataPoint();
+                                    bottomBlock.setMappingId(previous.getMappingId());
+                                    bottomBlock.setStartY(relativeY + 1);
+                                    bottomBlock.setHeight(1);
+                                    bottomBlock.setSkyLight(this.worldInterface.getSkyLightAt(worldX, lowWorldY, worldZ));
+                                    bottomBlock.setBlockLight(this.worldInterface.getBlockLightAt(worldX, lowWorldY, worldZ));
+
+                                    column.add(bottomBlock);
+
+                                    previous = bottomBlock;
+                                }
                             }
                         } else {
                             // Entered a new material. Reset yStep in case we came from air with yStep=1.

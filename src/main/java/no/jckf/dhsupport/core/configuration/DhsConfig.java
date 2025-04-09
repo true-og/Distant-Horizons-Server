@@ -70,5 +70,7 @@ public abstract class DhsConfig
 
     public static String INCLUDE_NON_COLLIDING_TOP_LAYER = "include_non-colliding_top_layer";
 
+    public static String PERFORM_UNDERGLOW_HACK = "perform_underglow_hack";
+
     public static String INCLUDE_BEACONS = "include_beacons";
 }

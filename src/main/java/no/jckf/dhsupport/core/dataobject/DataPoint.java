@@ -47,6 +47,11 @@ public class DataPoint extends DataObject
         this.blockLight = value;
     }
 
+    public byte getBlockLight()
+    {
+        return this.blockLight;
+    }
+
     public void setHeight(int value)
     {
         this.height = value;
