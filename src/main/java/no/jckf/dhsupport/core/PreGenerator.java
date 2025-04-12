@@ -18,7 +18,6 @@
 
 package no.jckf.dhsupport.core;
 
-import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.database.models.LodModel;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
