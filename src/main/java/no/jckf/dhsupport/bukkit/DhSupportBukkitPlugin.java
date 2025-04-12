@@ -18,6 +18,7 @@
 
 package no.jckf.dhsupport.bukkit;
 
+import no.jckf.dhsupport.bukkit.commands.DhCommand;
 import no.jckf.dhsupport.bukkit.commands.DhsCommand;
 import no.jckf.dhsupport.bukkit.handler.ConfigLoader;
 import no.jckf.dhsupport.bukkit.handler.PlayerHandler;
@@ -89,6 +90,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         this.getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
 
         this.getCommand("dhs").setExecutor(new DhsCommand(this));
+        this.getCommand("dh").setExecutor(new DhCommand(this));
 
         this.getLogger().info("Ready!");
     }
