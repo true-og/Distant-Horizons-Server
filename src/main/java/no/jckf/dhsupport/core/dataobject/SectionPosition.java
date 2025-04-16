@@ -23,101 +23,77 @@ import no.jckf.dhsupport.core.bytestream.Encoder;
 
 public class SectionPosition extends DataObject
 {
-    public static final int DETAIL_LEVEL_WIDTH = 8;
-    public static final int X_POS_WIDTH = 28;
-    public static final int Z_POS_WIDTH = 28;
-
     public static final int DETAIL_LEVEL_OFFSET = 0;
-    public static final int POS_X_OFFSET = DETAIL_LEVEL_OFFSET + DETAIL_LEVEL_WIDTH;
-    public static final int POS_Z_OFFSET = POS_X_OFFSET + X_POS_WIDTH;
+    public static final int DETAIL_LEVEL_BITS = 8;
+    public static final long DETAIL_LEVEL_MASK = 0xFF;
 
-    public static final long DETAIL_LEVEL_MASK = Byte.MAX_VALUE;
-    public static final int POS_X_MASK = (int) Math.pow(2, X_POS_WIDTH) - 1;
-    public static final int POS_Z_MASK = (int) Math.pow(2, Z_POS_WIDTH) - 1;
+    public static final int X_OFFSET = DETAIL_LEVEL_OFFSET + DETAIL_LEVEL_BITS;
+    public static final int X_BITS = 28;
+    public static final int X_MASK = (int) Math.pow(2, X_BITS) - 1;
 
-    protected int detailLevel;
+    public static final int Z_OFFSET = X_OFFSET + X_BITS;
+    public static final int Z_BITS = 28;
+    public static final int Z_MASK = (int) Math.pow(2, Z_BITS) - 1;
 
-    protected int x;
+    protected long data = 0;
 
-    protected int z;
-
-    public SectionPosition()
+    public void setDetailLevel(int detailLevel)
     {
+        this.data &= ~((long) DETAIL_LEVEL_MASK << DETAIL_LEVEL_OFFSET);
 
-    }
-
-    public SectionPosition(int x, int z, int detailLevel)
-    {
-        this.x = x;
-        this.z = z;
-        this.detailLevel = detailLevel;
-    }
-
-    public void setDetailLevel(int level)
-    {
-        this.detailLevel = level;
+        this.data |= (detailLevel & DETAIL_LEVEL_MASK) << DETAIL_LEVEL_OFFSET;
     }
 
     public int getDetailLevel()
     {
-        return this.detailLevel;
+        return (int) (data & DETAIL_LEVEL_MASK);
     }
 
     public void setX(int x)
     {
-        this.x = x;
+        this.data &= ~((long) X_MASK << X_OFFSET);
+
+        this.data |= (long) (x & X_MASK) << X_OFFSET;
     }
 
     public int getX()
     {
-        return this.x;
+        int raw = (int) ((data >> X_OFFSET) & X_MASK);
+
+        if ((raw & (1 << 23)) != 0) {
+            raw |= ~X_MASK;
+        }
+
+        return raw;
     }
 
     public void setZ(int z)
     {
-        this.z = z;
+        this.data &= ~((long) Z_MASK << Z_OFFSET);
+
+        this.data |= (long) (z & Z_MASK) << Z_OFFSET;
     }
 
     public int getZ()
     {
-        return this.z;
+        int raw = (int) ((data >> Z_OFFSET) & Z_MASK);
+
+        if ((raw & (1 << 23)) != 0) {
+            raw |= ~Z_MASK;
+        }
+
+        return raw;
     }
 
     @Override
     public void encode(Encoder encoder)
     {
-        encoder.writeLong(this.toLong());
+        encoder.writeLong(this.data);
     }
 
     @Override
     public void decode(Decoder decoder)
     {
-        this.fromLong(decoder.readLong());
-    }
-
-    public long toLong()
-    {
-        long data = 0;
-
-        data |= this.detailLevel & DETAIL_LEVEL_MASK;
-        data |= (long) (this.x & POS_X_MASK) << POS_X_OFFSET;
-        data |= (long) (this.z & POS_Z_MASK) << POS_Z_OFFSET;
-
-        return data;
-    }
-
-    public void fromLong(long data)
-    {
-        this.detailLevel = (int) (data & DETAIL_LEVEL_MASK);
-        this.x = (int) ((data >> POS_X_OFFSET) & POS_X_MASK);
-        this.z = (int) ((data >> POS_Z_OFFSET) & POS_Z_MASK);
-
-        // Adjust for potential negative values if masks do not account for sign
-        if ((this.x & (1 << 23)) != 0) { // Check if the sign bit is set for 24-bit value
-            this.x |= ~POS_X_MASK; // Sign extend
-        }
-        if ((this.z & (1 << 23)) != 0) { // Check if the sign bit is set for 24-bit value
-            this.z |= ~POS_Z_MASK; // Sign extend
-        }
+        this.data = decoder.readLong();
     }
 }
