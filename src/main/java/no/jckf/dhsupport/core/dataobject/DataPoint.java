@@ -18,6 +18,7 @@
 
 package no.jckf.dhsupport.core.dataobject;
 
+import no.jckf.dhsupport.core.bytestream.Decoder;
 import no.jckf.dhsupport.core.bytestream.Encoder;
 
 public class DataPoint extends DataObject
@@ -116,5 +117,11 @@ public class DataPoint extends DataObject
     public void encode(Encoder encoder)
     {
         encoder.writeLong(data);
+    }
+
+    @Override
+    public void decode(Decoder decoder)
+    {
+        this.data = decoder.readLong();
     }
 }

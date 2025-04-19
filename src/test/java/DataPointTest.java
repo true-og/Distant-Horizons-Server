@@ -17,11 +17,13 @@
  */
 
 import junit.framework.TestCase;
+import no.jckf.dhsupport.core.bytestream.Decoder;
+import no.jckf.dhsupport.core.bytestream.Encoder;
 import no.jckf.dhsupport.core.dataobject.DataPoint;
 
 public class DataPointTest extends TestCase
 {
-    final DataPoint dataPoint = new DataPoint();
+    private DataPoint dataPoint = new DataPoint();
 
     public void testMappingId()
     {
@@ -100,5 +102,36 @@ public class DataPointTest extends TestCase
     public void testBlockLightAgain()
     {
         this.testBlockLight();
+    }
+
+    public void testEncodeDecode()
+    {
+        int mappingId = (int) Math.floor(Math.random() * 100);
+        int height = (int) Math.floor(Math.random() * 10);
+        int startY = (int) Math.floor(Math.random() * 100);
+        byte skyLight = (byte) Math.floor(Math.random() * 15);
+        byte blockLight = (byte) Math.floor(Math.random() * 15);
+
+        this.dataPoint.setMappingId(mappingId);
+        this.dataPoint.setHeight(height);
+        this.dataPoint.setStartY(startY);
+        this.dataPoint.setSkyLight(skyLight);
+        this.dataPoint.setBlockLight(blockLight);
+
+        Encoder encoder = new Encoder();
+
+        this.dataPoint.encode(encoder);
+
+        this.dataPoint = new DataPoint();
+
+        Decoder decoder = new Decoder(encoder.toByteArray());
+
+        this.dataPoint.decode(decoder);
+
+        assertEquals("Mapping ID", mappingId, this.dataPoint.getMappingId());
+        assertEquals("Height", height, this.dataPoint.getHeight());
+        assertEquals("Start Y", startY, this.dataPoint.getStartY());
+        assertEquals("Sky light", skyLight, this.dataPoint.getSkyLight());
+        assertEquals("Block light", blockLight, this.dataPoint.getBlockLight());
     }
 }

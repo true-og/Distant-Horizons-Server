@@ -17,11 +17,13 @@
  */
 
 import junit.framework.TestCase;
+import no.jckf.dhsupport.core.bytestream.Decoder;
+import no.jckf.dhsupport.core.bytestream.Encoder;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
 
 public class SectionPositionTest extends TestCase
 {
-    protected final SectionPosition sectionPosition = new SectionPosition();
+    protected SectionPosition sectionPosition = new SectionPosition();
 
     public void testDetailLevel()
     {
@@ -81,5 +83,30 @@ public class SectionPositionTest extends TestCase
     public void testZAgain()
     {
         this.testPositiveZ();
+    }
+
+    public void testEncodeDecode()
+    {
+        int detailLevel = (int) Math.ceil(Math.random() * 6);
+        int x = (int) Math.ceil(Math.random() * 100000);
+        int z = (int) Math.ceil(Math.random() * 100000);
+
+        this.sectionPosition.setDetailLevel(detailLevel);
+        this.sectionPosition.setX(x);
+        this.sectionPosition.setZ(z);
+
+        Encoder encoder = new Encoder();
+
+        this.sectionPosition.encode(encoder);
+
+        this.sectionPosition = new SectionPosition();
+
+        Decoder decoder = new Decoder(encoder.toByteArray());
+
+        this.sectionPosition.decode(decoder);
+
+        assertEquals("Detail level", detailLevel, this.sectionPosition.getDetailLevel());
+        assertEquals("X coordinate", x, this.sectionPosition.getX());
+        assertEquals("Z coordinate", z, this.sectionPosition.getZ());
     }
 }
