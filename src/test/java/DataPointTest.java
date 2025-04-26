@@ -17,6 +17,7 @@
  */
 
 import junit.framework.TestCase;
+import no.jckf.dhsupport.core.Utils;
 import no.jckf.dhsupport.core.bytestream.Decoder;
 import no.jckf.dhsupport.core.bytestream.Encoder;
 import no.jckf.dhsupport.core.dataobject.DataPoint;
@@ -133,5 +134,42 @@ public class DataPointTest extends TestCase
         assertEquals("Start Y", startY, this.dataPoint.getStartY());
         assertEquals("Sky light", skyLight, this.dataPoint.getSkyLight());
         assertEquals("Block light", blockLight, this.dataPoint.getBlockLight());
+    }
+
+    public void testBinary()
+    {
+        this.dataPoint = new DataPoint();
+
+        this.dataPoint.setMappingId(1);
+        Encoder mappingIdEncoder = new Encoder();
+        this.dataPoint.encode(mappingIdEncoder);
+        this.dataPoint.setMappingId(0);
+
+        this.dataPoint.setHeight(1);
+        Encoder heightEncoder = new Encoder();
+        this.dataPoint.encode(heightEncoder);
+        this.dataPoint.setHeight(0);
+
+        this.dataPoint.setStartY(1);
+        Encoder startYEncoder = new Encoder();
+        this.dataPoint.encode(startYEncoder);
+        this.dataPoint.setStartY(0);
+
+        this.dataPoint.setSkyLight((byte) 1);
+        Encoder skyLightEncoder = new Encoder();
+        this.dataPoint.encode(skyLightEncoder);
+        this.dataPoint.setSkyLight((byte) 0);
+
+        this.dataPoint.setBlockLight((byte) 1);
+        Encoder blockLightEncoder = new Encoder();
+        this.dataPoint.encode(blockLightEncoder);
+        this.dataPoint.setBlockLight((byte) 0);
+
+        //                          | Blk| Sky|       Start Y|        Height|                             Mapping ID|
+        assertEquals("Mapping ID",  "0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001", Utils.bytesToBin(mappingIdEncoder.toByteArray()));
+        assertEquals("Height",      "0000 0000 0000 0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 0000", Utils.bytesToBin(heightEncoder.toByteArray()));
+        assertEquals("StartY",      "0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000", Utils.bytesToBin(startYEncoder.toByteArray()));
+        assertEquals("Sky light",   "0000 0001 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000", Utils.bytesToBin(skyLightEncoder.toByteArray()));
+        assertEquals("Block light", "0001 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000", Utils.bytesToBin(blockLightEncoder.toByteArray()));
     }
 }

@@ -17,6 +17,7 @@
  */
 
 import junit.framework.TestCase;
+import no.jckf.dhsupport.core.Utils;
 import no.jckf.dhsupport.core.bytestream.Decoder;
 import no.jckf.dhsupport.core.bytestream.Encoder;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
@@ -108,5 +109,47 @@ public class SectionPositionTest extends TestCase
         assertEquals("Detail level", detailLevel, this.sectionPosition.getDetailLevel());
         assertEquals("X coordinate", x, this.sectionPosition.getX());
         assertEquals("Z coordinate", z, this.sectionPosition.getZ());
+    }
+
+    public void testBinary()
+    {
+        this.sectionPosition = new SectionPosition();
+
+        this.sectionPosition.setDetailLevel(1);
+        Encoder detailLevelEncoder = new Encoder();
+        this.sectionPosition.encode(detailLevelEncoder);
+        byte[] detailLevelBytes = detailLevelEncoder.toByteArray();
+        this.sectionPosition.setDetailLevel(0);
+
+        this.sectionPosition.setX(1);
+        Encoder xEncoder = new Encoder();
+        this.sectionPosition.encode(xEncoder);
+        byte[] xBytes = xEncoder.toByteArray();
+        this.sectionPosition.setX(0);
+
+        this.sectionPosition.setX(-1);
+        Encoder negativeXEncoder = new Encoder();
+        this.sectionPosition.encode(negativeXEncoder);
+        byte[] negativeXBytes = negativeXEncoder.toByteArray();
+        this.sectionPosition.setX(0);
+
+        this.sectionPosition.setZ(1);
+        Encoder zEncoder = new Encoder();
+        this.sectionPosition.encode(zEncoder);
+        byte[] zBytes = zEncoder.toByteArray();
+        this.sectionPosition.setZ(0);
+
+        this.sectionPosition.setZ(-1);
+        Encoder negativeZEncoder = new Encoder();
+        this.sectionPosition.encode(negativeZEncoder);
+        byte[] negativeZBytes = negativeZEncoder.toByteArray();
+        this.sectionPosition.setZ(0);
+
+        //                                    |                                 Z|                                 X|   Detail|
+        assertEquals("Detail level",          "0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001", Utils.bytesToBin(detailLevelBytes));
+        assertEquals("X coordinate",          "0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0000 0000", Utils.bytesToBin(xBytes));
+        assertEquals("Negative X coordinate", "0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111 1111 1111 1111 0000 0000", Utils.bytesToBin(negativeXBytes));
+        assertEquals("Z coordinate",          "0000 0000 0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 0000 0000", Utils.bytesToBin(zBytes));
+        assertEquals("Negative Z coordinate", "1111 1111 1111 1111 1111 1111 1111 0000 0000 0000 0000 0000 0000 0000 0000 0000", Utils.bytesToBin(negativeZBytes));
     }
 }
