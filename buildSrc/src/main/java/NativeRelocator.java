@@ -196,6 +196,8 @@ class NativeRelocator
 			return Files.readAllBytes(outputFilePath);
 		}
 		
+		System.out.println("Relocating to " + outputPath + "...");
+		
 		for (Map.Entry<String, String> replacement : replacements.entrySet())
 		{
 			this.replaceInNullTerminatedStrings(content, replacement.getKey(), replacement.getValue());

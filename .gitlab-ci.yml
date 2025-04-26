@@ -17,9 +17,6 @@ variables:
 # These can be extended so code is a bit less duplicated
 .build_java:
   #image: eclipse-temurin:17
-  before_script:
-    - apt-get update
-    - apt-get install python3 python3-pip python-is-python3 python3-venv -y --no-install-recommends
   cache:
     key: "gradleCache_$CI_JOB_NAME_SLUG"
     policy: pull-push
