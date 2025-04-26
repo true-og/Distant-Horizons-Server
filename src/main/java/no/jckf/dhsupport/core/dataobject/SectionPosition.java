@@ -29,11 +29,11 @@ public class SectionPosition extends DataObject
 
     public static final int X_OFFSET = DETAIL_LEVEL_OFFSET + DETAIL_LEVEL_BITS;
     public static final int X_BITS = 28;
-    public static final int X_MASK = (int) Math.pow(2, X_BITS) - 1;
+    public static final int X_MASK = 0x0FFFFFFF;
 
     public static final int Z_OFFSET = X_OFFSET + X_BITS;
     public static final int Z_BITS = 28;
-    public static final int Z_MASK = (int) Math.pow(2, Z_BITS) - 1;
+    public static final int Z_MASK = 0x0FFFFFFF;
 
     protected long data = 0;
 
@@ -60,7 +60,7 @@ public class SectionPosition extends DataObject
     {
         int raw = (int) ((data >> X_OFFSET) & X_MASK);
 
-        if ((raw & (1 << 23)) != 0) {
+        if ((raw & (1 << 27)) != 0) {
             raw |= ~X_MASK;
         }
 
@@ -78,7 +78,7 @@ public class SectionPosition extends DataObject
     {
         int raw = (int) ((data >> Z_OFFSET) & Z_MASK);
 
-        if ((raw & (1 << 23)) != 0) {
+        if ((raw & (1 << 27)) != 0) {
             raw |= ~Z_MASK;
         }
 
