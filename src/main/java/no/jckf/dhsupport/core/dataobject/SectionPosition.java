@@ -29,17 +29,17 @@ public class SectionPosition extends DataObject
 
     public static final int X_OFFSET = DETAIL_LEVEL_OFFSET + DETAIL_LEVEL_BITS;
     public static final int X_BITS = 28;
-    public static final int X_MASK = 0x0FFFFFFF;
+    public static final long X_MASK = 0x0FFFFFFF;
 
     public static final int Z_OFFSET = X_OFFSET + X_BITS;
     public static final int Z_BITS = 28;
-    public static final int Z_MASK = 0x0FFFFFFF;
+    public static final long Z_MASK = 0x0FFFFFFF;
 
     protected long data = 0;
 
     public void setDetailLevel(int detailLevel)
     {
-        this.data &= ~((long) DETAIL_LEVEL_MASK << DETAIL_LEVEL_OFFSET);
+        this.data &= ~(DETAIL_LEVEL_MASK << DETAIL_LEVEL_OFFSET);
 
         this.data |= (detailLevel & DETAIL_LEVEL_MASK) << DETAIL_LEVEL_OFFSET;
     }
@@ -51,9 +51,9 @@ public class SectionPosition extends DataObject
 
     public void setX(int x)
     {
-        this.data &= ~((long) X_MASK << X_OFFSET);
+        this.data &= ~(X_MASK << X_OFFSET);
 
-        this.data |= (long) (x & X_MASK) << X_OFFSET;
+        this.data |= (x & X_MASK) << X_OFFSET;
     }
 
     public int getX()
@@ -61,7 +61,7 @@ public class SectionPosition extends DataObject
         int raw = (int) ((data >> X_OFFSET) & X_MASK);
 
         if ((raw & (1 << 27)) != 0) {
-            raw |= ~X_MASK;
+            raw |= (int) ~X_MASK;
         }
 
         return raw;
@@ -69,9 +69,9 @@ public class SectionPosition extends DataObject
 
     public void setZ(int z)
     {
-        this.data &= ~((long) Z_MASK << Z_OFFSET);
+        this.data &= ~(Z_MASK << Z_OFFSET);
 
-        this.data |= (long) (z & Z_MASK) << Z_OFFSET;
+        this.data |= (z & Z_MASK) << Z_OFFSET;
     }
 
     public int getZ()
@@ -79,7 +79,7 @@ public class SectionPosition extends DataObject
         int raw = (int) ((data >> Z_OFFSET) & Z_MASK);
 
         if ((raw & (1 << 27)) != 0) {
-            raw |= ~Z_MASK;
+            raw |= (int) ~Z_MASK;
         }
 
         return raw;

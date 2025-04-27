@@ -25,29 +25,29 @@ public class DataPoint extends DataObject
 {
     protected static int MAPPING_ID_OFFSET = 0;
     protected static int MAPPING_ID_BITS = 32;
-    protected static int MAPPING_ID_MASK = 0xFFFFFFFF;
+    protected static long MAPPING_ID_MASK = 0xFFFFFFFFL;
 
     protected static int HEIGHT_OFFSET = MAPPING_ID_OFFSET + MAPPING_ID_BITS;
     protected static int HEIGHT_BITS = 12;
-    protected static int HEIGHT_MASK = 0x0FFF;
+    protected static long HEIGHT_MASK = 0x0FFF;
 
     protected static int START_Y_OFFSET = HEIGHT_OFFSET + HEIGHT_BITS;
-    protected static int START_Y_SIZE = 12;
-    protected static int START_Y_MASK = 0x0FFF;
+    protected static int START_Y_BITS = 12;
+    protected static long START_Y_MASK = 0x0FFF;
 
-    protected static int SKY_LIGHT_OFFSET = START_Y_OFFSET + START_Y_SIZE;
-    protected static int SKY_LIGHT_SIZE = 4;
-    protected static int SKY_LIGHT_MASK = 0x0F;
+    protected static int SKY_LIGHT_OFFSET = START_Y_OFFSET + START_Y_BITS;
+    protected static int SKY_LIGHT_BITS = 4;
+    protected static long SKY_LIGHT_MASK = 0x0F;
 
-    protected static int BLOCK_LIGHT_OFFSET = SKY_LIGHT_OFFSET + SKY_LIGHT_SIZE;
-    protected static int BLOCK_LIGHT_SIZE = 4;
-    protected static int BLOCK_LIGHT_MASK = 0x0F;
+    protected static int BLOCK_LIGHT_OFFSET = SKY_LIGHT_OFFSET + SKY_LIGHT_BITS;
+    protected static int BLOCK_LIGHT_BITS = 4;
+    protected static long BLOCK_LIGHT_MASK = 0x0F;
 
     protected long data = 0;
 
     public void setMappingId(int mappingId)
     {
-        this.data &= ~((long) MAPPING_ID_MASK << MAPPING_ID_OFFSET);
+        this.data &= ~(MAPPING_ID_MASK << MAPPING_ID_OFFSET);
 
         this.data |= mappingId & MAPPING_ID_MASK;
     }
@@ -59,9 +59,9 @@ public class DataPoint extends DataObject
 
     public void setHeight(int height)
     {
-        this.data &= ~((long) HEIGHT_MASK << HEIGHT_OFFSET);
+        this.data &= ~(HEIGHT_MASK << HEIGHT_OFFSET);
 
-        this.data |= (long) (height & HEIGHT_MASK) << HEIGHT_OFFSET;
+        this.data |= (height & HEIGHT_MASK) << HEIGHT_OFFSET;
     }
 
     public int getHeight()
@@ -71,7 +71,7 @@ public class DataPoint extends DataObject
 
     public void setStartY(int startY)
     {
-        this.data &= ~((long) START_Y_MASK << START_Y_OFFSET);
+        this.data &= ~(START_Y_MASK << START_Y_OFFSET);
 
         this.data |= ((long) startY & START_Y_MASK) << START_Y_OFFSET;
     }
@@ -82,18 +82,17 @@ public class DataPoint extends DataObject
         int raw = (int) ((this.data >> START_Y_OFFSET) & START_Y_MASK);
 
         if ((raw & 0x0800) != 0) {
-            raw |= ~START_Y_MASK;
+            raw |= (int) ~START_Y_MASK;
         }
 
         return raw;
     }
 
-
     public void setSkyLight(byte skyLight)
     {
-        this.data &= ~((long) SKY_LIGHT_MASK << SKY_LIGHT_OFFSET);
+        this.data &= ~(SKY_LIGHT_MASK << SKY_LIGHT_OFFSET);
 
-        this.data |= (long) (skyLight & SKY_LIGHT_MASK) << SKY_LIGHT_OFFSET;
+        this.data |= (skyLight & SKY_LIGHT_MASK) << SKY_LIGHT_OFFSET;
     }
 
     public byte getSkyLight()
@@ -103,9 +102,9 @@ public class DataPoint extends DataObject
 
     public void setBlockLight(byte blockLight)
     {
-        this.data &= ~((long) BLOCK_LIGHT_MASK << BLOCK_LIGHT_OFFSET);
+        this.data &= ~(BLOCK_LIGHT_MASK << BLOCK_LIGHT_OFFSET);
 
-        this.data |= (long) (blockLight & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_OFFSET;
+        this.data |= (blockLight & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_OFFSET;
     }
 
     public byte getBlockLight()

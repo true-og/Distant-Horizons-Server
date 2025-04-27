@@ -113,11 +113,12 @@ public class DataPointTest extends TestCase
         byte skyLight = (byte) Math.floor(Math.random() * 15);
         byte blockLight = (byte) Math.floor(Math.random() * 15);
 
-        this.dataPoint.setMappingId(mappingId);
-        this.dataPoint.setHeight(height);
-        this.dataPoint.setStartY(startY);
-        this.dataPoint.setSkyLight(skyLight);
+        // Set them in reverse order of how they appear in the packed long. This will reveal any accidental overwrites.
         this.dataPoint.setBlockLight(blockLight);
+        this.dataPoint.setSkyLight(skyLight);
+        this.dataPoint.setStartY(startY);
+        this.dataPoint.setHeight(height);
+        this.dataPoint.setMappingId(mappingId);
 
         Encoder encoder = new Encoder();
 
@@ -129,11 +130,11 @@ public class DataPointTest extends TestCase
 
         this.dataPoint.decode(decoder);
 
-        assertEquals("Mapping ID", mappingId, this.dataPoint.getMappingId());
-        assertEquals("Height", height, this.dataPoint.getHeight());
-        assertEquals("Start Y", startY, this.dataPoint.getStartY());
-        assertEquals("Sky light", skyLight, this.dataPoint.getSkyLight());
         assertEquals("Block light", blockLight, this.dataPoint.getBlockLight());
+        assertEquals("Sky light", skyLight, this.dataPoint.getSkyLight());
+        assertEquals("Start Y", startY, this.dataPoint.getStartY());
+        assertEquals("Height", height, this.dataPoint.getHeight());
+        assertEquals("Mapping ID", mappingId, this.dataPoint.getMappingId());
     }
 
     public void testBinary()
