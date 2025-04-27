@@ -106,23 +106,11 @@ forgix {
 
 
 class NativeTransformer implements Transformer {
-    private boolean enabled = false
     private final HashMap<String, String> replacements = new HashMap()
     private final HashMap<String, byte[]> rewrittenFiles = new HashMap()
     private var nativeRelocator
 
     public File rootDir
-
-    NativeTransformer() {
-        try {
-            int exitCode = Runtime.getRuntime().exec(new String[]{"python", "--version"}).waitFor()
-            if (exitCode == 0) {
-                enabled = true
-            }
-        } catch (IOException e) {
-            println(e)
-        }
-    }
 
     void relocateNative(String target, String replacement) {
         if (replacement.length() > target.length()) {
@@ -132,22 +120,15 @@ class NativeTransformer implements Transformer {
         replacements.put(target, replacement)
     }
 
-    void before(Closure closure) {
-        if (enabled)
-            closure.run()
-    }
-
-
     @Override
     boolean canTransformResource(@Nonnull FileTreeElement element) {
-        return enabled && replacements.keySet().stream().anyMatch {
+        return replacements.keySet().stream().anyMatch {
             element.name.startsWith(it as String)
         }
     }
 
     @Override
     void transform(@Nonnull TransformerContext context) {
-        println("Transforming $context.path...")
         byte[] content = context.is.readAllBytes()
 
         if (nativeRelocator == null) {
@@ -395,16 +376,13 @@ subprojects { p ->
         // Sqlite Database
         // librariesLocation isn't used because it's too long for replacing paths in native libraries
         // Allowing strings larger than the original string would require shifting the entire binary's contents
+        relocate "org.sqlite", "dh_sqlite", {
+            exclude "org/sqlite/native/**"
+        }
+        relocate "jdbc:sqlite", "jdbc:dh_sqlite"
+
         transform(NativeTransformer) {
             rootDir = project.rootDir
-
-            before {
-                relocate "org.sqlite", "dh_sqlite", {
-                    exclude "org/sqlite/native/**"
-                }
-                relocate "jdbc:sqlite", "jdbc:dh_sqlite"
-            }
-
             relocateNative "org/sqlite", "dh_sqlite"
             relocateNative "org_sqlite", "dh_1sqlite"
         }
