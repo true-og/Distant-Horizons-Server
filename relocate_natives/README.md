@@ -6,7 +6,7 @@ How to add a library's natives:
 
 1. In `build.gradle`:
 
-- Make sure the target package is the same length or shorter (untested) than the source package. Underscores in native methods will take 2 characters so account for that as well.
+- Make sure the target package is the same length or shorter (untested) than the source package. Underscores in native methods will be mapped to `_1` so account for that as well.
 - Exclude the native files and add them as `relocateNative` (see example).
 
 Example:
