@@ -21,6 +21,7 @@ package no.jckf.dhsupport.core.world;
 import no.jckf.dhsupport.core.configuration.Configurable;
 import no.jckf.dhsupport.core.dataobject.Beacon;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +35,15 @@ public interface WorldInterface extends Configurable
 
     String getName();
 
+    String getKey();
+
     double getCoordinateScale();
+
+    @Nullable Integer getWorldBorderX();
+
+    @Nullable Integer getWorldBorderZ();
+
+    @Nullable Integer getWorldBorderRadius();
 
     boolean chunkExists(int x, int z);
 
@@ -42,7 +51,11 @@ public interface WorldInterface extends Configurable
 
     boolean loadChunk(int x, int z);
 
+    boolean loadOrGenerateChunk(int x, int z);
+
     CompletableFuture<Boolean> loadChunkAsync(int x, int z);
+
+    CompletableFuture<Boolean> loadOrGenerateChunkAsync(int x, int z);
 
     boolean unloadChunk(int x, int z);
 

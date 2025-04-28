@@ -19,7 +19,7 @@ full_data_request_concurrency_limit: 20
 # Default: true
 real_time_updates_enabled: true
 
-# Currently unsupported.
+# How close to an update players have to be in order to receive it.
 # Required.
 # Default: 128
 real_time_update_radius: 128
@@ -43,6 +43,17 @@ login_data_sync_rc_limit: 50
 # Required.
 # Default: 0
 max_data_transfer_speed: 0
+
+# Should new chunks be generated to build LODs?
+# If you disable this, the plugin will not be able to create LODs in areas where chunks don't already exist.
+# Optional.
+# Default: true
+#generate_new_chunks: false
+
+# Show warning during startup if chunk generation is enabled?
+# Optional.
+# Default: true
+#generate_new_chunks_warning: false
 
 # Output builder activity to the server console.
 # Optional.
@@ -77,6 +88,18 @@ builder_resolution: 2
 # Optional.
 #level_key_prefix:
 
+# Use the vanilla world border of the respective world.
+# Optional.
+# Default: true
+#use_vanilla_world_border: false
+
+# How many chunks beyond the vanilla world border can we see (if it's enabled)?. If set to auto, it uses the server's
+# view distance, which effectively means that if standing at the border you can see as far as the server would generate
+# chunks naturally.
+# Optional.
+# Default: auto
+#vanilla_world_border_expansion: 12
+
 # World specific settings.
 # You can override any of the above settings on a per-world basis.
 worlds:
@@ -96,10 +119,15 @@ worlds:
     #border_center_z: 0
     #border_radius: 5000
 
-  # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
-  # the level design anyway.
   world_nether:
+    # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
+    # the level design anyway.
     render_distance: 64
+
+    # This is a hack to prevent light from shining through ceilings, mostly noticeable on the nether ceiling.
+    # Only works with the FullBuilder, should only be used with builder_resolution=1, and does have some side effects.
+    #perform_underglow_hack: true
+    #builder_resolution: 1
 
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
@@ -108,4 +136,4 @@ worlds:
 scheduler_threads: 2
 
 # Don't touch :)
-config_version: 5
+config_version: 6

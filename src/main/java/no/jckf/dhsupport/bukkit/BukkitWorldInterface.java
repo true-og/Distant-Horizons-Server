@@ -20,6 +20,7 @@ package no.jckf.dhsupport.bukkit;
 
 import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.Configuration;
+import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.configuration.WorldConfiguration;
 import no.jckf.dhsupport.core.dataobject.Beacon;
 import no.jckf.dhsupport.core.world.WorldInterface;
@@ -108,7 +109,7 @@ public class BukkitWorldInterface implements WorldInterface
         }
 
         try {
-            this.getChunkAtAsync = this.world.getClass().getMethod("getChunkAtAsyncUrgently", int.class, int.class);
+            this.getChunkAtAsync = this.world.getClass().getMethod("getChunkAtAsync", int.class, int.class, boolean.class);
         } catch (NoSuchMethodException exception) {
             if (!ASYNC_LOAD_WARNING_SENT) {
                 this.getLogger().warning("Async chunk loading is not supported on this server. Performance will suffer.");
@@ -161,6 +162,12 @@ public class BukkitWorldInterface implements WorldInterface
     }
 
     @Override
+    public String getKey()
+    {
+        return this.getName().replaceAll("[^a-zA-Z0-9_-]", "");
+    }
+
+    @Override
     public double getCoordinateScale()
     {
         if (this.getCoordinateScale == null) {
@@ -174,6 +181,49 @@ public class BukkitWorldInterface implements WorldInterface
         } catch (InvocationTargetException | IllegalAccessException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    protected boolean useVanillaWorldBorder()
+    {
+        return this.worldConfig.getBool(DhsConfig.USE_VANILLA_WORLD_BORDER, true);
+    }
+
+    @Override
+    public Integer getWorldBorderX()
+    {
+        if (this.useVanillaWorldBorder()) {
+            return this.world.getWorldBorder().getCenter().getBlockX();
+        }
+
+        return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_X);
+    }
+
+    @Override
+    public Integer getWorldBorderZ()
+    {
+        if (this.useVanillaWorldBorder()) {
+            return this.world.getWorldBorder().getCenter().getBlockZ();
+        }
+
+        return this.worldConfig.getInt(DhsConfig.BORDER_CENTER_Z);
+    }
+
+    @Override
+    public Integer getWorldBorderRadius()
+    {
+        if (!this.useVanillaWorldBorder()) {
+            return this.worldConfig.getInt(DhsConfig.BORDER_RADIUS);
+        }
+
+        int borderRadius = (int) (this.world.getWorldBorder().getSize() / 2.0);
+
+        if (this.worldConfig.getString(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, "auto").equals("auto")) {
+            borderRadius += Coordinates.chunkToBlock(this.world.getViewDistance());
+        } else {
+            borderRadius += Coordinates.chunkToBlock(this.worldConfig.getInt(DhsConfig.VANILLA_WORLD_BORDER_EXPANSION, 0));
+        }
+
+        return borderRadius;
     }
 
     @Override
@@ -221,9 +271,16 @@ public class BukkitWorldInterface implements WorldInterface
         int chunkX = Coordinates.blockToChunk(x);
         int chunkZ = Coordinates.blockToChunk(z);
 
-        this.world.loadChunk(chunkX, chunkZ);
+        return this.world.loadChunk(chunkX, chunkZ, false);
+    }
 
-        return true;
+    @Override
+    public boolean loadOrGenerateChunk(int x, int z)
+    {
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        return this.world.loadChunk(chunkX, chunkZ, true);
     }
 
     @Override
@@ -237,9 +294,28 @@ public class BukkitWorldInterface implements WorldInterface
         int chunkZ = Coordinates.blockToChunk(z);
 
         try {
-            CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ);
+            CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ, false);
 
-            return chunkFuture.thenApply((chunk) -> true);
+            return chunkFuture.thenApply(Objects::nonNull);
+        } catch (InvocationTargetException | IllegalAccessException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Boolean> loadOrGenerateChunkAsync(int x, int z)
+    {
+        if (this.getChunkAtAsync == null) {
+            return this.plugin.getDhSupport().getScheduler().runOnMainThread(() -> this.loadOrGenerateChunk(x, z));
+        }
+
+        int chunkX = Coordinates.blockToChunk(x);
+        int chunkZ = Coordinates.blockToChunk(z);
+
+        try {
+            CompletableFuture<Chunk> chunkFuture = (CompletableFuture<Chunk>) this.getChunkAtAsync.invoke(this.world, chunkX, chunkZ, true);
+
+            return chunkFuture.thenApply(Objects::nonNull);
         } catch (InvocationTargetException | IllegalAccessException exception) {
             throw new RuntimeException(exception);
         }

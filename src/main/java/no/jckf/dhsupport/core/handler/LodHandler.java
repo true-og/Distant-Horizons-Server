@@ -22,7 +22,6 @@ import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.DhSupport;
 import no.jckf.dhsupport.core.configuration.Configuration;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import no.jckf.dhsupport.core.dataobject.Lod;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
 import no.jckf.dhsupport.core.message.plugin.ExceptionMessage;
 import no.jckf.dhsupport.core.message.plugin.FullDataChunkMessage;
@@ -68,6 +67,16 @@ public class LodHandler
             WorldInterface world = this.dhSupport.getWorldInterface(worldUuid);
 
             Configuration config = world.getConfig();
+            Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
+
+            if (!config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) || !playerConfig.getBool(DhsConfig.DISTANT_GENERATION_ENABLED)) {
+                ExceptionMessage exceptionMessage = new ExceptionMessage();
+                exceptionMessage.isResponseTo(requestMessage);
+                exceptionMessage.setTypeId(ExceptionMessage.TYPE_SECTION_REQUIRES_SPLITTING);
+                exceptionMessage.setMessage("Server has disabled distant generation");
+                this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                return;
+            }
 
             SectionPosition position = requestMessage.getPosition();
 
@@ -77,7 +86,7 @@ public class LodHandler
                 ExceptionMessage exceptionMessage = new ExceptionMessage();
                 exceptionMessage.isResponseTo(requestMessage);
                 exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
-                exceptionMessage.setMessage("Generation disabled");
+                exceptionMessage.setMessage("Server has disabled LOD builder");
                 this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
                 return;
             }
@@ -85,9 +94,9 @@ public class LodHandler
             int worldX = Coordinates.sectionToBlock(position.getX());
             int worldZ = Coordinates.sectionToBlock(position.getZ());
 
-            Integer borderCenterX = config.getInt(DhsConfig.BORDER_CENTER_X);
-            Integer borderCenterZ = config.getInt(DhsConfig.BORDER_CENTER_Z);
-            Integer borderRadius = config.getInt(DhsConfig.BORDER_RADIUS);
+            Integer borderCenterX = world.getWorldBorderX();
+            Integer borderCenterZ = world.getWorldBorderZ();
+            Integer borderRadius = world.getWorldBorderRadius();
 
             if (borderCenterX != null && borderCenterZ != null && borderRadius != null) {
                 int minX = borderCenterX - borderRadius;
@@ -128,19 +137,21 @@ public class LodHandler
 
             this.dhSupport.getLod(worldUuid, position)
                 .thenAccept((lodModel) -> {
+                    if (lodModel == null) {
+                        ExceptionMessage exceptionMessage = new ExceptionMessage();
+                        exceptionMessage.isResponseTo(requestMessage);
+                        exceptionMessage.setTypeId(ExceptionMessage.TYPE_REQUEST_REJECTED);
+                        exceptionMessage.setMessage("No LOD available");
+                        this.pluginMessageHandler.sendPluginMessage(requestMessage.getSender(), exceptionMessage);
+                        return;
+                    }
+
                     FullDataSourceResponseMessage responseMessage = new FullDataSourceResponseMessage();
                     responseMessage.isResponseTo(requestMessage);
 
                     boolean sendData = requestMessage.getTimestamp() == null || (requestMessage.getTimestamp() / 1000) < lodModel.getTimestamp();
 
                     if (sendData) {
-                        Configuration playerConfig = this.dhSupport.getPlayerConfiguration(requestMessage.getSender());
-
-                        if (playerConfig == null) {
-                            // Player disconnected before delivery.
-                            return;
-                        }
-
                         int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
 
                         playerConfig.set("buffer-id", myBufferId);

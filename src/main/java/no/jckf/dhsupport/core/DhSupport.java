@@ -47,6 +47,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class DhSupport implements Configurable
@@ -73,11 +75,13 @@ public class DhSupport implements Configurable
 
     protected PluginMessageSender pluginMessageSender;
 
-    protected Map<String, CompletableFuture<Lod>> queuedBuilders = new HashMap<>();
+    protected Map<String, CompletableFuture<Lod>> queuedBuilders = new ConcurrentHashMap<>();
 
     protected Map<String, LodModel> touchedLods = new ConcurrentHashMap<>();
 
     protected Map<UUID, Configuration> playerConfigurations = new HashMap<>();
+
+    protected Map<UUID, PreGenerator> preGenerators = new HashMap<>();
 
     public DhSupport()
     {
@@ -108,6 +112,11 @@ public class DhSupport implements Configurable
         (new LodHandler(this, this.pluginMessageHandler)).register();
 
         this.pluginMessageHandler.onEnable();
+
+        if (this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true) && this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS_WARNING, true)) {
+            this.warning("Chunk generation is enabled. New chunks will be generated as needed to complete LOD generation. This could significantly increase the size of your world.");
+            this.warning("If you understand what this means and would like to disable this warning, set " + DhsConfig.GENERATE_NEW_CHUNKS_WARNING + " to false in your config.");
+        }
     }
 
     public void onDisable()
@@ -143,6 +152,13 @@ public class DhSupport implements Configurable
         this.generationCountStartTime = System.currentTimeMillis();
     }
 
+    public double getGenerationPerSecondStat()
+    {
+        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
+
+        return (double) this.generationCount / secondsElapsed;
+    }
+
     public void printGenerationCount()
     {
         boolean showActivity = this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true);
@@ -158,9 +174,7 @@ public class DhSupport implements Configurable
             return;
         }
 
-        double lodsPerSecond = (double) this.generationCount / secondsElapsed;
-
-        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", lodsPerSecond) + " per second.");
+        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", this.getGenerationPerSecondStat()) + " per second.");
 
         this.resetGenerationCount();
     }
@@ -322,13 +336,15 @@ public class DhSupport implements Configurable
 
         return this.getLodRepository()
             .loadLodAsync(worldId, position.getX(), position.getZ())
-            .thenCompose((modelFromDb) -> {
-                // If a LOD was found in the database, return it.
+            .thenComposeAsync((modelFromDb) -> {
+                // If an LOD was found in the database, return it.
                 if (modelFromDb != null) {
                     return CompletableFuture.completedFuture(modelFromDb);
                 }
 
                 WorldInterface world = this.getWorldInterface(worldId).newInstance();
+
+                boolean generateNewChunks = world.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true);
 
                 Map<String, CompletableFuture<Boolean>> loads = new HashMap<>();
 
@@ -339,14 +355,34 @@ public class DhSupport implements Configurable
                         int chunkZ = worldZ + 16 * zMultiplier;
 
                         if (!world.isChunkLoaded(chunkX, chunkZ)) {
-                            loads.put(worldX + "x" + worldZ, world.loadChunkAsync(chunkX, chunkZ));
+                            if (generateNewChunks) {
+                                loads.put(worldX + "x" + worldZ, world.loadOrGenerateChunkAsync(chunkX, chunkZ));
+                            } else {
+                                loads.put(worldX + "x" + worldZ, world.loadChunkAsync(chunkX, chunkZ));
+                            }
                         }
                     }
                 }
 
                 // Wait for chunk loads, then...
-                return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[loads.size()]))
-                    .thenCompose((asd) -> {
+                return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[0]))
+                    .thenComposeAsync((asd) -> {
+                        boolean loadRejected = loads
+                            .values()
+                            .stream()
+                            .map(loadRequest -> {
+                                try {
+                                    return loadRequest.get();
+                                } catch (InterruptedException | ExecutionException exception) {
+                                    return false;
+                                }
+                            })
+                            .anyMatch(Predicate.isEqual(false));
+
+                        if (loadRejected) {
+                            return CompletableFuture.completedFuture(null);
+                        }
+
                         // No LOD was found. Start building a new one.
                         CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
 
@@ -368,38 +404,38 @@ public class DhSupport implements Configurable
                         });
 
                         // Combine the LOD and beacons and save the result in the database.
-                        return lodFuture.thenCombine(beaconFuture, (lod, beacons) -> {
-                                // Discard the chunks we loaded.
-                                this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
-                                    for (String key : loads.keySet()) {
-                                        String[] xz = key.split("x", 2);
+                        return lodFuture.thenCombineAsync(beaconFuture, (lod, beacons) -> {
+                            // Discard the chunks we loaded.
+                            this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
+                                for (String key : loads.keySet()) {
+                                    String[] xz = key.split("x", 2);
 
-                                        world.discardChunk(
-                                            Coordinates.chunkToBlock(Integer.parseInt(xz[0])),
-                                            Coordinates.chunkToBlock(Integer.parseInt(xz[1]))
-                                        );
-                                    }
+                                    world.discardChunk(
+                                        Integer.parseInt(xz[0]),
+                                        Integer.parseInt(xz[1])
+                                    );
+                                }
 
-                                    return null;
-                                });
+                                return null;
+                            });
 
-                                Encoder lodEncoder = new Encoder();
-                                lod.encode(lodEncoder);
+                            Encoder lodEncoder = new Encoder();
+                            lod.encode(lodEncoder);
 
-                                Encoder beaconEncoder = new Encoder();
-                                beaconEncoder.writeCollection(beacons);
+                            Encoder beaconEncoder = new Encoder();
+                            beaconEncoder.writeCollection(beacons);
 
-                                this.generationCount++;
+                            this.generationCount++;
 
-                                return this.lodRepository.saveLodAsync(
-                                    worldId,
-                                    position.getX(),
-                                    position.getZ(),
-                                    lodEncoder.toByteArray(),
-                                    beaconEncoder.toByteArray()
-                                );
-                            })
-                            .thenCompose((f) -> f); // Unwrap the nested future.
+                            return this.lodRepository.saveLodAsync(
+                                worldId,
+                                position.getX(),
+                                position.getZ(),
+                                lodEncoder.toByteArray(),
+                                beaconEncoder.toByteArray()
+                            );
+                        })
+                        .thenCompose((f) -> f); // Unwrap the nested future.
                     });
             });
     }
@@ -433,101 +469,147 @@ public class DhSupport implements Configurable
 
             this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
 
-            this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
-                .thenAccept((deleted) -> {
-                    if (!deleted) {
-                        this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
-                        return;
-                    }
+            this.getLodRepository().lodExistsAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ()).thenAccept((exists) -> {
+                if (!exists) {
+                    return;
+                }
 
-                    SectionPosition position = new SectionPosition();
-                    position.setDetailLevel(6);
-                    position.setX(lodModelToDelete.getX());
-                    position.setZ(lodModelToDelete.getZ());
+                this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
+                    .thenAccept((deleted) -> {
+                        if (!deleted) {
+                            this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
+                            return;
+                        }
 
-                    this.getLod(lodModelToDelete.getWorldId(), position)
-                        .thenAccept((newLodModel) -> {
-                            Configuration worldConfig = world.getConfig();
+                        SectionPosition position = new SectionPosition();
+                        position.setDetailLevel(6);
+                        position.setX(lodModelToDelete.getX());
+                        position.setZ(lodModelToDelete.getZ());
 
-                            // If this is false, then it will be false for all players as well.
-                            boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
+                        this.getLod(lodModelToDelete.getWorldId(), position)
+                            .thenAcceptAsync((newLodModel) -> {
+                                Configuration worldConfig = world.getConfig();
 
-                            if (!updatesEnabled) {
-                                this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
-                                return;
-                            }
+                                // If this is false, then it will be false for all players as well.
+                                boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
 
-                            String levelKeyPrefix = worldConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
-                            String levelKey = world.getName();
-
-                            if (levelKeyPrefix != null) {
-                                levelKey = levelKeyPrefix + levelKey;
-                            }
-
-                            int lodChunkX = Coordinates.sectionToChunk(lodModelToDelete.getX());
-                            int lodChunkZ = Coordinates.sectionToChunk(lodModelToDelete.getZ());
-
-                            int playersInRangeCount = 0;
-                            int playersOutOfRangeCount = 0;
-                            int playersWithoutDhCount = 0;
-
-                            // TODO: Don't use Bukkit classes.
-                            for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
-                                Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
-
-                                // No config for this player? Probably not using DH.
-                                if (playerConfig == null) {
-                                    playersWithoutDhCount++;
-                                    continue;
+                                if (!updatesEnabled) {
+                                    this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
+                                    return;
                                 }
 
-                                int updatesRadius = playerConfig.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
+                                String levelKeyPrefix = worldConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
+                                String levelKey = world.getKey();
 
-                                int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
-                                int playerChunkZ = Coordinates.blockToChunk(player.getLocation().getBlockZ());
-
-                                int distanceX = Math.abs(Math.max(lodChunkX, playerChunkX) - Math.min(lodChunkX, playerChunkX));
-                                int distanceZ = Math.abs(Math.max(lodChunkZ, playerChunkZ) - Math.min(lodChunkZ, playerChunkZ));
-
-                                // Update outside of player's range?
-                                if (distanceX > updatesRadius || distanceZ > updatesRadius) {
-                                    playersOutOfRangeCount++;
-                                    continue;
+                                if (levelKeyPrefix != null) {
+                                    levelKey = levelKeyPrefix + levelKey;
                                 }
 
-                                playersInRangeCount++;
+                                int lodChunkX = Coordinates.sectionToChunk(lodModelToDelete.getX());
+                                int lodChunkZ = Coordinates.sectionToChunk(lodModelToDelete.getZ());
 
-                                int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
-                                playerConfig.set("buffer-id", myBufferId);
+                                int playersInRangeCount = 0;
+                                int playersOutOfRangeCount = 0;
+                                int playersWithoutDhCount = 0;
 
-                                FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
-                                partialUpdateMessage.setLevelKey(levelKey);
-                                partialUpdateMessage.setBufferId(myBufferId);
-                                partialUpdateMessage.setBeacons(newLodModel.getBeacons());
+                                // TODO: Don't use Bukkit classes.
+                                for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
+                                    Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
 
-                                byte[] data = newLodModel.getData();
+                                    // No config for this player? Probably not using DH.
+                                    if (playerConfig == null) {
+                                        playersWithoutDhCount++;
+                                        continue;
+                                    }
 
-                                int chunkCount = (int) Math.ceil((double) data.length / LodHandler.CHUNK_SIZE);
+                                    if (!playerConfig.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) || !playerConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED)) {
+                                        continue;
+                                    }
 
-                                for (int chunkNo = 0; chunkNo < chunkCount; chunkNo++) {
-                                    FullDataChunkMessage chunkResponse = new FullDataChunkMessage();
-                                    chunkResponse.setBufferId(myBufferId);
-                                    chunkResponse.setIsFirst(chunkNo == 0);
-                                    chunkResponse.setData(Arrays.copyOfRange(
-                                        data,
-                                        LodHandler.CHUNK_SIZE * chunkNo,
-                                        Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
-                                    ));
+                                    int updatesRadius = playerConfig.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS);
 
-                                    this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), chunkResponse);
+                                    int playerChunkX = Coordinates.blockToChunk(player.getLocation().getBlockX());
+                                    int playerChunkZ = Coordinates.blockToChunk(player.getLocation().getBlockZ());
+
+                                    int distanceX = Math.abs(Math.max(lodChunkX, playerChunkX) - Math.min(lodChunkX, playerChunkX));
+                                    int distanceZ = Math.abs(Math.max(lodChunkZ, playerChunkZ) - Math.min(lodChunkZ, playerChunkZ));
+
+                                    // Update outside of player's range?
+                                    if (distanceX > updatesRadius || distanceZ > updatesRadius) {
+                                        playersOutOfRangeCount++;
+                                        continue;
+                                    }
+
+                                    playersInRangeCount++;
+
+                                    int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
+                                    playerConfig.set("buffer-id", myBufferId);
+
+                                    FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
+                                    partialUpdateMessage.setLevelKey(levelKey);
+                                    partialUpdateMessage.setBufferId(myBufferId);
+                                    partialUpdateMessage.setBeacons(newLodModel.getBeacons());
+
+                                    byte[] data = newLodModel.getData();
+
+                                    int chunkCount = (int) Math.ceil((double) data.length / LodHandler.CHUNK_SIZE);
+
+                                    for (int chunkNo = 0; chunkNo < chunkCount; chunkNo++) {
+                                        FullDataChunkMessage chunkResponse = new FullDataChunkMessage();
+                                        chunkResponse.setBufferId(myBufferId);
+                                        chunkResponse.setIsFirst(chunkNo == 0);
+                                        chunkResponse.setData(Arrays.copyOfRange(
+                                            data,
+                                            LodHandler.CHUNK_SIZE * chunkNo,
+                                            Math.min(LodHandler.CHUNK_SIZE * chunkNo + LodHandler.CHUNK_SIZE, data.length)
+                                        ));
+
+                                        this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), chunkResponse);
+                                    }
+
+                                    this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
                                 }
 
-                                this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
-                            }
+                                this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
+                            });
+                    });
+            });
+        }
+    }
 
-                            this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
-                        });
-                });
+    public boolean isPreGenerating(WorldInterface world)
+    {
+        return this.preGenerators.containsKey(world.getId()) && this.getPreGenerator(world).isRunning();
+    }
+
+    public void preGenerate(WorldInterface world, int centerX, int centerZ, int radius)
+    {
+        if (this.isPreGenerating(world)) {
+            this.info("Cannot run multiple pre-generators in the same world. Stopping current task for " + world.getName() + "...");
+
+            this.stopPreGenerator(world);
+        }
+
+        this.preGenerators.put(world.getId(), new PreGenerator(this, world, centerX, centerZ, radius));
+
+        this.getScheduler().runOnSeparateThread(() -> {
+            this.preGenerators.get(world.getId()).run();
+
+            return null;
+        });
+    }
+
+    public @Nullable PreGenerator getPreGenerator(WorldInterface world)
+    {
+        return this.preGenerators.get(world.getId());
+    }
+
+    public void stopPreGenerator(WorldInterface world)
+    {
+        if (this.isPreGenerating(world)) {
+            this.getPreGenerator(world).stop();
+
+            this.preGenerators.remove(world.getId());
         }
     }
 }

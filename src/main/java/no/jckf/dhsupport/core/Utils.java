@@ -28,12 +28,25 @@ public class Utils
     public static String bytesToHex(byte[] bytes)
     {
         byte[] hexChars = new byte[bytes.length * 2];
+
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = HEX_ARRAY[v >>> 4];
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
+
         return new String(hexChars, StandardCharsets.UTF_8);
+    }
+
+    public static String bytesToBin(byte[] bytes)
+    {
+        StringBuilder builder = new StringBuilder();
+
+        for (byte b : bytes) {
+            builder.append(Integer.toBinaryString((b & 0xFF) | 0x0100).substring(1));
+        }
+
+        return builder.toString().replaceAll("(.{4})", "$1 ").trim();
     }
 
     public static String ucFirst(String string, Locale locale)

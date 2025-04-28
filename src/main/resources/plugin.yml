@@ -6,3 +6,12 @@ mc-version: ${mc.api-version}${mc.api-version-patch}
 prefix: DHS
 folia-supported: true
 author: Jckf
+commands:
+  dhs:
+    description: Manage DH Support.
+    usage: /dhs
+    permission: distant_horizons.admin
+  dh:
+    description: Not used.
+    usage: /dh
+    permission: distant_horizons.admin

@@ -29,6 +29,8 @@ import org.bukkit.entity.Player;
 
 public class PlayerConfigHandler
 {
+    public final static String USAGE_PERMISSION = "distant_horizons.worlds.%s";
+
     protected DhSupport dhSupport;
 
     protected PluginMessageHandler pluginMessageHandler;
@@ -47,12 +49,15 @@ public class PlayerConfigHandler
 
             WorldInterface world = this.dhSupport.getWorldInterface(player.getWorld().getUID());
 
+            String permission = USAGE_PERMISSION.formatted(world.getName());
+            boolean dhUseIsAllowed = !player.isPermissionSet(permission) || player.hasPermission(permission);
+
             double coordinateScale = world.getCoordinateScale();
 
             Configuration dhsConfig = world.getConfig();
 
             String levelKeyPrefix = dhsConfig.getString(DhsConfig.LEVEL_KEY_PREFIX);
-            String levelKey = player.getWorld().getName();
+            String levelKey = world.getKey();
 
             if (levelKeyPrefix != null) {
                 levelKey = levelKeyPrefix + levelKey;
@@ -75,14 +80,22 @@ public class PlayerConfigHandler
                 Object clientValue = clientConfig.get(key);
                 Object keepValue = null;
 
-                // Hack to scale border center position.
-                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && dhsValue != null) {
-                    dhsValue = (int) (((Integer) dhsValue).doubleValue() * coordinateScale);
+                if (key.equals(DhsConfig.DISTANT_GENERATION_ENABLED) && !dhUseIsAllowed) {
+                    keepValue = false;
                 }
 
                 // TODO: This is ugly. Move to comparator closures like in DH.
-                if (key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z) || key.equals(DhsConfig.BORDER_RADIUS)) {
-                    keepValue = dhsValue;
+                if (key.equals(DhsConfig.BORDER_CENTER_X)) {
+                    keepValue = world.getWorldBorderX();
+                } else if (key.equals(DhsConfig.BORDER_CENTER_Z)) {
+                    keepValue = world.getWorldBorderZ();
+                } else if(key.equals(DhsConfig.BORDER_RADIUS)) {
+                    keepValue = world.getWorldBorderRadius();
+                }
+
+                // Hack to scale border center position.
+                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && keepValue != null) {
+                    keepValue = (int) (((Integer) keepValue).doubleValue() * coordinateScale);
                 }
 
                 if (keepValue == null) {

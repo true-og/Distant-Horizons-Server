@@ -43,6 +43,22 @@ public class IdMapping extends DataObject
         this.properties = properties;
     }
 
+    public String getBiome()
+    {
+        return this.biome;
+    }
+
+    public String getBlock()
+    {
+        return this.block;
+    }
+
+    @Nullable
+    public Map<String, String> getProperties()
+    {
+        return this.properties;
+    }
+
     @Override
     public void encode(Encoder encoder)
     {

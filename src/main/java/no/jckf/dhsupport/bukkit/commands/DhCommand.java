@@ -16,32 +16,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package no.jckf.dhsupport.bukkit;
+package no.jckf.dhsupport.bukkit.commands;
 
-import no.jckf.dhsupport.core.message.plugin.PluginMessageSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
-public class BukkitPluginMessageSender implements PluginMessageSender
+public class DhCommand implements CommandExecutor
 {
-    protected JavaPlugin plugin;
+    protected DhSupportBukkitPlugin plugin;
 
-    public BukkitPluginMessageSender(JavaPlugin plugin)
+    public DhCommand(DhSupportBukkitPlugin plugin)
     {
         this.plugin = plugin;
     }
 
     @Override
-    public void sendPluginMessage(UUID recipientUuid, String channel, byte[] message)
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args)
     {
-        Player player = this.plugin.getServer().getPlayer(recipientUuid);
+        sender.sendMessage(ChatColor.RED + "Did you mean " + ChatColor.YELLOW + "/dhs" + ChatColor.RED + "?");
 
-        if (player == null || !player.isOnline()) {
-            return;
-        }
-
-        player.sendPluginMessage(this.plugin, channel, message);
+        return true;
     }
 }

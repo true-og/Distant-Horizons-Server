@@ -18,12 +18,15 @@
 
 package no.jckf.dhsupport.bukkit;
 
+import no.jckf.dhsupport.bukkit.commands.DhCommand;
+import no.jckf.dhsupport.bukkit.commands.DhsCommand;
 import no.jckf.dhsupport.bukkit.handler.ConfigLoader;
 import no.jckf.dhsupport.bukkit.handler.PlayerHandler;
 import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
 import no.jckf.dhsupport.bukkit.handler.WorldHandler;
 import no.jckf.dhsupport.core.DhSupport;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -68,8 +71,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.metrics = new Metrics(this, 21843);
 
-        this.configLoader = new ConfigLoader(this);
-        this.configLoader.onEnable();
+        this.loadDhsConfig();
 
         this.pluginMessageProxy = new PluginMessageProxy(this);
         this.pluginMessageProxy.onEnable();
@@ -86,6 +88,9 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.getServer().getPluginManager().registerEvents(new WorldHandler(this), this);
         this.getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
+
+        this.getCommand("dhs").setExecutor(new DhsCommand(this));
+        this.getCommand("dh").setExecutor(new DhCommand(this));
 
         this.getLogger().info("Ready!");
     }
@@ -113,6 +118,27 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         }
 
         this.getLogger().info("Lights out!");
+    }
+
+    public void loadDhsConfig()
+    {
+        if (this.configLoader != null) {
+            this.configLoader.onDisable();
+        }
+
+        this.configLoader = new ConfigLoader(this);
+        this.configLoader.onEnable();
+    }
+
+    public @Nullable World getWorld(String name)
+    {
+        for (World world : this.getServer().getWorlds()) {
+            if (world.getName().replace(' ', '_').equals(name)) {
+                return world;
+            }
+        }
+
+        return null;
     }
 
     @Nullable

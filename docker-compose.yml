@@ -1,0 +1,7 @@
+services:
+  maven:
+    build:
+      context: .
+
+    volumes:
+      - ./:/app

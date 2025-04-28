@@ -51,8 +51,16 @@ public abstract class DhsConfig
     public static String BORDER_CENTER_Z = "border_center_z";
 
     public static String BORDER_RADIUS = "border_radius";
+    
+    public static String USE_VANILLA_WORLD_BORDER = "use_vanilla_world_border";
+    
+    public static String VANILLA_WORLD_BORDER_EXPANSION = "vanilla_world_border_expansion";
 
     public static String SHOW_BUILDER_ACTIVITY = "show_builder_activity";
+
+    public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
+
+    public static String GENERATE_NEW_CHUNKS_WARNING = "generate_new_chunks_warning";
 
     public static String BUILDER_TYPE = "builder_type";
 
@@ -61,6 +69,8 @@ public abstract class DhsConfig
     public static String SCAN_TO_SEA_LEVEL= "scan_to_sea_level";
 
     public static String INCLUDE_NON_COLLIDING_TOP_LAYER = "include_non-colliding_top_layer";
+
+    public static String PERFORM_UNDERGLOW_HACK = "perform_underglow_hack";
 
     public static String INCLUDE_BEACONS = "include_beacons";
 }
