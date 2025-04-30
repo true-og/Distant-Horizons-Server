@@ -95,7 +95,7 @@ public class PreGenerator implements Runnable
                     CompletableFuture<LodModel> request = this.dhSupport.getLod(this.world.getId(), position);
 
                     this.inFlight++;
-                    request.thenAccept((LodModel) -> this.inFlight--);
+                    request.handle((lodModel, exception) -> this.inFlight--);
 
                     requests.add(request);
 
