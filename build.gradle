@@ -525,8 +525,9 @@ allprojects { p ->
     apply plugin: "java"
     apply plugin: "maven-publish"
     
+    // Sets the name of the jar, the version will contain the name of the project if it isn't the root project
     archivesBaseName = rootProject.mod_name
-    version = rootProject.versionStr
+    version = (project == rootProject ? "" : project.name + "-") + rootProject.versionStr
     group = rootProject.maven_group
     
     // this is the text that appears at the top of the overview (home) page
