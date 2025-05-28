@@ -37,7 +37,7 @@ public class DhCommand implements CommandExecutor
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args)
     {
-        sender.sendMessage(ChatColor.RED + "Did you mean " + ChatColor.YELLOW + "/dhs" + ChatColor.RED + "?");
+        sender.sendMessage(ChatColor.RED + "You have issued a " + ChatColor.YELLOW + "/dh" + ChatColor.RED + " command which is meant for the Distant Horizons " + ChatColor.YELLOW + "mod" + ChatColor.RED + ", but you are using the " + ChatColor.YELLOW + "plugin" + ChatColor.RED + ". Please make sure you are reading the correct documentation.");
 
         return true;
     }
