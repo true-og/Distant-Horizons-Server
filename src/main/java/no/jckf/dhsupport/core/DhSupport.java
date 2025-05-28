@@ -65,6 +65,9 @@ public class DhSupport implements Configurable
 
     protected Scheduler scheduler;
 
+    @Nullable
+    protected CompletableFuture<?> pause;
+
     protected int generationCount;
 
     protected long generationCountStartTime;
@@ -144,6 +147,41 @@ public class DhSupport implements Configurable
     public Scheduler getScheduler()
     {
         return this.scheduler;
+    }
+
+    public boolean pause()
+    {
+        if (this.pause != null) {
+            return false;
+        }
+
+        this.pause = new CompletableFuture<>();
+
+        return true;
+    }
+
+    public boolean unpause()
+    {
+        if (this.pause == null) {
+            return false;
+        }
+
+        this.pause.complete(null);
+        this.pause = null;
+
+        return true;
+    }
+
+    public boolean isPaused()
+    {
+        return this.pause != null;
+    }
+
+    public void joinPauseState()
+    {
+        if (this.pause != null) {
+            this.pause.join();
+        }
     }
 
     protected void resetGenerationCount()
@@ -342,6 +380,8 @@ public class DhSupport implements Configurable
                     return CompletableFuture.completedFuture(modelFromDb);
                 }
 
+                this.joinPauseState();
+
                 WorldInterface world = this.getWorldInterface(worldId).newInstance();
 
                 boolean generateNewChunks = world.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true);
@@ -461,6 +501,10 @@ public class DhSupport implements Configurable
 
     public void updateTouchedLods()
     {
+        if (this.isPaused()) {
+            return;
+        }
+
         for (String key : this.touchedLods.keySet()) {
             LodModel lodModelToDelete = this.touchedLods.get(key);
             this.touchedLods.remove(key);

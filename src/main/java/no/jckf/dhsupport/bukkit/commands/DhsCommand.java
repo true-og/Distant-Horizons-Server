@@ -57,6 +57,12 @@ public class DhsCommand implements CommandExecutor
 
             case "pregen":
                 return this.pregen(sender, Arrays.copyOfRange(args, 1, args.length));
+
+            case "pause":
+                return this.pause(sender);
+
+            case "unpause":
+                return this.unpause(sender);
         }
 
         sender.sendMessage(ChatColor.RED + "Unknown sub-command.");
@@ -237,6 +243,40 @@ public class DhsCommand implements CommandExecutor
         sender.sendMessage(ChatColor.GREEN + "Generation progress: " + ChatColor.YELLOW + String.format("%.2f", generator.getProgress() * 100f) + "%");
         sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests());
         sender.sendMessage(ChatColor.GREEN + "Time estimate: " + ChatColor.YELLOW + String.format("%.2f", (generator.getTargetRequests() - generator.getCompletedRequests()) / this.plugin.getDhSupport().getGenerationPerSecondStat() / 60 / 60) + ChatColor.GREEN + " hours.");
+
+        return true;
+    }
+
+    protected boolean pause(CommandSender sender)
+    {
+        if (this.plugin.getDhSupport().isPaused()) {
+            sender.sendMessage(ChatColor.RED + "Already paused.");
+            return true;
+        }
+
+        if (!this.plugin.getDhSupport().pause()) {
+            sender.sendMessage(ChatColor.RED + "Could not pause. Check server log for error messages.");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "DHS has been paused.");
+
+        return true;
+    }
+
+    protected boolean unpause(CommandSender sender)
+    {
+        if (!this.plugin.getDhSupport().isPaused()) {
+            sender.sendMessage(ChatColor.RED + "Not paused.");
+            return true;
+        }
+
+        if (!this.plugin.getDhSupport().unpause()) {
+            sender.sendMessage(ChatColor.RED + "Could not unpause. Check server log for error messages.");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.GREEN + "DHS has been unpaused.");
 
         return true;
     }
