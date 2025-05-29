@@ -54,6 +54,7 @@ public class FastOverworldBuilder extends LodBuilder
         int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
 
         boolean scanToSeaLevel = this.worldInterface.getConfig().getBool(DhsConfig.SCAN_TO_SEA_LEVEL, false);
+        boolean underfill = this.worldInterface.getConfig().getBool(DhsConfig.FAST_UNDERFILL, true);
         boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, true);
 
         List<IdMapping> idMappings = new ArrayList<>();
@@ -187,6 +188,11 @@ public class FastOverworldBuilder extends LodBuilder
                     }
 
                     previous = point;
+                }
+
+                if (underfill && previous != null) {
+                    previous.setHeight(previous.getStartY() + previous.getHeight());
+                    previous.setStartY(0);
                 }
 
                 columns.add(column);

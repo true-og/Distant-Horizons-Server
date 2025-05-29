@@ -113,6 +113,12 @@ worlds:
     # Default: false
     #scan_to_sea_level: true
 
+    # When using the FastOverworldBuilder, should the bottom data point be stretched to the lowest permitted build
+    # height? This will make the LODs look more complete, and gives a theoretical boost to render performance.
+    # Optional.
+    # Default: true
+    #fast_underfill: false
+
     # Limit LOD generation to within this area.
     # Optional.
     #border_center_x: 0
