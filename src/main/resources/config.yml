@@ -138,8 +138,8 @@ worlds:
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
 # Required.
-# Default: 2
-scheduler_threads: 2
+# Default: 4
+scheduler_threads: 4
 
 # Don't touch :)
 config_version: 6
