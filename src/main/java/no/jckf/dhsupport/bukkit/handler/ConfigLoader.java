@@ -63,6 +63,9 @@ public class ConfigLoader extends Handler
         // DH Support config.
         Configuration dhsConfig = this.plugin.getDhSupport().getConfig();
 
+        // Get rid of potentially old config values in the case of a reload.
+        dhsConfig.clear();
+
         // Populate DH Support config.
         pluginConfig.getKeys(true).forEach((key) -> dhsConfig.set(key, pluginConfig.get(key)));
     }

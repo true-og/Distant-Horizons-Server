@@ -28,6 +28,11 @@ public class Configuration
 {
     protected Map<String, Object> variables = new HashMap<>();
 
+    public void clear()
+    {
+        this.variables.clear();
+    }
+
     public void set(String key, @Nullable Object value)
     {
         this.variables.put(key, value);
