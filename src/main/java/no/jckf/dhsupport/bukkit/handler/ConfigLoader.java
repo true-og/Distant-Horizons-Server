@@ -34,6 +34,9 @@ public class ConfigLoader extends Handler
     @Override
     public void onEnable()
     {
+        // Make sure we always start with clean instances.
+        this.plugin.reloadConfig();
+
         // Create config file if none is present.
         this.plugin.saveDefaultConfig();
 
@@ -47,13 +50,13 @@ public class ConfigLoader extends Handler
         pluginConfig.setDefaults(new MemoryConfiguration());
 
         // Get the config version value from the default config file.
-        Integer pluginConfigVersion = defaultConfig.getInt(DhsConfig.CONFIG_VERSION);
+        Integer bundledConfigVersion = defaultConfig.getInt(DhsConfig.CONFIG_VERSION);
 
         // Get the config version value from the server's config file.
         Integer serverConfigVersion = pluginConfig.getInt(DhsConfig.CONFIG_VERSION);
 
         // If the two values differ, load defaults for missing values.
-        if (!pluginConfigVersion.equals(serverConfigVersion)) {
+        if (!bundledConfigVersion.equals(serverConfigVersion)) {
             this.plugin.getLogger().warning("Your config file is for an older version of this plugin.");
 
             pluginConfig.setDefaults(defaultConfig);
@@ -73,10 +76,6 @@ public class ConfigLoader extends Handler
     @Override
     public void onDisable()
     {
-        FileConfiguration pluginConfig = this.plugin.getConfig();
 
-        pluginConfig.getKeys(false).forEach((key) -> {
-            pluginConfig.set(key, null);
-        });
     }
 }
