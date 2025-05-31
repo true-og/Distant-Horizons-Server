@@ -116,5 +116,17 @@ public class Database
 
             this.markMigrationAsRan(name);
         }
+
+        this.optimize();
+    }
+
+    public void optimize() throws Exception
+    {
+        try (Statement statement = this.getConnection().createStatement()) {
+            statement.execute("PRAGMA optimize");
+            statement.execute("ANALYZE");
+            statement.execute("REINDEX");
+            statement.execute("VACUUM");
+        }
     }
 }

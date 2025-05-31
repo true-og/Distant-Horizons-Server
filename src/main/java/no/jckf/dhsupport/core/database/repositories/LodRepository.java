@@ -146,4 +146,27 @@ public class LodRepository
             return false;
         }
     }
+
+    public int trimLods(UUID worldId, int lowSectionX, int lowSectionZ, int highSectionX, int highSectionZ)
+    {
+        String sql = "DELETE FROM lods WHERE worldId = ? AND (x < ? OR z < ? OR x > ? OR z > ?)";
+
+        int affectedRows = 0;
+
+        try (PreparedStatement statement = this.database.getConnection().prepareStatement(sql)) {
+            statement.setString(1, worldId.toString());
+            statement.setInt(2, lowSectionX);
+            statement.setInt(3, lowSectionZ);
+            statement.setInt(4, highSectionX);
+            statement.setInt(5, highSectionZ);
+
+            affectedRows = statement.executeUpdate();
+
+            this.database.optimize();
+        } catch (Exception exception) {
+            this.getLogger().warning("Could not trim LODs/optimize DB: " + exception);
+        }
+
+        return affectedRows;
+    }
 }

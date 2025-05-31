@@ -63,6 +63,9 @@ public class DhsCommand implements CommandExecutor
 
             case "unpause":
                 return this.unpause(sender);
+
+            case "trim":
+                return this.trim(sender, Arrays.copyOfRange(args, 1, args.length));
         }
 
         sender.sendMessage(ChatColor.RED + "Unknown sub-command.");
@@ -277,6 +280,67 @@ public class DhsCommand implements CommandExecutor
         }
 
         sender.sendMessage(ChatColor.GREEN + "DHS has been unpaused.");
+
+        return true;
+    }
+
+    protected boolean trim(CommandSender sender, String[] args)
+    {
+        WorldInterface world;
+        Integer centerX;
+        Integer centerZ;
+        Integer radius;
+
+        if (args.length >= 1) {
+            World bukkitWorld = this.plugin.getWorld(args[0]);
+
+            if (bukkitWorld == null) {
+                sender.sendMessage(ChatColor.RED + "Unknown world.");
+                return true;
+            }
+
+            world = this.plugin.getDhSupport().getWorldInterface(bukkitWorld.getUID());
+        } else if (sender instanceof Player) {
+            world = this.plugin.getDhSupport().getWorldInterface(((Player) sender).getWorld().getUID());
+        } else {
+            world = null;
+        }
+
+        if (world == null) {
+            sender.sendMessage(ChatColor.RED + "No world specified.");
+            return true;
+        }
+
+        if (args.length >= 3) {
+            centerX = Integer.parseInt(args[1]);
+            centerZ = Integer.parseInt(args[2]);
+        } else {
+            centerX = world.getWorldBorderX();
+            centerZ = world.getWorldBorderZ();
+        }
+
+        if (centerX == null || centerZ == null) {
+            sender.sendMessage(ChatColor.RED + "No center coordinates specified.");
+            return true;
+        }
+
+        if (args.length >= 4) {
+            radius = Integer.parseInt(args[3]);
+        } else {
+            radius = world.getWorldBorderRadius();
+        }
+
+        if (radius == null) {
+            sender.sendMessage(ChatColor.RED + "No radius specified.");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "Trimming LODs outside view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " centered at " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+
+        this.plugin.getDhSupport().trim(world, centerX, centerZ, radius)
+            .thenAccept((trimmedCount) -> {
+                sender.sendMessage(ChatColor.GREEN + "Trimming of " + ChatColor.YELLOW + trimmedCount + ChatColor.GREEN + " LODs in " + ChatColor.YELLOW + world.getName() + ChatColor.GREEN + " completed.");
+            });
 
         return true;
     }

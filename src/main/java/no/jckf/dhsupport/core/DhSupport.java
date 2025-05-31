@@ -656,4 +656,15 @@ public class DhSupport implements Configurable
             this.preGenerators.remove(world.getId());
         }
     }
+
+    public CompletableFuture<Integer> trim(WorldInterface world, int centerX, int centerZ, int radius)
+    {
+        return this.getLodRepository().trimLodsAsync(
+            world.getId(),
+            Coordinates.blockToSection(centerX - radius),
+            Coordinates.blockToSection(centerZ - radius),
+            Coordinates.blockToSection(centerX + radius),
+            Coordinates.blockToSection(centerZ + radius)
+        );
+    }
 }
