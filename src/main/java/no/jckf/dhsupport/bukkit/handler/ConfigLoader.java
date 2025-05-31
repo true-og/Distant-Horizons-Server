@@ -34,9 +34,6 @@ public class ConfigLoader extends Handler
     @Override
     public void onEnable()
     {
-        // Make sure we always start with clean instances.
-        this.plugin.reloadConfig();
-
         // Create config file if none is present.
         this.plugin.saveDefaultConfig();
 
@@ -76,6 +73,7 @@ public class ConfigLoader extends Handler
     @Override
     public void onDisable()
     {
-
+        // Revert any changes we did.
+        this.plugin.reloadConfig();
     }
 }
