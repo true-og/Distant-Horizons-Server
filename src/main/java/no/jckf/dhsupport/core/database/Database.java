@@ -23,6 +23,8 @@ import no.jckf.dhsupport.core.database.migrations.Migration;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Database
 {
@@ -30,7 +32,11 @@ public class Database
 
     protected Connection connection;
 
+    protected Map<String, PreparedStatement> preparedStatements = new ConcurrentHashMap<>();
+
     protected Map<String, Class<? extends Migration>> migrations = new HashMap<>();
+
+    protected CompletableFuture<?> optimizing;
 
     public Connection getConnection() throws SQLException
     {
@@ -50,11 +56,35 @@ public class Database
 
     public void close() throws SQLException
     {
+        this.clearQueryCache();
+
         if (this.connection == null || this.connection.isClosed()) {
             return;
         }
 
         this.getConnection().close();
+    }
+
+    public PreparedStatement prepareAndReuse(String sql) throws SQLException
+    {
+        this.waitForOptimization();
+
+        if (!this.preparedStatements.containsKey(sql)) {
+            this.preparedStatements.put(sql, this.getConnection().prepareStatement(sql));
+        }
+
+        return this.preparedStatements.get(sql);
+    }
+
+    protected void clearQueryCache()
+    {
+        for (String key : this.preparedStatements.keySet()) {
+            try {
+                this.preparedStatements.remove(key).close();
+            } catch (SQLException exception) {
+
+            }
+        }
     }
 
     protected void createMigrationsTable() throws SQLException
@@ -122,11 +152,25 @@ public class Database
 
     public void optimize() throws Exception
     {
+        this.optimizing = new CompletableFuture<>();
+
+        this.clearQueryCache();
+
         try (Statement statement = this.getConnection().createStatement()) {
             statement.execute("PRAGMA optimize");
             statement.execute("ANALYZE");
             statement.execute("REINDEX");
             statement.execute("VACUUM");
+        } finally {
+            this.optimizing.complete(null);
+            this.optimizing = null;
+        }
+    }
+
+    public void waitForOptimization()
+    {
+        if (this.optimizing != null) {
+            this.optimizing.join();
         }
     }
 }
