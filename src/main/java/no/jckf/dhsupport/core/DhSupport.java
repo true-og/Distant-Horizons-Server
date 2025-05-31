@@ -101,7 +101,10 @@ public class DhSupport implements Configurable
         this.lodRepository.setLogger(this.getLogger());
 
         try {
-            this.database.open(this.getDataDirectory() + "/data.sqlite");
+            this.database.open(
+                this.getConfig().getString(DhsConfig.DATABASE_PATH)
+                    .replace("{datadir}", this.getDataDirectory())
+            );
 
             this.database.addMigration(CreateLodsTable.class);
 

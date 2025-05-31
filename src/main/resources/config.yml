@@ -1,3 +1,8 @@
+# Where should the plugin store its database file?
+# Required.
+# Default: "{datadir}/data.sqlite"
+database_path: "{datadir}/data.sqlite"
+
 # Maximum supported render distance. Clients will be capped to this value.
 # Required.
 # Default: 1024
