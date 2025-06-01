@@ -73,6 +73,7 @@ builder_type: FullBuilder
 
 # Number of blocks to advance between each sample on the Y axis when generating LODs.
 # A setting of 1 will sample every block, while 2 will sample every other block, and so on.
+# CURRENTLY BROKEN. THIS VALUE IS IGNORED.
 # Required.
 # Default: 2
 builder_resolution: 2

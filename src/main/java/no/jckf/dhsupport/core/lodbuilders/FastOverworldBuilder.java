@@ -51,7 +51,8 @@ public class FastOverworldBuilder extends LodBuilder
         int offsetX = Coordinates.sectionToBlock(this.position.getX());
         int offsetZ = Coordinates.sectionToBlock(this.position.getZ());
 
-        int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
+        int yStep = 1;//this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
+        int originalStep = yStep;
 
         boolean scanToSeaLevel = this.worldInterface.getConfig().getBool(DhsConfig.SCAN_TO_SEA_LEVEL, false);
         boolean underfill = this.worldInterface.getConfig().getBool(DhsConfig.FAST_UNDERFILL, true);
@@ -69,10 +70,7 @@ public class FastOverworldBuilder extends LodBuilder
 
                 // Actual Y of top-most block.
                 int topLayer = this.worldInterface.getHighestYAt(worldX, worldZ);
-
-                // Copies of the original values.
                 int hardTopLayer = topLayer;
-                int originalStep = yStep;
 
                 if (includeNonCollidingTopLayer) {
                     outer: while (topLayer + 1 < maxY) {

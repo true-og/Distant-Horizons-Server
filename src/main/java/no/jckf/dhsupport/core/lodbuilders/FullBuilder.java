@@ -48,7 +48,8 @@ public class FullBuilder extends LodBuilder
         int offsetX = Coordinates.sectionToBlock(this.position.getX());
         int offsetZ = Coordinates.sectionToBlock(this.position.getZ());
 
-        int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
+        int yStep = 1;//this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
+        int originalStep = yStep;
 
         boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, true);
         boolean performUnderglowHack = this.worldInterface.getConfig().getBool(DhsConfig.PERFORM_UNDERGLOW_HACK, false);
@@ -65,10 +66,7 @@ public class FullBuilder extends LodBuilder
 
                 // Actual Y of top-most block.
                 int topLayer = this.worldInterface.getHighestYAt(worldX, worldZ);
-
-                // Copies of the original values.
                 int hardTopLayer = topLayer;
-                int originalStep = yStep;
 
                 if (includeNonCollidingTopLayer) {
                     outer: while (topLayer + 1 < maxY) {
