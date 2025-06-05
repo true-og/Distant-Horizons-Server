@@ -80,7 +80,6 @@ public class PreGenerator implements Runnable
 
         this.startTime = System.currentTimeMillis();
 
-        // Vibe code :>
         OUTER: for (int step = 1; this.stepsSoFar < totalSteps; step++) {
             for (int directionChanges = 0; directionChanges < 2; directionChanges++) {
                 for (int stepsOnThisSide = 0; stepsOnThisSide < step; stepsOnThisSide++) {
@@ -88,13 +87,17 @@ public class PreGenerator implements Runnable
                         break OUTER;
                     }
 
+                    this.stepsSoFar++;
+
+                    if (this.stepsSoFar > this.totalSteps) {
+                        break OUTER;
+                    }
+
                     currentX += directions[dirIndex][0];
                     currentZ += directions[dirIndex][1];
 
-                    this.stepsSoFar++;
-
-                    if (this.stepsSoFar >= this.totalSteps) {
-                        break OUTER;
+                    if (!this.force && this.dhSupport.lodRepository.lodExists(this.world.getId(), currentX, currentZ)) {
+                        continue;
                     }
 
                     SectionPosition position = new SectionPosition();
@@ -102,16 +105,13 @@ public class PreGenerator implements Runnable
                     position.setZ(currentZ);
                     position.setDetailLevel(6);
 
-                    if (!this.force && this.dhSupport.lodRepository.lodExists(this.world.getId(), currentX, currentZ)) {
-                        continue;
-                    }
-
                     CompletableFuture<LodModel> request = this.dhSupport.generateLod(this.world.getId(), position);
 
-                    this.inFlight++;
                     request.handle((lodModel, exception) -> this.inFlight--);
 
                     requests.add(request);
+
+                    this.inFlight++;
 
                     while (this.inFlight >= rateLimit) {
                         CompletableFuture.anyOf(requests.toArray(new CompletableFuture[0])).join();
