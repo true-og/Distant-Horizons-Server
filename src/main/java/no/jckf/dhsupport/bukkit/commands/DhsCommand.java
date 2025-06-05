@@ -19,7 +19,9 @@
 package no.jckf.dhsupport.bukkit.commands;
 
 import no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin;
+import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.PreGenerator;
+import no.jckf.dhsupport.core.Utils;
 import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -29,6 +31,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Arrays;
 
 public class DhsCommand implements CommandExecutor
@@ -159,7 +162,7 @@ public class DhsCommand implements CommandExecutor
         }
 
         if (args.length >= 4) {
-            radius = Integer.parseInt(args[3]);
+            radius = Coordinates.chunkToBlock(Integer.parseInt(args[3]));
         } else {
             radius = world.getWorldBorderRadius();
         }
@@ -169,9 +172,15 @@ public class DhsCommand implements CommandExecutor
             return true;
         }
 
-        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+        boolean force = args.length >= 5 && args[4].equals("force");
 
-        this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius);
+        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + Coordinates.blockToChunk(radius) + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+
+        if (force) {
+            sender.sendMessage(ChatColor.YELLOW + "All existing LODs in this area will be re-generated.");
+        }
+
+        this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius, force);
 
         return true;
     }
@@ -236,16 +245,24 @@ public class DhsCommand implements CommandExecutor
             return true;
         }
 
-        if (!this.plugin.getDhSupport().isPreGenerating(world)) {
+        PreGenerator generator = this.plugin.getDhSupport().getPreGenerator(world);
+
+        if (generator == null) {
             sender.sendMessage(ChatColor.RED + "No pre-generator running in world " + ChatColor.YELLOW + world.getName() + ChatColor.RED + ".");
             return true;
         }
 
-        PreGenerator generator = this.plugin.getDhSupport().getPreGenerator(world);
+        Duration elapsedTime = generator.getElapsedTime();
 
         sender.sendMessage(ChatColor.GREEN + "Generation progress: " + ChatColor.YELLOW + String.format("%.2f", generator.getProgress() * 100f) + "%");
-        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests());
-        sender.sendMessage(ChatColor.GREEN + "Time estimate: " + ChatColor.YELLOW + String.format("%.2f", (generator.getTargetRequests() - generator.getCompletedRequests()) / this.plugin.getDhSupport().getGenerationPerSecondStat() / 60 / 60) + ChatColor.GREEN + " hours.");
+        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests() + ChatColor.GREEN + " (" + ChatColor.YELLOW + String.format("%.2f", (generator.getCompletedRequests() * 16F) / (float) elapsedTime.toSeconds()) + ChatColor.GREEN + " CPS)");
+        sender.sendMessage(ChatColor.GREEN + "Time elapsed: " + ChatColor.YELLOW + Utils.humanReadableDuration(elapsedTime));
+
+        if (generator.isRunning()) {
+            sender.sendMessage(ChatColor.GREEN + "Time remaining: " + ChatColor.YELLOW + Utils.humanReadableDuration(Duration.ofSeconds((long) ((generator.getTargetRequests() - generator.getCompletedRequests()) / this.plugin.getDhSupport().getGenerationPerSecondStat()))));
+        } else {
+            sender.sendMessage(ChatColor.GREEN + "Generation is complete.");
+        }
 
         return true;
     }

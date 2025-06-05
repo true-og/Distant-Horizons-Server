@@ -23,6 +23,7 @@ import no.jckf.dhsupport.core.database.models.LodModel;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
 import no.jckf.dhsupport.core.world.WorldInterface;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -39,6 +40,8 @@ public class PreGenerator implements Runnable
 
     protected int centerZ;
 
+    protected boolean force;
+
     protected int totalSteps;
 
     protected int stepsSoFar = 0;
@@ -47,13 +50,18 @@ public class PreGenerator implements Runnable
 
     protected boolean run = true;
 
-    public PreGenerator(DhSupport dhSupport, WorldInterface world, int centerX, int centerZ, int radius)
+    protected long startTime = 0;
+
+    protected long stopTime = 0;
+
+    public PreGenerator(DhSupport dhSupport, WorldInterface world, int centerX, int centerZ, int radius, boolean force)
     {
         this.dhSupport = dhSupport;
         this.world = world;
         this.centerX = Coordinates.blockToSection(centerX);
         this.centerZ = Coordinates.blockToSection(centerZ);
         this.radius = radius;
+        this.force = force;
 
         this.totalSteps = (int) Math.pow((double) Coordinates.blockToChunk(this.radius) / 2, 2);
     }
@@ -69,6 +77,8 @@ public class PreGenerator implements Runnable
         int dirIndex = 0;
 
         List<CompletableFuture<LodModel>> requests = new ArrayList<>();
+
+        this.startTime = System.currentTimeMillis();
 
         // Vibe code :>
         OUTER: for (int step = 1; this.stepsSoFar < totalSteps; step++) {
@@ -92,7 +102,11 @@ public class PreGenerator implements Runnable
                     position.setZ(currentZ);
                     position.setDetailLevel(6);
 
-                    CompletableFuture<LodModel> request = this.dhSupport.getLod(this.world.getId(), position);
+                    if (!this.force && this.dhSupport.lodRepository.lodExists(this.world.getId(), currentX, currentZ)) {
+                        continue;
+                    }
+
+                    CompletableFuture<LodModel> request = this.dhSupport.generateLod(this.world.getId(), position);
 
                     this.inFlight++;
                     request.handle((lodModel, exception) -> this.inFlight--);
@@ -110,6 +124,8 @@ public class PreGenerator implements Runnable
             }
         }
 
+        this.stopTime = System.currentTimeMillis();
+
         this.run = false;
     }
 
@@ -126,6 +142,15 @@ public class PreGenerator implements Runnable
     public float getProgress()
     {
         return (float) this.getCompletedRequests() / this.getTargetRequests();
+    }
+
+    public Duration getElapsedTime()
+    {
+        if (this.startTime == 0) {
+            return Duration.ZERO;
+        }
+
+        return Duration.ofMillis((this.stopTime == 0 ? System.currentTimeMillis() : this.stopTime) - this.startTime);
     }
 
     public boolean isRunning()
