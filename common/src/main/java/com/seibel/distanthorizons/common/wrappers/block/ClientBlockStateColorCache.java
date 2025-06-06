@@ -42,6 +42,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
