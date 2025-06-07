@@ -22,6 +22,8 @@ import no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin;
 import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.PreGenerator;
 import no.jckf.dhsupport.core.Utils;
+import no.jckf.dhsupport.core.configuration.Configuration;
+import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -33,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class DhsCommand implements CommandExecutor
 {
@@ -52,6 +55,9 @@ public class DhsCommand implements CommandExecutor
         }
 
         switch (args[0]) {
+            case "status":
+                return this.status(sender, Arrays.copyOfRange(args, 1, args.length));
+
             case "reload":
                 return this.reload(sender);
 
@@ -72,6 +78,75 @@ public class DhsCommand implements CommandExecutor
         }
 
         sender.sendMessage(ChatColor.RED + "Unknown sub-command.");
+
+        return true;
+    }
+
+    protected boolean status(CommandSender sender, String[] args)
+    {
+        if (args.length == 0) {
+            return this.statusServer(sender);
+        }
+
+        return this.statusPlayer(sender, args[0]);
+    }
+
+    protected boolean statusServer(CommandSender sender)
+    {
+        Configuration config;
+
+        if (sender instanceof Player) {
+            World world = ((Player) sender).getWorld();
+
+            config = this.plugin.getDhSupport().getWorldInterface(world.getUID()).getConfig();
+
+            sender.sendMessage(ChatColor.BLUE + "Distant Horizons Support status for world " + ChatColor.GREEN + world.getName() + ChatColor.BLUE + ":");
+        } else {
+            config = this.plugin.getDhSupport().getConfig();
+
+            sender.sendMessage(ChatColor.BLUE + "Distant Horizons Support status for " + ChatColor.GREEN + "global context" + ChatColor.BLUE + ":");
+        }
+
+        sender.sendMessage(ChatColor.BLUE + "Distant generation is " + (config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.RENDER_DISTANCE) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Real time updates is " + (config.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Builder type is " + ChatColor.GREEN + config.getString(DhsConfig.BUILDER_TYPE) + ChatColor.BLUE + ".");
+
+        int playerCount = this.plugin.getDhSupport().getPlayerConfigurations().size();
+
+        StringBuilder playerList = new StringBuilder();
+
+        for (UUID playerId : this.plugin.getDhSupport().getPlayerConfigurations().keySet()) {
+            playerList.append(ChatColor.GREEN + this.plugin.getServer().getPlayer(playerId).getName() + ChatColor.BLUE + ", ");
+        }
+
+        sender.sendMessage(ChatColor.BLUE + "There " + (playerCount == 1 ? "is" : "are") + " " + ChatColor.GREEN + playerCount + ChatColor.BLUE + " " + (playerCount == 1 ? "player" : "players") + " online using Distant Horizons" + (playerCount == 0 ? "." : ": " + playerList.substring(0, playerList.length() - 2)));
+
+        return true;
+    }
+
+    protected boolean statusPlayer(CommandSender sender, String playerName)
+    {
+        Player player = this.plugin.getServer().getPlayer(playerName);
+
+        if (player == null) {
+            sender.sendMessage(ChatColor.RED + "Player not found.");
+
+            return true;
+        }
+
+        Configuration config = this.plugin.getDhSupport().getPlayerConfiguration(player.getUniqueId());
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.YELLOW + "The player " + ChatColor.WHITE + player.getName() + ChatColor.YELLOW + " is not using Distant Horizons.");
+
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.BLUE + "Distant Horizons Support status for player " + ChatColor.GREEN + player.getName() + ChatColor.BLUE + ":");
+
+        sender.sendMessage(ChatColor.BLUE + "Distant generation is " + (config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.RENDER_DISTANCE) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Real time updates is " + (config.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Server has sent " + ChatColor.GREEN + config.getInt("buffer-id", 0) + ChatColor.BLUE + " LODs to them.");
 
         return true;
     }

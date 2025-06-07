@@ -288,6 +288,11 @@ public class DhSupport implements Configurable
         //this.getLogger().info("[DEBUG] " + message);
     }
 
+    public Map<UUID, Configuration> getPlayerConfigurations()
+    {
+        return this.playerConfigurations;
+    }
+
     public void setPlayerConfiguration(UUID playerId, Configuration playerConfiguration)
     {
         this.playerConfigurations.put(playerId, playerConfiguration);
