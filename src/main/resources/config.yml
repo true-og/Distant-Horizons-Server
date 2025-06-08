@@ -148,4 +148,4 @@ worlds:
 scheduler_threads: 4
 
 # Don't touch :)
-config_version: 6
+config_version: 7

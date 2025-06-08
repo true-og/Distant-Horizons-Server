@@ -110,8 +110,7 @@ public class DhSupport implements Configurable
 
             this.database.migrate();
         } catch (Exception exception) {
-            this.warning("Failed to initialize database: " + exception.getMessage());
-            // TODO: Disable the plugin?
+            throw new RuntimeException("Failed to initialize database: " + exception.getMessage());
         }
 
         (new PlayerConfigHandler(this, this.pluginMessageHandler)).register();
