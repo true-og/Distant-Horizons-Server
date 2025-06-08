@@ -81,6 +81,8 @@ public class PlayerConfigHandler
                 Object keepValue = null;
 
                 if (key.equals(DhsConfig.DISTANT_GENERATION_ENABLED) && !dhUseIsAllowed) {
+                    this.dhSupport.info("Player " + player.getName() + " has been denied the use of Distant Horizons through permissions.");
+
                     keepValue = false;
                 }
 
