@@ -146,8 +146,6 @@ public class Database
 
             this.markMigrationAsRan(name);
         }
-
-        this.optimize();
     }
 
     public void optimize() throws Exception
