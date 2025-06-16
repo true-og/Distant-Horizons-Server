@@ -114,7 +114,7 @@ public class DhSupport implements Configurable
         }
 
         try {
-            this.database.optimize();
+            //this.database.optimize();
         } catch (Exception exception) {
             this.warning("Failed to optimize database!");
 
