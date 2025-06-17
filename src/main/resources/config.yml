@@ -60,6 +60,11 @@ max_data_transfer_speed: 0
 # Default: true
 #generate_new_chunks_warning: false
 
+# How frequently (in seconds) should LODs be updated if world changes are detected?
+# Required.
+# Default: 5
+lod_refresh_interval: 5
+
 # Output builder activity to the server console.
 # Optional.
 # Default: true
@@ -148,4 +153,4 @@ worlds:
 scheduler_threads: 4
 
 # Don't touch :)
-config_version: 7
+config_version: 8
