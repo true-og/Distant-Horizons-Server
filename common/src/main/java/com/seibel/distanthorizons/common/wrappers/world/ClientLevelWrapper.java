@@ -110,14 +110,26 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 			}
 		}
 		
-		return LEVEL_WRAPPER_REF_BY_CLIENT_LEVEL.compute(level, (newLevel, levelRef) ->
+		
+		WeakReference<ClientLevelWrapper> levelRef = LEVEL_WRAPPER_REF_BY_CLIENT_LEVEL.get(level);
+		if (levelRef != null)
 		{
-			if (levelRef != null)
+			ClientLevelWrapper levelWrapper = levelRef.get();
+			if (levelWrapper != null)
 			{
-				ClientLevelWrapper oldLevelWrapper = levelRef.get();
+				return levelWrapper;
+			}
+		}
+		
+		
+		return LEVEL_WRAPPER_REF_BY_CLIENT_LEVEL.compute(level, (newLevel, newLevelRef) ->
+		{
+			if (newLevelRef != null)
+			{
+				ClientLevelWrapper oldLevelWrapper = newLevelRef.get();
 				if (oldLevelWrapper != null)
 				{
-					return levelRef;
+					return newLevelRef;
 				}
 			}
 			
