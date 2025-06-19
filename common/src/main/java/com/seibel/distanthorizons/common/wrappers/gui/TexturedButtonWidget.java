@@ -44,6 +44,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 #endif
 
+import net.minecraft.client.renderer.RenderPipelines;
+
 /**
  * Creates a button with a texture on it (and a background) that works with all mc versions
  *
@@ -172,9 +174,15 @@ public class TexturedButtonWidget extends Button
 		{
 			#if MC_VER < MC_1_21_3
 			matrices.blitSprite(SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight());
+			#elif MC_VER < MC_1_21_6
+			matrices.blitSprite(
+					RenderType::guiTextured,
+					SPRITES.get(this.active, this.isHoveredOrFocused()),
+					this.getX(), this.getY(),
+					this.getWidth(), this.getHeight());
 			#else
 			matrices.blitSprite(
-				RenderType::guiTextured,
+				RenderPipelines.GUI_TEXTURED,
 				SPRITES.get(this.active, this.isHoveredOrFocused()),
 				this.getX(), this.getY(),
 				this.getWidth(), this.getHeight());
@@ -196,9 +204,17 @@ public class TexturedButtonWidget extends Button
 		
 		#if MC_VER < MC_1_21_3
 		matrices.blit(this.textureResourceLocation, this.getX(), this.getY(), this.u, this.v + (this.hoveredVOffset * i), this.width, this.height, this.textureWidth, this.textureHeight);
-		#else
+		#elif MC_VER < MC_1_21_6
 		matrices.blit(
 				RenderType::guiTextured,
+				this.textureResourceLocation,
+				this.getX(), this.getY(),
+				this.u, this.v + (this.hoveredVOffset * i),
+				this.width, this.height,
+				this.textureWidth, this.textureHeight);
+		#else
+		matrices.blit(
+				RenderPipelines.GUI_TEXTURED,
 				this.textureResourceLocation,
 				this.getX(), this.getY(),
 				this.u, this.v + (this.hoveredVOffset * i),
