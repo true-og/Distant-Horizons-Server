@@ -20,9 +20,11 @@
 package com.seibel.distanthorizons.fabric.mixins.client;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.mojang.blaze3d.buffers.Std140Builder;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
+import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -55,8 +57,9 @@ import org.joml.Vector4f;
 #else
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.client.renderer.fog.FogRenderer;
-import net.minecraft.client.multiplayer.ClientLevel;
 import org.joml.Vector4f;
+
+import java.nio.ByteBuffer;
 #endif
 
 @Mixin(FogRenderer.class)
@@ -80,14 +83,27 @@ public class MixinFogRenderer
 	@Inject(at = @At("RETURN"), method = "setupFog", cancellable = true)
 	private static void disableSetupFog(Camera camera, FogMode fogMode, Vector4f vector4f, float f, boolean bl, float g, CallbackInfoReturnable<FogParameters> callback)
 	#else
-	@ModifyReturnValue(at = @At("RETURN"), method = "computeFogColor")
-	private static Vector4f disableSetupFog(Vector4f fogReturnValue, Camera camera, float f, ClientLevel clientLevel, int i, float g, boolean bl)
+	@Inject(at = @At("RETURN"), method = "updateBuffer")
+	private static void disableSetupFog(ByteBuffer fogDataBuffer, int bufferStartPos, Vector4f fogColor, float environmentalStart, float environmentalEnd, float renderDistanceStart, float renderDistanceEnd, float skyEnd, float cloudEnd, CallbackInfo callback)
 	#endif
 	{
 		#if MC_VER < MC_1_21_6
 		boolean cancelFog = cancelFog(camera, fogMode);
-		#else
+		#elif MC_VER < MC_1_21_6
 		boolean cancelFog = cancelFog(camera);
+		#else
+		// don't try disabling the "Empty fog" buffer, that one is already empty and
+		// will be called before the renderer is set up which can cause some weird null-pointer issues
+		if (fogColor.x == 0.0f // Red
+			&& fogColor.y == 0.0f // Green
+			&& fogColor.z == 0.0f // Blue
+			&& fogColor.w == 0.0f // Alpha
+			)
+		{
+			return;
+		}
+			
+		boolean cancelFog = cancelFog();
 		#endif
 		
 		if (cancelFog)
@@ -101,19 +117,22 @@ public class MixinFogRenderer
 			#elif MC_VER < MC_1_21_6
 			callback.setReturnValue(FogParameters.NO_FOG);
 			#else
-			// set the fog color to invisible
-			fogReturnValue.x = 0;
-			fogReturnValue.y = 0;
-			fogReturnValue.z = 0;
-			fogReturnValue.w = 0;
+			// replace the fog data with our own info
+			fogDataBuffer.position(bufferStartPos);
+			Std140Builder.intoBuffer(fogDataBuffer)
+					.putVec4(fogColor)
+					//environmentalStart/End
+					.putFloat(A_REALLY_REALLY_BIG_VALUE).putFloat(A_EVEN_LARGER_VALUE)
+					//renderDistanceStart/End
+					.putFloat(A_REALLY_REALLY_BIG_VALUE).putFloat(A_EVEN_LARGER_VALUE)
+					
+					// sky and cloud should be unaffected otherwise the distant sky will render incorrectly
+					// (IE have a large fog-colored block in the sky)
+					.putFloat(skyEnd)
+					.putFloat(cloudEnd);
 			#endif
 		}
 		
-		#if MC_VER < MC_1_21_6
-		// no return value needed
-		#else
-		return fogReturnValue;
-		#endif
 	}
 	
 	
@@ -122,12 +141,18 @@ public class MixinFogRenderer
 	#if MC_VER < MC_1_21_6
 	private static boolean cancelFog(Camera camera, FogMode fogMode)
 	#else
-	private static boolean cancelFog(Camera camera)
+	private static boolean cancelFog()
 	#endif
 	{
-		boolean cameraNotInFluid = cameraNotInFluid(camera);
-		
+		#if MC_VER < MC_1_21_6
 		Entity entity = camera.getEntity();
+		#else
+		Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+		Entity entity = camera.getEntity();	
+		#endif
+		
+		
+		boolean cameraNotInFluid = cameraNotInFluid(camera);
 		boolean isSpecialFog = (entity instanceof LivingEntity) && ((LivingEntity) entity).hasEffect(MobEffects.BLINDNESS);
 		
 		boolean cancelFog = !isSpecialFog;
