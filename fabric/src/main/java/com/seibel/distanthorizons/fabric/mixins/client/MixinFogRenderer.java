@@ -20,7 +20,6 @@
 package com.seibel.distanthorizons.fabric.mixins.client;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.mojang.blaze3d.buffers.Std140Builder;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
@@ -55,6 +54,7 @@ import net.minecraft.client.renderer.FogRenderer.FogMode;
 import net.minecraft.client.renderer.FogParameters;
 import org.joml.Vector4f;
 #else
+import com.mojang.blaze3d.buffers.Std140Builder;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import org.joml.Vector4f;
