@@ -420,7 +420,13 @@ public class ClassicConfigGUI
 			#endif
 			this.list.render(matrices, mouseX, mouseY, delta); // Render buttons
 			
-			DhDrawCenteredString(matrices, font, title, width / 2, 15, 0xFFFFFF); // Render title
+			// Render title
+			this.DhDrawCenteredString(matrices, this.font, this.title, this.width / 2, 15, 
+					#if MC_VER < MC_1_21_6 
+					0xFFFFFF // RGB white
+					#else 
+					0xFFFFFFFF // ARGB white
+					#endif);
 			
 			if (this.configBase.modID.equals("distanthorizons"))
 			{
@@ -429,7 +435,14 @@ public class ClassicConfigGUI
 				
 				// If the update is pending, display this message to inform the user that it will apply when the game restarts
 				if (SelfUpdater.deleteOldJarOnJvmShutdown)
-					DhDrawString(matrices, font, Translatable(configBase.modID + ".updater.waitingForClose"), 4, height - 38, 0xFFFFFF);
+				{
+					this.DhDrawString(matrices, this.font, Translatable(this.configBase.modID + ".updater.waitingForClose"), 4, this.height - 38, 
+						#if MC_VER < MC_1_21_6
+						0xFFFFFF // RGB white
+						#else 
+						0xFFFFFFFF // ARGB white
+						#endif);
+				}
 			}
 			
 			
@@ -659,8 +672,10 @@ public class ClassicConfigGUI
 			if (text != null && (!text.getString().contains("spacer") || button != null))
                 #if MC_VER < MC_1_20_1
 				GuiComponent.drawString(matrices, textRenderer, text, 12, y + 5, 0xFFFFFF);
+				#elif MC_VER < MC_1_21_6
+				matrices.drawString(textRenderer, this.text, 12, y + 5, 0xFFFFFF);
 				#else
-				matrices.drawString(textRenderer, text, 12, y + 5, 0xFFFFFF);
+				matrices.drawString(textRenderer, this.text, 12, y + 5, 0xFFFFFFFF);
 				#endif
 		}
 		
