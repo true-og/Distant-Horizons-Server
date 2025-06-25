@@ -39,12 +39,14 @@ import net.minecraft.client.renderer.GameRenderer;
 #elif MC_VER < MC_1_20_2
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.GuiGraphics;
+#elif MC_VER < MC_1_21_6
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 #else
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-#endif
-
 import net.minecraft.client.renderer.RenderPipelines;
+#endif
 
 /**
  * Creates a button with a texture on it (and a background) that works with all mc versions

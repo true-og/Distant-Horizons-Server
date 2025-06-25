@@ -19,31 +19,43 @@
 
 package com.seibel.distanthorizons.fabric.mixins.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 #if MC_VER < MC_1_19_4
 import com.mojang.math.Matrix4f;
 import org.lwjgl.opengl.GL32;
-#else
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+#elif MC_VER < MC_1_21_6
+import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4f;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+#else
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.seibel.distanthorizons.coreapi.ModInfo;
+import com.seibel.distanthorizons.fabric.FabricClientProxy;
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+import org.joml.Matrix4fc;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 #endif
-import com.seibel.distanthorizons.common.wrappers.chunk.ChunkWrapper;
+
+
 import com.seibel.distanthorizons.common.wrappers.McObjectConverter;
 import com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
 import com.seibel.distanthorizons.core.api.internal.ClientApi;
 import com.seibel.distanthorizons.core.util.math.Mat4f;
-import net.minecraft.client.Camera;
+import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import com.seibel.distanthorizons.core.config.Config;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import org.apache.logging.log4j.Logger;
 
 /**
  * This class is used to mix in my rendering code
@@ -51,8 +63,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * If this wasn't done, and we used Forge's
  * render last event, the LODs would render on top
  * of the normal terrain.
- *
- * This is also the mixin for rendering the clouds
  *
  * @author coolGi
  * @author James Seibel
@@ -63,7 +73,11 @@ public class MixinLevelRenderer
 {
     @Shadow
     private ClientLevel level;
-
+	
+	@Unique
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
+	
+	
 	#if MC_VER < MC_1_17_1
     @Inject(at = @At("HEAD"),
 			method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDD)V",
@@ -84,51 +98,63 @@ public class MixinLevelRenderer
 			method = "Lnet/minecraft/client/renderer/LevelRenderer;renderSectionLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
 			cancellable = true)
 	private void renderChunkLayer(RenderType renderType, PoseStack modelViewMatrixStack, double camX, double camY, double camZ, Matrix4f projectionMatrix, CallbackInfo callback)
-	#else
+	#elif MC_VER < MC_1_21_6
 	@Inject(at = @At("HEAD"),
 			method = "Lnet/minecraft/client/renderer/LevelRenderer;renderSectionLayer(Lnet/minecraft/client/renderer/RenderType;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
 			cancellable = true)
 	private void renderChunkLayer(RenderType renderType, double x, double y, double z, Matrix4f projectionMatrix, Matrix4f frustumMatrix, CallbackInfo callback)
+	#else
+	@Inject(at = @At("HEAD"), method = "prepareChunkRenders", cancellable = true)
+	private void renderChunkLayer(Matrix4fc projectionMatrix, double d, double e, double f, CallbackInfoReturnable<ChunkSectionsToRender> callback)
     #endif
     {
 		#if MC_VER == MC_1_16_5
 	    // get the matrices from the OpenGL fixed pipeline
 	    float[] mcProjMatrixRaw = new float[16];
 	    GL32.glGetFloatv(GL32.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
-	    Mat4f mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
-	    mcProjectionMatrix.transpose();
+	    FabricClientProxy.neoRenderState.mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
+	    FabricClientProxy.neoRenderState.mcProjectionMatrix.transpose();
 	    
-	    Mat4f mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
+	    FabricClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
 		
 		#elif MC_VER <= MC_1_20_4
 		// get the matrices directly from MC
-		Mat4f mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrixStack.last().pose());
-		Mat4f mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
+		FabricClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrixStack.last().pose());
+		FabricClientProxy.neoRenderState.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
 		#else
 	    // MC combined the model view and projection matricies
-	    Mat4f mcModelViewMatrix = McObjectConverter.Convert(projectionMatrix);
-	    Mat4f mcProjectionMatrix = new Mat4f();
-	    mcProjectionMatrix.setIdentity();
+	    FabricClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(projectionMatrix);
+	    FabricClientProxy.neoRenderState.mcProjectionMatrix = new Mat4f();
+	    FabricClientProxy.neoRenderState.mcProjectionMatrix.setIdentity();
 		#endif
 	    
 		// TODO move this into a common place
-		float frameTime;
 		#if MC_VER < MC_1_21_1
-		frameTime = Minecraft.getInstance().getFrameTime();
+		FabricClientProxy.neoRenderState.frameTime = Minecraft.getInstance().getFrameTime();
 		#elif MC_VER < MC_1_21_3
-		frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+		FabricClientProxy.neoRenderState.frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
 		#else
-		frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
+	    FabricClientProxy.neoRenderState.frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
 		#endif
 	    
+	    
+	    //LOGGER.info("\n\n" +
+		//	    "Level Mixin\n" +
+		//	    "Mc MVM: \n" + mcModelViewMatrix.toString() + "\n" +
+		//	    "Mc Proj: \n" + mcProjectionMatrix.toString()
+	    //);
+	    
+	    
+	    #if MC_VER < MC_1_21_6
 	    if (renderType.equals(RenderType.translucent())) 
 		{
-		    ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(this.level),
+		    ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
 				    mcModelViewMatrix,
 				    mcProjectionMatrix,
 				    frameTime
 				    );
 	    }
+	    #endif
 		
 		// FIXME completely disables rendering when sodium is installed
 		if (Config.Client.Advanced.Debugging.lodOnlyMode.get())
@@ -136,5 +162,31 @@ public class MixinLevelRenderer
 		    callback.cancel();
 		}
     }
+	
+	
+	
+	#if MC_VER < MC_1_21_6
+	
+	// formerly handled in renderChunkLayer()
+	
+	#else
+	@Inject(at = @At("HEAD"), method = "renderBlockDestroyAnimation", cancellable = true)
+	private void renderBlockDestroyAnimation(PoseStack poseStack, Camera camera, MultiBufferSource.BufferSource bufferSource, CallbackInfo callback)
+	{
+		// only crash during development
+		if (ModInfo.IS_DEV_BUILD)
+		{
+			FabricClientProxy.neoRenderState.canRenderOrThrow();
+		}
+		
+		ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
+			    FabricClientProxy.neoRenderState.mcModelViewMatrix,
+			    FabricClientProxy.neoRenderState.mcProjectionMatrix,
+			    FabricClientProxy.neoRenderState.frameTime
+			    );
+	}
+	#endif
+	
+	
 	
 }

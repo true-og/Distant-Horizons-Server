@@ -91,6 +91,44 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 	
 	HashSet<Integer> previouslyPressKeyCodes = new HashSet<>();
 	
+	public static NeoRenderState neoRenderState = new NeoRenderState();
+	
+	
+	public static class NeoRenderState
+	{
+		public Mat4f mcModelViewMatrix = null;
+		public Mat4f mcProjectionMatrix = null;
+		public float frameTime = -1;
+		
+		
+		public void canRenderOrThrow() throws IllegalStateException
+		{
+			String errorReasons = "";
+			
+			if (this.mcModelViewMatrix == null)
+			{
+				errorReasons += "no MVM Matrix, ";
+			}
+			
+			if (this.mcProjectionMatrix == null)
+			{
+				errorReasons += "no Projection Matrix, ";
+			}
+			
+			if (this.frameTime == -1)
+			{
+				errorReasons += "no Frame Time, ";
+			}
+			
+			
+			if (!errorReasons.isEmpty())
+			{
+				throw new IllegalStateException(errorReasons);
+			}
+			
+		}
+	}
+	
 	
 	
 	/**
@@ -227,6 +265,14 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 			#else
 			modelViewMatrix = McObjectConverter.Convert(renderContext.positionMatrix());
 			#endif
+			
+			
+			//LOGGER.info("\n\n" +
+			//		"Level Render\n" +
+			//		"Mc MVM: \n" + modelViewMatrix.toString() + "\n" +
+			//		"Mc Proj: \n" + projectionMatrix.toString()
+			//);
+			
 			
 			this.clientApi.renderLods(ClientLevelWrapper.getWrapper(renderContext.world()),
 					modelViewMatrix,

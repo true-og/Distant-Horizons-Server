@@ -78,11 +78,9 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	private static final IMinecraftClientWrapper MC = SingletonInjector.INSTANCE.get(IMinecraftClientWrapper.class);
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 
-//	private static SimpleChannel multiversePluginChannel;
-	
 	// Not the cleanest way of passing this to the LOD renderer, but it'll have to do for now
-	public static Mat4f currentModelViewMatrix = new Mat4f();
-	public static Mat4f currentProjectionMatrix = new Mat4f();
+	public static NeoRenderState neoRenderState = new NeoRenderState();
+	
 	
 	
 	
@@ -245,16 +243,6 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	//===========//
 	
 	@SubscribeEvent
-	public void beforeLevelRenderEvent(RenderLevelStageEvent event)
-	{
-		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY)
-		{
-			currentModelViewMatrix = McObjectConverter.Convert(event.getModelViewMatrix());
-			currentProjectionMatrix = McObjectConverter.Convert(event.getProjectionMatrix());
-		}
-	}
-	
-	@SubscribeEvent
 	public void afterLevelRenderEvent(RenderLevelStageEvent event)
 	{
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
@@ -280,6 +268,47 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	//================//
 	
 	private static LevelAccessor GetEventLevel(LevelEvent e) { return e.getLevel(); }
+	
+	
+	
+	//================//
+	// helper classes //
+	//================//
+	
+	public static class NeoRenderState
+	{
+		public Mat4f mcModelViewMatrix = null;
+		public Mat4f mcProjectionMatrix = null;
+		public float frameTime = -1;
+		
+		
+		public void canRenderOrThrow() throws IllegalStateException
+		{
+			String errorReasons = "";
+			
+			if (this.mcModelViewMatrix == null)
+			{
+				errorReasons += "no MVM Matrix, ";
+			}
+			
+			if (this.mcProjectionMatrix == null)
+			{
+				errorReasons += "no Projection Matrix, ";
+			}
+			
+			if (this.frameTime == -1)
+			{
+				errorReasons += "no Frame Time, ";
+			}
+			
+			
+			if (!errorReasons.isEmpty())
+			{
+				throw new IllegalStateException(errorReasons);
+			}
+			
+		}
+	}
 	
 	
 }
