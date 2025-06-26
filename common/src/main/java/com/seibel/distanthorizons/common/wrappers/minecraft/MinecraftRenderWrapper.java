@@ -33,7 +33,8 @@ import com.seibel.distanthorizons.core.logging.DhLoggerBuilder;
 import com.seibel.distanthorizons.core.util.ColorUtil;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.ILightMapWrapper;
 
-#if MC_VER >= MC_1_17_1 && MC_VER < MC_1_21_6
+#if MC_VER < MC_1_17_1
+#elif MC_VER < MC_1_21_6
 import net.minecraft.client.renderer.FogRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 #else
@@ -108,7 +109,10 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 	public boolean colorTextureCastFailLogged = false;
 	public boolean depthTextureCastFailLogged = false;
 	
+	#if MC_VER < MC_1_21_6
+	#else
 	private static FogRenderer mcFogRenderer = null;
+	#endif
 	
 	
 	

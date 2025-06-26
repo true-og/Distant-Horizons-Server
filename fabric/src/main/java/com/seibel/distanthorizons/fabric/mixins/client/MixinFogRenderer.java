@@ -19,7 +19,6 @@
 
 package com.seibel.distanthorizons.fabric.mixins.client;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.seibel.distanthorizons.core.config.Config;
 import com.seibel.distanthorizons.core.dependencyInjection.SingletonInjector;
 import com.seibel.distanthorizons.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
