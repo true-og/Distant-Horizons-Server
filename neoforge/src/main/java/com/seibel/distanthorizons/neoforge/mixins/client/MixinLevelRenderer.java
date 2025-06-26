@@ -99,26 +99,26 @@ public class MixinLevelRenderer
 	{
 		#if MC_VER < MC_1_21_6
 		// MC combined the model view and projection matricies
-		NeoforgeClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrix);
-		NeoforgeClientProxy.neoRenderState.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
+		ClientApi.RENDER_STATE.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrix);
+		ClientApi.RENDER_STATE.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
 		#else
-		NeoforgeClientProxy.neoRenderState.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
+		ClientApi.RENDER_STATE.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
 		#endif
 	
 		//LOGGER.info("\n\n" +
 		//		"Level Mixin\n" +
-		//		"Mc MVM: \n" + NeoforgeClientProxy.neoRenderState.mcModelViewMatrix.toString() + "\n" +
-		//		"Mc Proj: \n" + NeoforgeClientProxy.neoRenderState.mcProjectionMatrix.toString()
+		//		"Mc MVM: \n" + ClientApi.RENDER_STATE.mcModelViewMatrix.toString() + "\n" +
+		//		"Mc Proj: \n" + ClientApi.RENDER_STATE.mcProjectionMatrix.toString()
 		//);
 		
 		
 		
 		#if MC_VER < MC_1_21_1
-		NeoforgeClientProxy.neoRenderState.frameTime = Minecraft.getInstance().getFrameTime();
+		ClientApi.RENDER_STATE.frameTime = Minecraft.getInstance().getFrameTime();
 		#elif MC_VER < MC_1_21_3
-		NeoforgeClientProxy.neoRenderState.frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+		ClientApi.RENDER_STATE.frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
 		#else
-		NeoforgeClientProxy.neoRenderState.frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
+		ClientApi.RENDER_STATE.frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
 		#endif
 		
 		
@@ -127,23 +127,23 @@ public class MixinLevelRenderer
 		// only crash during development
 		if (ModInfo.IS_DEV_BUILD)
 		{
-			NeoforgeClientProxy.neoRenderState.canRenderOrThrow();
+			ClientApi.RENDER_STATE.canRenderOrThrow();
 		}
 		
 		// render LODs
 		if (renderType.equals(RenderType.solid()))
 		{
 			ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(this.level),
-					NeoforgeClientProxy.neoRenderState.mcModelViewMatrix,
-					NeoforgeClientProxy.neoRenderState.mcProjectionMatrix,
-					NeoforgeClientProxy.neoRenderState.frameTime);
+					ClientApi.RENDER_STATE.mcModelViewMatrix,
+					ClientApi.RENDER_STATE.mcProjectionMatrix,
+					ClientApi.RENDER_STATE.frameTime);
 		} 
 		else if (renderType.equals(RenderType.translucent())) 
 		{
 			ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
-					NeoforgeClientProxy.neoRenderState.mcModelViewMatrix,
-					NeoforgeClientProxy.neoRenderState.mcProjectionMatrix,
-					NeoforgeClientProxy.neoRenderState.frameTime);
+					ClientApi.RENDER_STATE.mcModelViewMatrix,
+					ClientApi.RENDER_STATE.mcProjectionMatrix,
+					ClientApi.RENDER_STATE.frameTime);
 		}
 		
 		// render fade
@@ -153,18 +153,18 @@ public class MixinLevelRenderer
 		if (renderType.equals(RenderType.cutout()))
 		{
 			ClientApi.INSTANCE.renderFadeOpaque(
-					NeoforgeClientProxy.neoRenderState.mcModelViewMatrix,
-					NeoforgeClientProxy.neoRenderState.mcProjectionMatrix,
-					NeoforgeClientProxy.neoRenderState.frameTime,
+					ClientApi.RENDER_STATE.mcModelViewMatrix,
+					ClientApi.RENDER_STATE.mcProjectionMatrix,
+					ClientApi.RENDER_STATE.frameTime,
 					ClientLevelWrapper.getWrapper(this.level)
 			);
 		}
 		else if (renderType.equals(RenderType.tripwire()))
 		{
 			ClientApi.INSTANCE.renderFade(
-					NeoforgeClientProxy.neoRenderState.mcModelViewMatrix,
-					NeoforgeClientProxy.neoRenderState.mcProjectionMatrix,
-					NeoforgeClientProxy.neoRenderState.frameTime,
+					ClientApi.RENDER_STATE.mcModelViewMatrix,
+					ClientApi.RENDER_STATE.mcProjectionMatrix,
+					ClientApi.RENDER_STATE.frameTime,
 					ClientLevelWrapper.getWrapper(this.level)
 			);
 		}
@@ -185,18 +185,18 @@ public class MixinLevelRenderer
 	@Inject(at = @At("HEAD"), method = "prepareChunkRenders", cancellable = true)
 	private void renderChunkLayer(Matrix4fc modelViewMatrix, double d, double e, double f, CallbackInfoReturnable<ChunkSectionsToRender> callback)
 	{
-		NeoforgeClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrix);
+		ClientApi.RENDER_STATE.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrix);
 
 		// only crash during development
 		if (ModInfo.IS_DEV_BUILD)
 		{
-			NeoforgeClientProxy.neoRenderState.canRenderOrThrow();
+			ClientApi.RENDER_STATE.canRenderOrThrow();
 		}
 		
 		ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(this.level), 
-				NeoforgeClientProxy.neoRenderState.mcModelViewMatrix, 
-				NeoforgeClientProxy.neoRenderState.mcProjectionMatrix, 
-				NeoforgeClientProxy.neoRenderState.frameTime);
+				ClientApi.RENDER_STATE.mcModelViewMatrix, 
+				ClientApi.RENDER_STATE.mcProjectionMatrix, 
+				ClientApi.RENDER_STATE.frameTime);
 	}
 	
 	
@@ -206,13 +206,13 @@ public class MixinLevelRenderer
 		// only crash during development
 		if (ModInfo.IS_DEV_BUILD)
 		{
-			NeoforgeClientProxy.neoRenderState.canRenderOrThrow();
+			ClientApi.RENDER_STATE.canRenderOrThrow();
 		}
 		
 		ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
-				NeoforgeClientProxy.neoRenderState.mcModelViewMatrix,
-				NeoforgeClientProxy.neoRenderState.mcProjectionMatrix,
-				NeoforgeClientProxy.neoRenderState.frameTime
+				ClientApi.RENDER_STATE.mcModelViewMatrix,
+				ClientApi.RENDER_STATE.mcProjectionMatrix,
+				ClientApi.RENDER_STATE.frameTime
 		);
 	}
 	

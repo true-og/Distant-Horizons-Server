@@ -115,29 +115,29 @@ public class MixinLevelRenderer
 	    // get the matrices from the OpenGL fixed pipeline
 	    float[] mcProjMatrixRaw = new float[16];
 	    GL32.glGetFloatv(GL32.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
-	    FabricClientProxy.neoRenderState.mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
-	    FabricClientProxy.neoRenderState.mcProjectionMatrix.transpose();
+	    ClientApi.RENDER_STATE.mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
+	    ClientApi.RENDER_STATE.mcProjectionMatrix.transpose();
 	    
-	    FabricClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
+	    ClientApi.RENDER_STATE.mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
 		
 		#elif MC_VER <= MC_1_20_4
 		// get the matrices directly from MC
-		FabricClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrixStack.last().pose());
-		FabricClientProxy.neoRenderState.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
+		ClientApi.RENDER_STATE.mcModelViewMatrix = McObjectConverter.Convert(modelViewMatrixStack.last().pose());
+		ClientApi.RENDER_STATE.mcProjectionMatrix = McObjectConverter.Convert(projectionMatrix);
 		#else
 	    // MC combined the model view and projection matricies
-	    FabricClientProxy.neoRenderState.mcModelViewMatrix = McObjectConverter.Convert(projectionMatrix);
-	    FabricClientProxy.neoRenderState.mcProjectionMatrix = new Mat4f();
-	    FabricClientProxy.neoRenderState.mcProjectionMatrix.setIdentity();
+	    ClientApi.RENDER_STATE.mcModelViewMatrix = McObjectConverter.Convert(projectionMatrix);
+	    ClientApi.RENDER_STATE.mcProjectionMatrix = new Mat4f();
+	    ClientApi.RENDER_STATE.mcProjectionMatrix.setIdentity();
 		#endif
 	    
 		// TODO move this into a common place
 		#if MC_VER < MC_1_21_1
-		FabricClientProxy.neoRenderState.frameTime = Minecraft.getInstance().getFrameTime();
+		ClientApi.RENDER_STATE.frameTime = Minecraft.getInstance().getFrameTime();
 		#elif MC_VER < MC_1_21_3
-		FabricClientProxy.neoRenderState.frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+		ClientApi.RENDER_STATE.frameTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
 		#else
-	    FabricClientProxy.neoRenderState.frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
+	    ClientApi.RENDER_STATE.frameTime = Minecraft.getInstance().deltaTracker.getRealtimeDeltaTicks();
 		#endif
 	    
 	    
@@ -152,9 +152,9 @@ public class MixinLevelRenderer
 	    if (renderType.equals(RenderType.translucent())) 
 		{
 		    ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
-				    FabricClientProxy.neoRenderState.mcModelViewMatrix,
-				    FabricClientProxy.neoRenderState.mcProjectionMatrix,
-				    FabricClientProxy.neoRenderState.frameTime
+				    ClientApi.RENDER_STATE.mcModelViewMatrix,
+				    ClientApi.RENDER_STATE.mcProjectionMatrix,
+				    ClientApi.RENDER_STATE.frameTime
 				    );
 	    }
 	    #endif
@@ -179,13 +179,13 @@ public class MixinLevelRenderer
 		// only crash during development
 		if (ModInfo.IS_DEV_BUILD)
 		{
-			FabricClientProxy.neoRenderState.canRenderOrThrow();
+			ClientApi.RENDER_STATE.canRenderOrThrow();
 		}
 		
 		ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
-			    FabricClientProxy.neoRenderState.mcModelViewMatrix,
-			    FabricClientProxy.neoRenderState.mcProjectionMatrix,
-			    FabricClientProxy.neoRenderState.frameTime
+			    ClientApi.RENDER_STATE.mcModelViewMatrix,
+			    ClientApi.RENDER_STATE.mcProjectionMatrix,
+			    ClientApi.RENDER_STATE.frameTime
 			    );
 	}
 	#endif
