@@ -78,11 +78,6 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	private static final IMinecraftClientWrapper MC = SingletonInjector.INSTANCE.get(IMinecraftClientWrapper.class);
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 
-	// Not the cleanest way of passing this to the LOD renderer, but it'll have to do for now
-	public static NeoRenderState neoRenderState = new NeoRenderState();
-	
-	
-	
 	
 	
 	@Override
