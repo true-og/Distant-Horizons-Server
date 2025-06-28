@@ -199,23 +199,6 @@ public class MixinLevelRenderer
 				ClientApi.RENDER_STATE.frameTime);
 	}
 	
-	
-	@Inject(at = @At("HEAD"), method = "renderBlockDestroyAnimation", cancellable = true)
-	private void renderBlockDestroyAnimation(PoseStack poseStack, Camera camera, MultiBufferSource.BufferSource bufferSource, CallbackInfo callback)
-	{
-		// only crash during development
-		if (ModInfo.IS_DEV_BUILD)
-		{
-			ClientApi.RENDER_STATE.canRenderOrThrow();
-		}
-		
-		ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
-				ClientApi.RENDER_STATE.mcModelViewMatrix,
-				ClientApi.RENDER_STATE.mcProjectionMatrix,
-				ClientApi.RENDER_STATE.frameTime
-		);
-	}
-	
 	#endif
 	
 	

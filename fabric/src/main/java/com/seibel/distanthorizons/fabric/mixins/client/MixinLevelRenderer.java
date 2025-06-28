@@ -31,12 +31,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 #else
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import org.joml.Matrix4fc;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 #endif
 
@@ -60,17 +56,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 
 import org.apache.logging.log4j.Logger;
 
-/**
- * This class is used to mix in my rendering code
- * before Minecraft starts rendering blocks.
- * If this wasn't done, and we used Forge's
- * render last event, the LODs would render on top
- * of the normal terrain.
- *
- * @author coolGi
- * @author James Seibel
- * @version 12-31-2021
- */
+
 @Mixin(LevelRenderer.class)
 public class MixinLevelRenderer
 {
@@ -108,7 +94,7 @@ public class MixinLevelRenderer
 	private void renderChunkLayer(RenderType renderType, double x, double y, double z, Matrix4f projectionMatrix, Matrix4f frustumMatrix, CallbackInfo callback)
 	#else
 	@Inject(at = @At("HEAD"), method = "prepareChunkRenders", cancellable = true)
-	private void renderChunkLayer(Matrix4fc projectionMatrix, double d, double e, double f, CallbackInfoReturnable<ChunkSectionsToRender> callback)
+	private void prepareChunkRenders(Matrix4fc projectionMatrix, double d, double e, double f, CallbackInfoReturnable<ChunkSectionsToRender> callback)
     #endif
     {
 		#if MC_VER == MC_1_16_5
@@ -157,6 +143,8 @@ public class MixinLevelRenderer
 				    ClientApi.RENDER_STATE.frameTime
 				    );
 	    }
+		#else
+		// rendering handled via Fabric Api render event
 	    #endif
 		
 		// FIXME completely disables rendering when sodium is installed
@@ -165,30 +153,6 @@ public class MixinLevelRenderer
 		    callback.cancel();
 		}
     }
-	
-	
-	
-	#if MC_VER < MC_1_21_6
-	
-	// formerly handled in renderChunkLayer()
-	
-	#else
-	@Inject(at = @At("HEAD"), method = "renderBlockDestroyAnimation", cancellable = true)
-	private void renderBlockDestroyAnimation(PoseStack poseStack, Camera camera, MultiBufferSource.BufferSource bufferSource, CallbackInfo callback)
-	{
-		// only crash during development
-		if (ModInfo.IS_DEV_BUILD)
-		{
-			ClientApi.RENDER_STATE.canRenderOrThrow();
-		}
-		
-		ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(this.level),
-			    ClientApi.RENDER_STATE.mcModelViewMatrix,
-			    ClientApi.RENDER_STATE.mcProjectionMatrix,
-			    ClientApi.RENDER_STATE.frameTime
-			    );
-	}
-	#endif
 	
 	
 	

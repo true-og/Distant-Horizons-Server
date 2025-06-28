@@ -284,6 +284,17 @@ public class FabricClientProxy implements AbstractModInitializer.IEventProxy
 			modelViewMatrix = McObjectConverter.Convert(renderContext.positionMatrix());
 			#endif
 			
+			
+			#if MC_VER < MC_1_21_6
+			// rendered in MixinLevelRenderer
+			#else
+			ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper(renderContext.world()),
+					ClientApi.RENDER_STATE.mcModelViewMatrix,
+					ClientApi.RENDER_STATE.mcProjectionMatrix,
+					ClientApi.RENDER_STATE.frameTime
+			);
+			#endif
+			
 			this.clientApi.renderFade(
 					modelViewMatrix,
 					projectionMatrix,

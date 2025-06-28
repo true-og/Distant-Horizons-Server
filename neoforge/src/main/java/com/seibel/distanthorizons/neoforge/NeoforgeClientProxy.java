@@ -254,6 +254,17 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 				LOGGER.error("Unexpected error in afterLevelRenderEvent: "+e.getMessage(), e);
 			}
 		}
+		#if MC_VER < MC_1_21_6
+		#else
+		else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)
+		{
+			ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper((ClientLevel)event.getLevel()),
+					ClientApi.RENDER_STATE.mcModelViewMatrix,
+					ClientApi.RENDER_STATE.mcProjectionMatrix,
+					ClientApi.RENDER_STATE.frameTime
+			);
+		}
+		#endif
 	}
 	
 	
