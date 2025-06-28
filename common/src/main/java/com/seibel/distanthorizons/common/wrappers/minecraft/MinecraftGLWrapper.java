@@ -233,7 +233,7 @@ public class MinecraftGLWrapper implements IMinecraftGLWrapper
 		GlStateManager._activeTexture(textureId);
 	}
 	@Override
-	public int getActiveTexture() { return GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE); }
+	public int getActiveTexture() { return GL32.glGetInteger(GL32.GL_TEXTURE_BINDING_2D); }
 	
 	/**
 	 * Always binds to {@link GL32#GL_TEXTURE_2D}
