@@ -447,6 +447,8 @@ subprojects { p ->
 
                 fabric_incompatibility_list  : fabric_incompatibility_list,
                 fabric_recommend_list        : fabric_recommend_list,
+
+                neoforge_version_range       : neoforge_version_range,
         ]
         
         // replace any properties in the sub-projects with the values defined here
