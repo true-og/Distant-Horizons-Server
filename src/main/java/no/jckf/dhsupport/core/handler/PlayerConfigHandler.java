@@ -95,11 +95,6 @@ public class PlayerConfigHandler
                     keepValue = world.getWorldBorderRadius();
                 }
 
-                // Hack to scale border center position.
-                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && keepValue != null) {
-                    keepValue = (int) (((Integer) keepValue).doubleValue() * coordinateScale);
-                }
-
                 if (keepValue == null) {
                     if (dhsValue instanceof Boolean dhsBool && clientValue instanceof Boolean clientBool) {
                         keepValue = dhsBool && clientBool;
