@@ -237,6 +237,7 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	// rendering //
 	//===========//
 	
+	#if MC_VER < MC_1_21_6
 	@SubscribeEvent
 	public void afterLevelRenderEvent(RenderLevelStageEvent event)
 	{
@@ -254,18 +255,36 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 				LOGGER.error("Unexpected error in afterLevelRenderEvent: "+e.getMessage(), e);
 			}
 		}
-		#if MC_VER < MC_1_21_6
-		#else
-		else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)
-		{
-			ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper((ClientLevel)event.getLevel()),
-					ClientApi.RENDER_STATE.mcModelViewMatrix,
-					ClientApi.RENDER_STATE.mcProjectionMatrix,
-					ClientApi.RENDER_STATE.frameTime
-			);
-		}
-		#endif
 	}
+	#else
+	
+	@SubscribeEvent
+	public void afterLevelTranslucentRenderEvent(RenderLevelStageEvent.AfterTranslucentBlocks event)
+	{
+		ClientApi.INSTANCE.renderDeferredLodsForShaders(ClientLevelWrapper.getWrapper((ClientLevel)event.getLevel()),
+				ClientApi.RENDER_STATE.mcModelViewMatrix,
+				ClientApi.RENDER_STATE.mcProjectionMatrix,
+				ClientApi.RENDER_STATE.frameTime
+		);
+	}
+	
+	@SubscribeEvent
+	public void afterLevelRenderEvent(RenderLevelStageEvent.AfterLevel event)
+	{
+		try
+		{
+			// should generally only need to be set once per game session
+			// allows DH to render directly to Optifine's level frame buffer,
+			// allowing better shader support
+			MinecraftRenderWrapper.INSTANCE.finalLevelFrameBufferId = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
+		}
+		catch (Exception | Error e)
+		{
+			LOGGER.error("Unexpected error in afterLevelRenderEvent: "+e.getMessage(), e);
+		}
+	}
+	
+	#endif
 	
 	
 	
