@@ -258,6 +258,19 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 	}
 	#else
 	
+	
+	@SubscribeEvent
+	public void afterLevelEntityRenderEvent(RenderLevelStageEvent.AfterEntities event)
+	{
+		ClientApi.INSTANCE.renderFade(
+				ClientApi.RENDER_STATE.mcModelViewMatrix,
+				ClientApi.RENDER_STATE.mcProjectionMatrix,
+				ClientApi.RENDER_STATE.frameTime,
+				ClientLevelWrapper.getWrapper((ClientLevel)event.getLevel())
+		);
+	}
+	
+	
 	@SubscribeEvent
 	public void afterLevelTranslucentRenderEvent(RenderLevelStageEvent.AfterTranslucentBlocks event)
 	{
@@ -282,6 +295,14 @@ public class NeoforgeClientProxy implements AbstractModInitializer.IEventProxy
 		{
 			LOGGER.error("Unexpected error in afterLevelRenderEvent: "+e.getMessage(), e);
 		}
+		
+		
+		ClientApi.INSTANCE.renderFadeOpaque(
+				ClientApi.RENDER_STATE.mcModelViewMatrix,
+				ClientApi.RENDER_STATE.mcProjectionMatrix,
+				ClientApi.RENDER_STATE.frameTime,
+				ClientLevelWrapper.getWrapper((ClientLevel)event.getLevel())
+		);
 	}
 	
 	#endif
