@@ -98,7 +98,7 @@ public class Utils
             builder.append(", ");
         }
 
-        if (duration.toSeconds() > 0) {
+        if (duration.toSeconds() > 0 || builder.isEmpty()) {
             builder.append(duration.toSecondsPart()).append(" second");
 
             if (duration.toSecondsPart() != 1) {
