@@ -26,6 +26,8 @@ public abstract class DhsConfig
 
     public static String DATABASE_PATH = "database_path";
 
+    public static String CHECK_FOR_UPDATES = "check_for_updates";
+
     public static String RENDER_DISTANCE = "render_distance";
 
     public static String DISTANT_GENERATION_ENABLED = "distant_generation_enabled";

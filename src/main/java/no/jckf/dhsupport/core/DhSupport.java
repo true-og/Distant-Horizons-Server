@@ -65,6 +65,8 @@ public class DhSupport implements Configurable
 
     protected Scheduler scheduler;
 
+    protected UpdateChecker updateChecker;
+
     @Nullable
     protected CompletableFuture<?> pause;
 
@@ -94,6 +96,8 @@ public class DhSupport implements Configurable
         this.lodRepository = new AsyncLodRepository(this.database);
 
         this.pluginMessageHandler = new PluginMessageHandler(this);
+
+        this.updateChecker = new UpdateChecker(62013887);
     }
 
     public void onEnable()
@@ -129,6 +133,10 @@ public class DhSupport implements Configurable
         if (this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true) && this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS_WARNING, true)) {
             this.warning("Chunk generation is enabled. New chunks will be generated as needed to complete LOD generation. This could significantly increase the size of your world.");
             this.warning("If you understand what this means and would like to disable this warning, set " + DhsConfig.GENERATE_NEW_CHUNKS_WARNING + " to false in your config.");
+        }
+
+        if (this.getConfig().getBool(DhsConfig.CHECK_FOR_UPDATES, true)) {
+            this.checkUpdates();
         }
     }
 
@@ -293,6 +301,11 @@ public class DhSupport implements Configurable
     public void debug(String message)
     {
         //this.getLogger().info("[DEBUG] " + message);
+    }
+
+    public void checkUpdates()
+    {
+        this.info("Latest version: " + this.updateChecker.getLatestVersion());
     }
 
     public Map<UUID, Configuration> getPlayerConfigurations()
