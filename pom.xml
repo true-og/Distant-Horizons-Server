@@ -248,5 +248,6 @@
         <module>pom-1.21.3.xml</module>
         <module>pom-1.21.4.xml</module>
         <module>pom-1.21.5.xml</module>
+        <module>pom-1.21.7.xml</module>
     </modules>
 </project>
