@@ -14,7 +14,6 @@
         <mc.api-version></mc.api-version>
         <mc.api-version-patch></mc.api-version-patch>
         <mc.plugin-api></mc.plugin-api>
-        <dhs.read-forge-byte></dhs.read-forge-byte>
         <skip-copy>true</skip-copy>
     </properties>
 
@@ -111,19 +110,6 @@
                     <source>${jdk}</source>
                     <target>${jdk}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
-
-                    <compilerArgs>
-                        <arg>-Xplugin:Manifold</arg>
-                        <arg>-AREAD_FORGE_BYTE=${dhs.read-forge-byte}</arg>
-                    </compilerArgs>
-
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>systems.manifold</groupId>
-                            <artifactId>manifold-preprocessor</artifactId>
-                            <version>2024.1.34</version>
-                        </path>
-                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
