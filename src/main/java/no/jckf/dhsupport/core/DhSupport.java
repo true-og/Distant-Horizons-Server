@@ -53,6 +53,10 @@ import java.util.logging.Logger;
 
 public class DhSupport implements Configurable
 {
+    protected String pluginVersion;
+
+    protected String mcVersion;
+
     protected String dataDirectory;
 
     protected Database database;
@@ -88,8 +92,11 @@ public class DhSupport implements Configurable
 
     protected Map<UUID, PreGenerator> preGenerators = new HashMap<>();
 
-    public DhSupport()
+    public DhSupport(String pluginVersion, String mcVersion)
     {
+        this.pluginVersion = pluginVersion;
+        this.mcVersion = mcVersion;
+
         this.configuration = new Configuration();
 
         this.database = new Database();
@@ -305,7 +312,11 @@ public class DhSupport implements Configurable
 
     public void checkUpdates()
     {
-        this.info("Latest version: " + this.updateChecker.getLatestVersion());
+        if (this.updateChecker.isLatestVersion(this.pluginVersion)) {
+            return;
+        }
+
+        this.warning("A newer version of the plugin is available.");
     }
 
     public Map<UUID, Configuration> getPlayerConfigurations()

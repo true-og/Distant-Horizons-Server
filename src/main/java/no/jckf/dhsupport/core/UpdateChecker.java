@@ -66,7 +66,7 @@ public class UpdateChecker
         return (JSONObject) releases.get(0);
     }
 
-    public String getLatestVersion()
+    protected String getLatestVersion()
     {
         try {
             return this.getLatestRelease().getString("tag_name");
@@ -75,5 +75,36 @@ public class UpdateChecker
         }
 
         return null;
+    }
+
+    public boolean isLatestVersion(String version)
+    {
+        String latestVersionString = this.getLatestVersion();
+
+        // If the version check fails, pretend like we're up to date.
+        if (latestVersionString == null) {
+            return true;
+        }
+
+        String[] myVersion = version.split("[.-]");
+        String[] latestVersion = latestVersionString.split("\\.");
+
+        for (int i = 0; i < 3; i++) {
+            int mySegment = Integer.parseInt(myVersion[i]);
+            int latestSegment = Integer.parseInt(latestVersion[i]);
+
+            // Our version is newer than the latest release.
+            if (mySegment > latestSegment) {
+                return true;
+            }
+
+            // Our version is older than the latest release.
+            if (mySegment < latestSegment) {
+                return false;
+            }
+        }
+
+        // Our version is equal to the latest release.
+        return true;
     }
 }

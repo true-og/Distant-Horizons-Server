@@ -64,7 +64,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.getLogger().info("I am DHS " + pluginVersion + " for MC " + mcVersion + ".");
 
-        this.dhSupport = new DhSupport();
+        this.dhSupport = new DhSupport(pluginVersion, mcVersion);
         this.dhSupport.setLogger(this.getLogger());
         this.dhSupport.setDataDirectory(this.getDataFolder().getAbsolutePath());
 
