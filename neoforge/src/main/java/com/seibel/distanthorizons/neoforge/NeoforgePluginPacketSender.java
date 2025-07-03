@@ -5,11 +5,14 @@ import com.seibel.distanthorizons.common.wrappers.misc.ServerPlayerWrapper;
 import com.seibel.distanthorizons.common.AbstractPluginPacketSender;
 import com.seibel.distanthorizons.core.network.messages.AbstractNetworkMessage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IServerPlayerWrapper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -41,7 +44,12 @@ public class NeoforgePluginPacketSender extends AbstractPluginPacketSender
 	
 	@Override
 	public void sendToServer(AbstractNetworkMessage message)
-	{ PacketDistributor.sendToServer(new CommonPacketPayload(message)); }
+	{
+		if (Minecraft.getInstance().getConnection() != null) 
+		{
+			Minecraft.getInstance().getConnection().send(new CommonPacketPayload(message));
+		}
+	}
 	
 	@Override
 	public void sendToClient(ServerPlayer serverPlayer, AbstractNetworkMessage message)
