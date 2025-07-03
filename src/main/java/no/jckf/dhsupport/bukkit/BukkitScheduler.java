@@ -42,11 +42,15 @@ public class BukkitScheduler implements Scheduler
 
         this.foliaLib = new FoliaLib(this.plugin);
 
+        int threadCount = this.plugin.getDhSupport().getConfig().getInt(DhsConfig.SCHEDULER_THREADS);
+
         this.executor = new ThreadPoolExecutor(
-            0, this.plugin.getDhSupport().getConfig().getInt(DhsConfig.SCHEDULER_THREADS),
+            threadCount, threadCount,
             60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>()
         );
+
+        ((ThreadPoolExecutor) this.executor).allowCoreThreadTimeOut(true);
 
         this.plugin.getDhSupport().info("Using " + Utils.ucFirst(this.foliaLib.getImplType().name().toLowerCase().replace('_', ' ')) + " scheduler.");
     }
