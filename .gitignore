@@ -23,16 +23,18 @@
 hs_err_pid*
 replay_pid*
 
-# IntelliJ IDEA project config
-/.idea
-/*.iml
+# macOS system files
+.DS_Store
 
-# Maven output
-/dependency-reduced-pom.xml
-/target
-/jars
-/.m2
+# gradle build output files
+build/
+.gradle/
 
-# Test server
-/server
-/folia
+# eclipse project files
+.settings/
+.project
+.classpath
+bin/
+
+# IntelliJ files
+.idea/
