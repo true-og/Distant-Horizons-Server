@@ -150,13 +150,6 @@ public class FabricMain extends AbstractModInitializer implements ClientModIniti
 		if (SingletonInjector.INSTANCE.get(IModChecker.class).isModLoaded("sodium"))
 		{
 			ModAccessorInjector.INSTANCE.get(ISodiumAccessor.class).setFogOcclusion(false);
-			
-			#if MC_VER < MC_1_21_6
-			#else
-			LOGGER.warn("Sodium detected: Vanilla fog cannot be disabled. Forcing vanilla fade 'on' and overdraw prevention to 'auto' to circumvent the issue.");
-			Config.Client.Advanced.Graphics.Quality.vanillaFadeMode.setApiValue(EDhApiMcRenderingFadeMode.DOUBLE_PASS);
-			Config.Client.Advanced.Graphics.Culling.overdrawPrevention.setApiValue(0.0);
-			#endif
 		}
 		#endif
 		
