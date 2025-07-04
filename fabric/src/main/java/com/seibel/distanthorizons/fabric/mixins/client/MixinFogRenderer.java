@@ -122,6 +122,9 @@ public class MixinFogRenderer
 	#if MC_VER < MC_1_21_6
 	#else
 	
+	// In MC's FogRenderer they clamp the "renderDistanceEnd" fog field to the render distance,
+	// which prevents us from disabling the vanilla fog.
+	// This mixin fires after they set the "renderDistanceEnd" so we can change it.
 	@WrapOperation(
 		method = "setupFog",
 		at = @At(
