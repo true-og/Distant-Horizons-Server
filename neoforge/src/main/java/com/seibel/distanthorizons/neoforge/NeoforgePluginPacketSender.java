@@ -5,21 +5,27 @@ import com.seibel.distanthorizons.common.wrappers.misc.ServerPlayerWrapper;
 import com.seibel.distanthorizons.common.AbstractPluginPacketSender;
 import com.seibel.distanthorizons.core.network.messages.AbstractNetworkMessage;
 import com.seibel.distanthorizons.core.wrapperInterfaces.misc.IServerPlayerWrapper;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+#if MC_VER < MC_1_21_7
+#else
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+#endif
+
+
 public class NeoforgePluginPacketSender extends AbstractPluginPacketSender
 {
 	private static BiConsumer<IServerPlayerWrapper, AbstractNetworkMessage> packetConsumer;
+	
+	
 	
 	public static void setPacketHandler(RegisterPayloadHandlersEvent event, Consumer<AbstractNetworkMessage> consumer)
 	{ setPacketHandler(event, (player, buffer) -> consumer.accept(buffer)); }
@@ -42,13 +48,30 @@ public class NeoforgePluginPacketSender extends AbstractPluginPacketSender
 		});
 	}
 	
+	#if MC_VER < MC_1_21_7
+	#else
+	public static void registerClientPacketHandler(RegisterClientPayloadHandlersEvent event)
+	{
+		// as of MC 1.21.7 Neo added a separate client network register 
+		// https://github.com/neoforged/NeoForge/pull/2272
+		event.register(CommonPacketPayload.TYPE, (payload, context) -> 
+		{
+			if (payload.message() != null)
+			{
+				packetConsumer.accept(null, payload.message());
+			}
+		});
+	}
+	#endif
+	
 	@Override
 	public void sendToServer(AbstractNetworkMessage message)
 	{
-		if (Minecraft.getInstance().getConnection() != null) 
-		{
-			Minecraft.getInstance().getConnection().send(new CommonPacketPayload(message));
-		}
+		#if MC_VER < MC_1_21_7
+		PacketDistributor.sendToServer(new CommonPacketPayload(message));
+		#else
+		ClientPacketDistributor.sendToServer(new CommonPacketPayload(message));
+		#endif
 	}
 	
 	@Override
