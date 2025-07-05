@@ -65,11 +65,6 @@ max_data_transfer_speed: 0
 # Default: 5
 lod_refresh_interval: 5
 
-# Output builder activity to the server console.
-# Optional.
-# Default: true
-#show_builder_activity: false
-
 # Select which LOD builder to use.
 # Valid options are: FullBuilder, FastOverworldBuilder, and None.
 # Required.

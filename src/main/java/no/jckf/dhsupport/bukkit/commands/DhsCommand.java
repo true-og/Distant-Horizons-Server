@@ -121,6 +121,8 @@ public class DhsCommand implements CommandExecutor
 
         sender.sendMessage(ChatColor.BLUE + "There " + (playerCount == 1 ? "is" : "are") + " " + ChatColor.GREEN + playerCount + ChatColor.BLUE + " " + (playerCount == 1 ? "player" : "players") + " online using Distant Horizons" + (playerCount == 0 ? "." : ": " + playerList.substring(0, playerList.length() - 2)));
 
+        sender.sendMessage(ChatColor.BLUE + "Current generation speed: " + ChatColor.GREEN + String.format("%.2f", this.plugin.getDhSupport().getGenerationTracker().getPingsPerSecond() * 16) + " CPS");
+
         return true;
     }
 
@@ -329,12 +331,15 @@ public class DhsCommand implements CommandExecutor
 
         Duration elapsedTime = generator.getElapsedTime();
 
+        float momentaryLodsPerSecond = (float) this.plugin.getDhSupport().getGenerationTracker().getPingsPerSecond();
+        float totalLodsPerSecond = (float) generator.getCompletedRequests() / elapsedTime.toSeconds();
+
         sender.sendMessage(ChatColor.GREEN + "Generation progress: " + ChatColor.YELLOW + String.format("%.2f", generator.getProgress() * 100f) + "%");
-        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests() + ChatColor.GREEN + " (" + ChatColor.YELLOW + String.format("%.2f", (generator.getCompletedRequests() * 16F) / (float) elapsedTime.toSeconds()) + ChatColor.GREEN + " CPS)");
+        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests() + ChatColor.GREEN + " (" + ChatColor.YELLOW + String.format("%.2f", totalLodsPerSecond * 16) + ChatColor.GREEN + " CPS)");
         sender.sendMessage(ChatColor.GREEN + "Time elapsed: " + ChatColor.YELLOW + Utils.humanReadableDuration(elapsedTime));
 
         if (generator.isRunning()) {
-            sender.sendMessage(ChatColor.GREEN + "Time remaining: " + ChatColor.YELLOW + Utils.humanReadableDuration(Duration.ofSeconds((long) ((generator.getTargetRequests() - generator.getCompletedRequests()) / this.plugin.getDhSupport().getGenerationPerSecondStat()))));
+            sender.sendMessage(ChatColor.GREEN + "Time remaining: " + ChatColor.YELLOW + Utils.humanReadableDuration(Duration.ofSeconds((long) ((generator.getTargetRequests() - generator.getCompletedRequests()) / momentaryLodsPerSecond))));
         } else {
             sender.sendMessage(ChatColor.GREEN + "Generation is complete.");
         }

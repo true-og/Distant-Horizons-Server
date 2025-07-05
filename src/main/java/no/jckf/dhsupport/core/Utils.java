@@ -66,6 +66,10 @@ public class Utils
 
     public static String humanReadableDuration(final Duration duration)
     {
+        if (duration.toDays() >= 365) {
+            return "infinite";
+        }
+
         final StringBuilder builder = new StringBuilder();
 
         if (duration.toDays() > 0) {

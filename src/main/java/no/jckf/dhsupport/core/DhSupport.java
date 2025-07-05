@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -74,9 +75,7 @@ public class DhSupport implements Configurable
     @Nullable
     protected CompletableFuture<?> pause;
 
-    protected int generationCount;
-
-    protected long generationCountStartTime;
+    protected PerformanceTracker generationTracker = new PerformanceTracker();
 
     protected Map<UUID, WorldInterface> worldInterfaces = new HashMap<>();
 
@@ -124,14 +123,6 @@ public class DhSupport implements Configurable
             throw new RuntimeException("Failed to initialize database!", exception);
         }
 
-        try {
-            //this.database.optimize();
-        } catch (Exception exception) {
-            this.warning("Failed to optimize database!");
-
-            exception.printStackTrace();
-        }
-
         (new PlayerConfigHandler(this, this.pluginMessageHandler)).register();
         (new LodHandler(this, this.pluginMessageHandler)).register();
 
@@ -143,7 +134,10 @@ public class DhSupport implements Configurable
         }
 
         if (this.getConfig().getBool(DhsConfig.CHECK_FOR_UPDATES, true)) {
-            this.checkUpdates();
+            this.getScheduler().runOnSeparateThread(() -> {
+                this.checkUpdates();
+                return null;
+            });
         }
     }
 
@@ -209,37 +203,9 @@ public class DhSupport implements Configurable
         }
     }
 
-    protected void resetGenerationCount()
+    public PerformanceTracker getGenerationTracker()
     {
-        this.generationCount = 0;
-        this.generationCountStartTime = System.currentTimeMillis();
-    }
-
-    public double getGenerationPerSecondStat()
-    {
-        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
-
-        return (double) this.generationCount / secondsElapsed;
-    }
-
-    public void printGenerationCount()
-    {
-        boolean showActivity = this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true);
-
-        if (!showActivity || this.generationCount == 0) {
-            this.resetGenerationCount();
-            return;
-        }
-
-        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
-
-        if (secondsElapsed < 60) {
-            return;
-        }
-
-        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", this.getGenerationPerSecondStat() * 16F) + " CPS.");
-
-        this.resetGenerationCount();
+        return this.generationTracker;
     }
 
     public void setWorldInterface(UUID id, @Nullable WorldInterface worldInterface)
@@ -417,7 +383,8 @@ public class DhSupport implements Configurable
                 }
 
                 // Otherwise generate a new one.
-                return this.generateLod(worldId, position);
+                return this.generateLod(worldId, position)
+                    .orTimeout(60, TimeUnit.SECONDS);
             });
     }
 
@@ -511,7 +478,7 @@ public class DhSupport implements Configurable
                     Encoder beaconEncoder = new Encoder();
                     beaconEncoder.writeCollection(beacons);
 
-                    this.generationCount++;
+                    this.generationTracker.ping();
 
                     return this.lodRepository.saveLodAsync(
                         worldId,

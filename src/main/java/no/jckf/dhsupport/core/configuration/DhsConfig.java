@@ -62,8 +62,6 @@ public abstract class DhsConfig
 
     public static String LOD_REFRESH_INTERVAL = "lod_refresh_interval";
 
-    public static String SHOW_BUILDER_ACTIVITY = "show_builder_activity";
-
     public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
 
     public static String GENERATE_NEW_CHUNKS_WARNING = "generate_new_chunks_warning";

@@ -75,16 +75,15 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         this.pluginMessageProxy = new PluginMessageProxy(this);
         this.pluginMessageProxy.onEnable();
 
-        this.dhSupport.onEnable();
-
         this.scheduler = new BukkitScheduler(this);
         this.dhSupport.setScheduler(this.scheduler);
+
+        this.dhSupport.onEnable();
 
         int lodRefreshInterval = this.getDhSupport().getConfig().getInt(DhsConfig.LOD_REFRESH_INTERVAL) * 20;
 
         this.scheduler.runTimer(() -> {
             this.dhSupport.updateTouchedLods();
-            this.dhSupport.printGenerationCount();
         }, lodRefreshInterval, lodRefreshInterval);
 
         this.getServer().getPluginManager().registerEvents(new WorldHandler(this), this);
