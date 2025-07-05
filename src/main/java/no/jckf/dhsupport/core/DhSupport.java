@@ -383,8 +383,7 @@ public class DhSupport implements Configurable
                 }
 
                 // Otherwise generate a new one.
-                return this.generateLod(worldId, position)
-                    .orTimeout(60, TimeUnit.SECONDS);
+                return this.generateLod(worldId, position);
             });
     }
 
@@ -598,8 +597,7 @@ public class DhSupport implements Configurable
 
                                     playersInRangeCount++;
 
-                                    int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
-                                    playerConfig.set("buffer-id", myBufferId);
+                                    int myBufferId = playerConfig.increment("buffer-id");
 
                                     FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
                                     partialUpdateMessage.setLevelKey(levelKey);
