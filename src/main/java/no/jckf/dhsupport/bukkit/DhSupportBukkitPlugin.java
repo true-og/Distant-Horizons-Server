@@ -83,6 +83,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         int lodRefreshInterval = this.getDhSupport().getConfig().getInt(DhsConfig.LOD_REFRESH_INTERVAL) * 20;
 
         this.scheduler.runTimer(() -> {
+            this.dhSupport.getGenerationTracker().prune();
             this.dhSupport.updateTouchedLods();
         }, lodRefreshInterval, lodRefreshInterval);
 

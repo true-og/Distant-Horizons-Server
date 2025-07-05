@@ -32,7 +32,7 @@ public class PerformanceTracker
         this.pings.add(System.currentTimeMillis());
     }
 
-    private synchronized void prune()
+    public synchronized void prune()
     {
         long currentTimeMillis = System.currentTimeMillis();
 
