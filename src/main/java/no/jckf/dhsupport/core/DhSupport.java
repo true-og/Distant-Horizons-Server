@@ -433,6 +433,20 @@ public class DhSupport implements Configurable
                     .anyMatch(Predicate.isEqual(false));
 
                 if (loadRejected) {
+                    // Discard the chunks we loaded.
+                    this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
+                        for (String key : loads.keySet()) {
+                            String[] xz = key.split("x", 2);
+
+                            world.discardChunk(
+                                Integer.parseInt(xz[0]),
+                                Integer.parseInt(xz[1])
+                            );
+                        }
+
+                        return null;
+                    });
+
                     return CompletableFuture.completedFuture(null);
                 }
 
