@@ -13,7 +13,6 @@
         <main.class>no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin</main.class>
         <mc.api-version></mc.api-version>
         <mc.api-version-patch></mc.api-version-patch>
-        <mc.plugin-api></mc.plugin-api>
         <skip-copy>true</skip-copy>
     </properties>
 
@@ -184,7 +183,7 @@
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
                                     <type>${project.packaging}</type>
-                                    <destFileName>DistantHorizonsSupport-${mc.plugin-api}-${project.version}-${mc.api-version}${mc.api-version-patch}.jar</destFileName>
+                                    <destFileName>DistantHorizonsSupport-Bukkit-Paper-${project.version}-${mc.api-version}${mc.api-version-patch}.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
