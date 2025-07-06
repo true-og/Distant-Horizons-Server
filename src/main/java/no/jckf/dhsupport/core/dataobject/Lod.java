@@ -50,12 +50,15 @@ public class Lod extends DataObject
 
     protected List<List<DataPoint>> columns;
 
-    public Lod(WorldInterface worldInterface, SectionPosition position, List<IdMapping> idMappings, List<List<DataPoint>> columns)
+    protected List<Beacon> beacons;
+
+    public Lod(WorldInterface worldInterface, SectionPosition position, List<IdMapping> idMappings, List<List<DataPoint>> columns, List<Beacon> beacons)
     {
         this.worldInterface = worldInterface;
         this.position = position;
         this.idMappings = idMappings;
         this.columns = columns;
+        this.beacons = beacons;
     }
 
     protected void encodeData(Encoder encoder)
@@ -153,5 +156,10 @@ public class Lod extends DataObject
         }
 
         return compressedStream.toByteArray();
+    }
+
+    public List<Beacon> getBeacons()
+    {
+        return this.beacons;
     }
 }

@@ -26,7 +26,6 @@ import no.jckf.dhsupport.core.database.Database;
 import no.jckf.dhsupport.core.database.migrations.CreateLodsTable;
 import no.jckf.dhsupport.core.database.models.LodModel;
 import no.jckf.dhsupport.core.database.repositories.AsyncLodRepository;
-import no.jckf.dhsupport.core.dataobject.Beacon;
 import no.jckf.dhsupport.core.dataobject.Lod;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
 import no.jckf.dhsupport.core.handler.LodHandler;
@@ -44,11 +43,13 @@ import org.bukkit.entity.Player;
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -438,25 +439,8 @@ public class DhSupport implements Configurable
                 // No LOD was found. Start building a new one.
                 CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
 
-                // Find any beacons that should appear in this LOD.
-                CompletableFuture<Collection<Beacon>> beaconFuture = this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
-                    Collection<Beacon> accumulator = new ArrayList<>();
-
-                    boolean includeBeacons = world.getConfig().getBool(DhsConfig.INCLUDE_BEACONS, false);
-
-                    if (includeBeacons) {
-                        for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                            for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
-                                accumulator.addAll(world.getBeaconsInChunk(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplier));
-                            }
-                        }
-                    }
-
-                    return accumulator;
-                });
-
                 // Combine the LOD and beacons and save the result in the database.
-                return lodFuture.thenCombineAsync(beaconFuture, (lod, beacons) -> {
+                return lodFuture.thenApply((lod) -> {
                     // Discard the chunks we loaded.
                     this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
                         for (String key : loads.keySet()) {
@@ -475,7 +459,7 @@ public class DhSupport implements Configurable
                     lod.encode(lodEncoder);
 
                     Encoder beaconEncoder = new Encoder();
-                    beaconEncoder.writeCollection(beacons);
+                    beaconEncoder.writeCollection(lod.getBeacons());
 
                     this.generationTracker.ping();
 

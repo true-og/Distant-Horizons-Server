@@ -20,13 +20,11 @@ package no.jckf.dhsupport.core.lodbuilders;
 
 import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import no.jckf.dhsupport.core.dataobject.DataPoint;
-import no.jckf.dhsupport.core.dataobject.IdMapping;
-import no.jckf.dhsupport.core.dataobject.Lod;
-import no.jckf.dhsupport.core.dataobject.SectionPosition;
+import no.jckf.dhsupport.core.dataobject.*;
 import no.jckf.dhsupport.core.world.WorldInterface;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +60,8 @@ public class FastOverworldBuilder extends LodBuilder
         Map<String, Integer> mapMap = new HashMap<>();
 
         List<List<DataPoint>> columns = new ArrayList<>();
+
+        List<Beacon> beacons = new ArrayList<>();
 
         for (int relativeX = 0; relativeX < Lod.width; relativeX++) {
             for (int relativeZ = 0; relativeZ < Lod.width; relativeZ++) {
@@ -123,6 +123,10 @@ public class FastOverworldBuilder extends LodBuilder
                     }
 
                     String material = this.worldInterface.getMaterialAt(worldX, highWorldY, worldZ);
+
+                    if (this.worldInterface.isBeacon(worldX, highWorldY, worldZ)) {
+                        beacons.add(new Beacon(worldX, highWorldY, worldZ, Color.WHITE.getRGB())); // TODO: Color
+                    }
 
                     if (solidGround == null && (!scanToSeaLevel || highWorldY <= seaLevel)) {
                         switch (material) {
@@ -197,6 +201,6 @@ public class FastOverworldBuilder extends LodBuilder
             }
         }
 
-        return new Lod(this.worldInterface, this.position, idMappings, columns);
+        return new Lod(this.worldInterface, this.position, idMappings, columns, beacons);
     }
 }

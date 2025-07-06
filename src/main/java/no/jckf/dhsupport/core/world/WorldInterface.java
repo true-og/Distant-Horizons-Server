@@ -19,10 +19,8 @@
 package no.jckf.dhsupport.core.world;
 
 import no.jckf.dhsupport.core.configuration.Configurable;
-import no.jckf.dhsupport.core.dataobject.Beacon;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -83,5 +81,5 @@ public interface WorldInterface extends Configurable
 
     byte getSkyLightAt(int x, int y, int z);
 
-    Collection<Beacon> getBeaconsInChunk(int x, int z);
+    boolean isBeacon(int x, int y, int z);
 }

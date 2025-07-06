@@ -22,17 +22,18 @@ import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.Configuration;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.configuration.WorldConfiguration;
-import no.jckf.dhsupport.core.dataobject.Beacon;
 import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.*;
-import org.bukkit.block.BlockState;
+import org.bukkit.block.Beacon;
 
 import javax.annotation.Nullable;
-import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
@@ -438,33 +439,22 @@ public class BukkitWorldInterface implements WorldInterface
     }
 
     @Override
-    public Collection<Beacon> getBeaconsInChunk(int x, int z)
-    {
-        Collection<Beacon> beacons = new ArrayList<>();
-
-        BlockState[] blocks = this.world.getChunkAt(Coordinates.blockToChunk(x), Coordinates.blockToChunk(z)).getTileEntities();
-
-        for (BlockState block : blocks) {
-            if (!block.getType().equals(Material.BEACON)) {
-                continue;
-            }
-
-            beacons.add(
-                new Beacon(
-                    block.getX(),
-                    block.getY(),
-                    block.getZ(),
-                    Color.WHITE.getRGB() // TODO?
-                )
-            );
-        }
-
-        return beacons;
-    }
-
-    @Override
     public Configuration getConfig()
     {
         return this.worldConfig;
+    }
+
+    @Override
+    public boolean isBeacon(int x, int y, int z)
+    {
+        if (!this.getMaterialAt(x, y, z).equals("minecraft:beacon")) {
+            return false;
+        }
+
+        return this.plugin.getDhSupport().getScheduler()
+            .runOnRegionThread(this.world.getUID(), x, z, () ->
+                ((Beacon) this.world.getBlockAt(x, y, z).getState()).getTier() > 0
+            )
+            .join();
     }
 }
