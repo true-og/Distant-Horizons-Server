@@ -19,6 +19,7 @@
 package no.jckf.dhsupport.core;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Locale;
 
 public class Utils
@@ -61,5 +62,56 @@ public class Utils
     public static String ucFirst(String string)
     {
         return ucFirst(string, Locale.getDefault());
+    }
+
+    public static String humanReadableDuration(final Duration duration)
+    {
+        if (duration.toDays() >= 365) {
+            return "infinite";
+        }
+
+        final StringBuilder builder = new StringBuilder();
+
+        if (duration.toDays() > 0) {
+            builder.append(duration.toDaysPart()).append(" day");
+
+            if (duration.toDaysPart() != 1) {
+                builder.append("s");
+            }
+
+            builder.append(", ");
+        }
+
+        if (duration.toHours() > 0) {
+            builder.append(duration.toHoursPart()).append(" hour");
+
+            if (duration.toHoursPart() != 1) {
+                builder.append("s");
+            }
+
+            builder.append(", ");
+        }
+
+        if (duration.toMinutes() > 0) {
+            builder.append(duration.toMinutesPart()).append(" minute");
+
+            if (duration.toMinutesPart() != 1) {
+                builder.append("s");
+            }
+
+            builder.append(", ");
+        }
+
+        if (duration.toSeconds() > 0 || builder.isEmpty()) {
+            builder.append(duration.toSecondsPart()).append(" second");
+
+            if (duration.toSecondsPart() != 1) {
+                builder.append("s");
+            }
+
+            builder.append(", ");
+        }
+
+        return builder.substring(0, builder.length() - 2);
     }
 }

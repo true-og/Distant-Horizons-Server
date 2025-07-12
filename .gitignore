@@ -33,6 +33,9 @@ replay_pid*
 /jars
 /.m2
 
+# Env vars
+.env
+
 # Test server
 /server
 /folia

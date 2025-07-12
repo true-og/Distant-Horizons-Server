@@ -25,9 +25,7 @@ import no.jckf.dhsupport.core.scheduling.Scheduler;
 import org.bukkit.Location;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 public class BukkitScheduler implements Scheduler
@@ -44,7 +42,15 @@ public class BukkitScheduler implements Scheduler
 
         this.foliaLib = new FoliaLib(this.plugin);
 
-        this.executor = Executors.newFixedThreadPool(this.plugin.getDhSupport().getConfig().getInt(DhsConfig.SCHEDULER_THREADS));
+        int threadCount = this.plugin.getDhSupport().getConfig().getInt(DhsConfig.SCHEDULER_THREADS);
+
+        this.executor = new ThreadPoolExecutor(
+            threadCount, threadCount,
+            60, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>()
+        );
+
+        ((ThreadPoolExecutor) this.executor).allowCoreThreadTimeOut(true);
 
         this.plugin.getDhSupport().info("Using " + Utils.ucFirst(this.foliaLib.getImplType().name().toLowerCase().replace('_', ' ')) + " scheduler.");
     }

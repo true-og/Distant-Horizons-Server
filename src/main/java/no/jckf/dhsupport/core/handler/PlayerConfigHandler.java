@@ -81,6 +81,8 @@ public class PlayerConfigHandler
                 Object keepValue = null;
 
                 if (key.equals(DhsConfig.DISTANT_GENERATION_ENABLED) && !dhUseIsAllowed) {
+                    this.dhSupport.info("Player " + player.getName() + " has been denied the use of Distant Horizons through permissions.");
+
                     keepValue = false;
                 }
 
@@ -91,11 +93,6 @@ public class PlayerConfigHandler
                     keepValue = world.getWorldBorderZ();
                 } else if(key.equals(DhsConfig.BORDER_RADIUS)) {
                     keepValue = world.getWorldBorderRadius();
-                }
-
-                // Hack to scale border center position.
-                if ((key.equals(DhsConfig.BORDER_CENTER_X) || key.equals(DhsConfig.BORDER_CENTER_Z)) && keepValue != null) {
-                    keepValue = (int) (((Integer) keepValue).doubleValue() * coordinateScale);
                 }
 
                 if (keepValue == null) {

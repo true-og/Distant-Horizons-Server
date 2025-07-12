@@ -70,4 +70,9 @@ public class AsyncLodRepository extends LodRepository
     {
         return this.queueTask(() -> this.deleteLod(worldId, sectionX, sectionZ));
     }
+
+    public CompletableFuture<Integer> trimLodsAsync(UUID worldId, int lowSectionX, int lowSectionZ, int highSectionX, int highSectionZ)
+    {
+        return this.queueTask(() -> this.trimLods(worldId, lowSectionX,lowSectionZ, highSectionX, highSectionZ));
+    }
 }

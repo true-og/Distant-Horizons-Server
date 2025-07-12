@@ -38,7 +38,7 @@ public class PluginMessageHandler
 
     public final String pluginChannel = "distant_horizons:message";
 
-    public final int protocolVersion = 10;
+    public final short protocolVersion = 11;
 
     private EventBus<PluginMessage> eventBus;
 
@@ -105,10 +105,6 @@ public class PluginMessageHandler
 
         Decoder decoder = new Decoder(data);
 
-        #if READ_FORGE_BYTE == "true"
-            decoder.readByte();
-        #endif
-
         // Read the client's protocol version.
         short protocolVersion = decoder.readShort();
 
@@ -166,10 +162,6 @@ public class PluginMessageHandler
         }
 
         Encoder encoder = new Encoder();
-
-        #if READ_FORGE_BYTE == "true"
-            encoder.writeByte(0);
-        #endif
 
         encoder.writeShort(this.protocolVersion);
         encoder.writeShort(messageTypeId);

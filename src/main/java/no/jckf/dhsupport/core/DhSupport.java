@@ -26,7 +26,6 @@ import no.jckf.dhsupport.core.database.Database;
 import no.jckf.dhsupport.core.database.migrations.CreateLodsTable;
 import no.jckf.dhsupport.core.database.models.LodModel;
 import no.jckf.dhsupport.core.database.repositories.AsyncLodRepository;
-import no.jckf.dhsupport.core.dataobject.Beacon;
 import no.jckf.dhsupport.core.dataobject.Lod;
 import no.jckf.dhsupport.core.dataobject.SectionPosition;
 import no.jckf.dhsupport.core.handler.LodHandler;
@@ -44,7 +43,10 @@ import org.bukkit.entity.Player;
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -53,6 +55,10 @@ import java.util.logging.Logger;
 
 public class DhSupport implements Configurable
 {
+    protected String pluginVersion;
+
+    protected String mcVersion;
+
     protected String dataDirectory;
 
     protected Database database;
@@ -65,9 +71,12 @@ public class DhSupport implements Configurable
 
     protected Scheduler scheduler;
 
-    protected int generationCount;
+    protected UpdateChecker updateChecker;
 
-    protected long generationCountStartTime;
+    @Nullable
+    protected CompletableFuture<?> pause;
+
+    protected PerformanceTracker generationTracker = new PerformanceTracker();
 
     protected Map<UUID, WorldInterface> worldInterfaces = new HashMap<>();
 
@@ -83,14 +92,19 @@ public class DhSupport implements Configurable
 
     protected Map<UUID, PreGenerator> preGenerators = new HashMap<>();
 
-    public DhSupport()
+    public DhSupport(String pluginVersion, String mcVersion)
     {
+        this.pluginVersion = pluginVersion;
+        this.mcVersion = mcVersion;
+
         this.configuration = new Configuration();
 
         this.database = new Database();
         this.lodRepository = new AsyncLodRepository(this.database);
 
         this.pluginMessageHandler = new PluginMessageHandler(this);
+
+        this.updateChecker = new UpdateChecker(62013887);
     }
 
     public void onEnable()
@@ -98,14 +112,16 @@ public class DhSupport implements Configurable
         this.lodRepository.setLogger(this.getLogger());
 
         try {
-            this.database.open(this.getDataDirectory() + "/data.sqlite");
+            this.database.open(
+                this.getConfig().getString(DhsConfig.DATABASE_PATH)
+                    .replace("{datadir}", this.getDataDirectory())
+            );
 
             this.database.addMigration(CreateLodsTable.class);
 
             this.database.migrate();
         } catch (Exception exception) {
-            this.warning("Failed to initialize database: " + exception.getMessage());
-            // TODO: Disable the plugin?
+            throw new RuntimeException("Failed to initialize database!", exception);
         }
 
         (new PlayerConfigHandler(this, this.pluginMessageHandler)).register();
@@ -116,6 +132,13 @@ public class DhSupport implements Configurable
         if (this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true) && this.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS_WARNING, true)) {
             this.warning("Chunk generation is enabled. New chunks will be generated as needed to complete LOD generation. This could significantly increase the size of your world.");
             this.warning("If you understand what this means and would like to disable this warning, set " + DhsConfig.GENERATE_NEW_CHUNKS_WARNING + " to false in your config.");
+        }
+
+        if (this.getConfig().getBool(DhsConfig.CHECK_FOR_UPDATES, true)) {
+            this.getScheduler().runOnSeparateThread(() -> {
+                this.checkUpdates();
+                return null;
+            });
         }
     }
 
@@ -146,37 +169,44 @@ public class DhSupport implements Configurable
         return this.scheduler;
     }
 
-    protected void resetGenerationCount()
+    public boolean pause()
     {
-        this.generationCount = 0;
-        this.generationCountStartTime = System.currentTimeMillis();
-    }
-
-    public double getGenerationPerSecondStat()
-    {
-        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
-
-        return (double) this.generationCount / secondsElapsed;
-    }
-
-    public void printGenerationCount()
-    {
-        boolean showActivity = this.getConfig().getBool(DhsConfig.SHOW_BUILDER_ACTIVITY, true);
-
-        if (!showActivity || this.generationCount == 0) {
-            this.resetGenerationCount();
-            return;
+        if (this.pause != null) {
+            return false;
         }
 
-        double secondsElapsed = (double) (System.currentTimeMillis() - this.generationCountStartTime) / 1000;
+        this.pause = new CompletableFuture<>();
 
-        if (secondsElapsed < 60) {
-            return;
+        return true;
+    }
+
+    public boolean unpause()
+    {
+        if (this.pause == null) {
+            return false;
         }
 
-        this.info("Generation in progress: " + this.generationCount + " processed, " + this.queuedBuilders.size() + " in queue, " + String.format("%.2f", this.getGenerationPerSecondStat()) + " per second.");
+        this.pause.complete(null);
+        this.pause = null;
 
-        this.resetGenerationCount();
+        return true;
+    }
+
+    public boolean isPaused()
+    {
+        return this.pause != null;
+    }
+
+    public void joinPauseState()
+    {
+        if (this.pause != null) {
+            this.pause.join();
+        }
+    }
+
+    public PerformanceTracker getGenerationTracker()
+    {
+        return this.generationTracker;
     }
 
     public void setWorldInterface(UUID id, @Nullable WorldInterface worldInterface)
@@ -245,6 +275,20 @@ public class DhSupport implements Configurable
     public void debug(String message)
     {
         //this.getLogger().info("[DEBUG] " + message);
+    }
+
+    public void checkUpdates()
+    {
+        if (this.updateChecker.isLatestVersion(this.pluginVersion)) {
+            return;
+        }
+
+        this.warning("A newer version of the plugin is available.");
+    }
+
+    public Map<UUID, Configuration> getPlayerConfigurations()
+    {
+        return this.playerConfigurations;
     }
 
     public void setPlayerConfiguration(UUID playerId, Configuration playerConfiguration)
@@ -331,9 +375,6 @@ public class DhSupport implements Configurable
 
     public CompletableFuture<LodModel> getLod(UUID worldId, SectionPosition position)
     {
-        int worldX = Coordinates.sectionToBlock(position.getX());
-        int worldZ = Coordinates.sectionToBlock(position.getZ());
-
         return this.getLodRepository()
             .loadLodAsync(worldId, position.getX(), position.getZ())
             .thenComposeAsync((modelFromDb) -> {
@@ -342,101 +383,109 @@ public class DhSupport implements Configurable
                     return CompletableFuture.completedFuture(modelFromDb);
                 }
 
-                WorldInterface world = this.getWorldInterface(worldId).newInstance();
+                // Otherwise generate a new one.
+                return this.generateLod(worldId, position);
+            });
+    }
 
-                boolean generateNewChunks = world.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true);
+    protected CompletableFuture<LodModel> generateLod(UUID worldId, SectionPosition position)
+    {
+        this.joinPauseState();
 
-                Map<String, CompletableFuture<Boolean>> loads = new HashMap<>();
+        int worldX = Coordinates.sectionToBlock(position.getX());
+        int worldZ = Coordinates.sectionToBlock(position.getZ());
 
-                // Load all the chunks we need for this request.
-                for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                    for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
-                        int chunkX = worldX + 16 * xMultiplier;
-                        int chunkZ = worldZ + 16 * zMultiplier;
+        WorldInterface world = this.getWorldInterface(worldId).newInstance();
 
-                        if (!world.isChunkLoaded(chunkX, chunkZ)) {
-                            if (generateNewChunks) {
-                                loads.put(worldX + "x" + worldZ, world.loadOrGenerateChunkAsync(chunkX, chunkZ));
-                            } else {
-                                loads.put(worldX + "x" + worldZ, world.loadChunkAsync(chunkX, chunkZ));
-                            }
-                        }
+        boolean generateNewChunks = world.getConfig().getBool(DhsConfig.GENERATE_NEW_CHUNKS, true);
+
+        Map<String, CompletableFuture<Boolean>> loads = new HashMap<>();
+
+        // Load all the chunks we need for this request.
+        for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
+            for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
+                int chunkX = worldX + 16 * xMultiplier;
+                int chunkZ = worldZ + 16 * zMultiplier;
+
+                if (!world.isChunkLoaded(chunkX, chunkZ)) {
+                    if (generateNewChunks) {
+                        loads.put(worldX + "x" + worldZ, world.loadOrGenerateChunkAsync(chunkX, chunkZ));
+                    } else {
+                        loads.put(worldX + "x" + worldZ, world.loadChunkAsync(chunkX, chunkZ));
                     }
                 }
+            }
+        }
 
-                // Wait for chunk loads, then...
-                return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[0]))
-                    .thenComposeAsync((asd) -> {
-                        boolean loadRejected = loads
-                            .values()
-                            .stream()
-                            .map(loadRequest -> {
-                                try {
-                                    return loadRequest.get();
-                                } catch (InterruptedException | ExecutionException exception) {
-                                    return false;
-                                }
-                            })
-                            .anyMatch(Predicate.isEqual(false));
+        // Wait for chunk loads, then...
+        return CompletableFuture.allOf(loads.values().toArray(new CompletableFuture[0]))
+            .thenComposeAsync((asd) -> {
+                boolean loadRejected = loads
+                    .values()
+                    .stream()
+                    .map(loadRequest -> {
+                        try {
+                            return loadRequest.get();
+                        } catch (InterruptedException | ExecutionException exception) {
+                            return false;
+                        }
+                    })
+                    .anyMatch(Predicate.isEqual(false));
 
-                        if (loadRejected) {
-                            return CompletableFuture.completedFuture(null);
+                if (loadRejected) {
+                    // Discard the chunks we loaded.
+                    this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
+                        for (String key : loads.keySet()) {
+                            String[] xz = key.split("x", 2);
+
+                            world.discardChunk(
+                                Integer.parseInt(xz[0]),
+                                Integer.parseInt(xz[1])
+                            );
                         }
 
-                        // No LOD was found. Start building a new one.
-                        CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
-
-                        // Find any beacons that should appear in this LOD.
-                        CompletableFuture<Collection<Beacon>> beaconFuture = this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
-                            Collection<Beacon> accumulator = new ArrayList<>();
-
-                            boolean includeBeacons = world.getConfig().getBool(DhsConfig.INCLUDE_BEACONS, false);
-
-                            if (includeBeacons) {
-                                for (int xMultiplier = 0; xMultiplier < 4; xMultiplier++) {
-                                    for (int zMultiplier = 0; zMultiplier < 4; zMultiplier++) {
-                                        accumulator.addAll(world.getBeaconsInChunk(worldX + 16 * xMultiplier, worldZ + 16 * zMultiplier));
-                                    }
-                                }
-                            }
-
-                            return accumulator;
-                        });
-
-                        // Combine the LOD and beacons and save the result in the database.
-                        return lodFuture.thenCombineAsync(beaconFuture, (lod, beacons) -> {
-                            // Discard the chunks we loaded.
-                            this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
-                                for (String key : loads.keySet()) {
-                                    String[] xz = key.split("x", 2);
-
-                                    world.discardChunk(
-                                        Integer.parseInt(xz[0]),
-                                        Integer.parseInt(xz[1])
-                                    );
-                                }
-
-                                return null;
-                            });
-
-                            Encoder lodEncoder = new Encoder();
-                            lod.encode(lodEncoder);
-
-                            Encoder beaconEncoder = new Encoder();
-                            beaconEncoder.writeCollection(beacons);
-
-                            this.generationCount++;
-
-                            return this.lodRepository.saveLodAsync(
-                                worldId,
-                                position.getX(),
-                                position.getZ(),
-                                lodEncoder.toByteArray(),
-                                beaconEncoder.toByteArray()
-                            );
-                        })
-                        .thenCompose((f) -> f); // Unwrap the nested future.
+                        return null;
                     });
+
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                // No LOD was found. Start building a new one.
+                CompletableFuture<Lod> lodFuture = this.queueBuilder(worldId, position, this.getBuilder(world, position));
+
+                // Combine the LOD and beacons and save the result in the database.
+                return lodFuture.thenApply((lod) -> {
+                    // Discard the chunks we loaded.
+                    this.getScheduler().runOnRegionThread(worldId, worldX, worldZ, () -> {
+                        for (String key : loads.keySet()) {
+                            String[] xz = key.split("x", 2);
+
+                            world.discardChunk(
+                                Integer.parseInt(xz[0]),
+                                Integer.parseInt(xz[1])
+                            );
+                        }
+
+                        return null;
+                    });
+
+                    Encoder lodEncoder = new Encoder();
+                    lod.encode(lodEncoder);
+
+                    Encoder beaconEncoder = new Encoder();
+                    beaconEncoder.writeCollection(lod.getBeacons());
+
+                    this.generationTracker.ping();
+
+                    return this.lodRepository.saveLodAsync(
+                        worldId,
+                        position.getX(),
+                        position.getZ(),
+                        lodEncoder.toByteArray(),
+                        beaconEncoder.toByteArray()
+                    );
+                })
+                .thenCompose((f) -> f); // Unwrap the nested future.
             });
     }
 
@@ -461,6 +510,10 @@ public class DhSupport implements Configurable
 
     public void updateTouchedLods()
     {
+        if (this.isPaused()) {
+            return;
+        }
+
         for (String key : this.touchedLods.keySet()) {
             LodModel lodModelToDelete = this.touchedLods.get(key);
             this.touchedLods.remove(key);
@@ -542,8 +595,7 @@ public class DhSupport implements Configurable
 
                                     playersInRangeCount++;
 
-                                    int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
-                                    playerConfig.set("buffer-id", myBufferId);
+                                    int myBufferId = playerConfig.increment("buffer-id");
 
                                     FullDataPartialUpdateMessage partialUpdateMessage = new FullDataPartialUpdateMessage();
                                     partialUpdateMessage.setLevelKey(levelKey);
@@ -582,7 +634,7 @@ public class DhSupport implements Configurable
         return this.preGenerators.containsKey(world.getId()) && this.getPreGenerator(world).isRunning();
     }
 
-    public void preGenerate(WorldInterface world, int centerX, int centerZ, int radius)
+    public void preGenerate(WorldInterface world, int centerX, int centerZ, int radius, boolean force)
     {
         if (this.isPreGenerating(world)) {
             this.info("Cannot run multiple pre-generators in the same world. Stopping current task for " + world.getName() + "...");
@@ -590,7 +642,7 @@ public class DhSupport implements Configurable
             this.stopPreGenerator(world);
         }
 
-        this.preGenerators.put(world.getId(), new PreGenerator(this, world, centerX, centerZ, radius));
+        this.preGenerators.put(world.getId(), new PreGenerator(this, world, centerX, centerZ, radius, force));
 
         this.getScheduler().runOnSeparateThread(() -> {
             this.preGenerators.get(world.getId()).run();
@@ -611,5 +663,16 @@ public class DhSupport implements Configurable
 
             this.preGenerators.remove(world.getId());
         }
+    }
+
+    public CompletableFuture<Integer> trim(WorldInterface world, int centerX, int centerZ, int radius)
+    {
+        return this.getLodRepository().trimLodsAsync(
+            world.getId(),
+            Coordinates.blockToSection(centerX - radius),
+            Coordinates.blockToSection(centerZ - radius),
+            Coordinates.blockToSection(centerX + radius),
+            Coordinates.blockToSection(centerZ + radius)
+        );
     }
 }

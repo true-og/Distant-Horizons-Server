@@ -21,12 +21,17 @@ package no.jckf.dhsupport.core.configuration;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Configuration
 {
-    protected Map<String, Object> variables = new HashMap<>();
+    protected Map<String, Object> variables = new ConcurrentHashMap<>();
+
+    public void clear()
+    {
+        this.variables.clear();
+    }
 
     public void set(String key, @Nullable Object value)
     {
@@ -78,5 +83,10 @@ public class Configuration
     public @Nullable String getString(String key)
     {
         return this.getString(key, null);
+    }
+
+    public int increment(String key)
+    {
+        return (int) this.variables.compute(key, (k, v) -> v == null ? 1 : (int) v + 1);
     }
 }

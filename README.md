@@ -4,17 +4,19 @@
 
 DH Support is a Bukkit/Spigot/Paper/Folia server plugin that transmits Level Of Detail (LOD) data to players with Distant Horizons installed. Distant Horizons _will_ work fine without this plugin, but then each client will have to be within normal view distance of chunks to load them, and they will not receive updates for distant chunks when they change. 
 
-## Installation
+## Installing and configuring
 
-Download the [latest release](https://gitlab.com/distant-horizons-team/distant-horizons-server-plugin/-/releases) and drop the JAR in your plugins folder, and you're done!
-
-## Configuration
-
-The default values should be pretty solid, but you may tweak them to better suit your specific needs. Everything you need to know should be in config.yml.
+Please see [our wiki](https://gitlab.com/distant-horizons-team/distant-horizons-server-plugin/-/wikis/home) for details.
 
 ## Building
 
-The project uses Maven, so just run `mvn` in the project directory to compile and package a new JAR.
+### Dockerized
+
+If you have Docker; run `docker compose up` to build the project inside a container. See `.env.example` if you need to adjust the user/group of the build process.
+
+### Using Maven directly
+
+Just run `mvn` in the project directory to compile and package a new JAR.
 
 ## Contribution
 

@@ -20,13 +20,11 @@ package no.jckf.dhsupport.core.lodbuilders;
 
 import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import no.jckf.dhsupport.core.dataobject.DataPoint;
-import no.jckf.dhsupport.core.dataobject.IdMapping;
-import no.jckf.dhsupport.core.dataobject.Lod;
-import no.jckf.dhsupport.core.dataobject.SectionPosition;
+import no.jckf.dhsupport.core.dataobject.*;
 import no.jckf.dhsupport.core.world.WorldInterface;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +46,8 @@ public class FullBuilder extends LodBuilder
         int offsetX = Coordinates.sectionToBlock(this.position.getX());
         int offsetZ = Coordinates.sectionToBlock(this.position.getZ());
 
-        int yStep = this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
+        int yStep = 1;//this.worldInterface.getConfig().getInt(DhsConfig.BUILDER_RESOLUTION);
+        int originalStep = yStep;
 
         boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, true);
         boolean performUnderglowHack = this.worldInterface.getConfig().getBool(DhsConfig.PERFORM_UNDERGLOW_HACK, false);
@@ -58,6 +57,8 @@ public class FullBuilder extends LodBuilder
 
         List<List<DataPoint>> columns = new ArrayList<>();
 
+        List<Beacon> beacons = new ArrayList<>();
+
         for (int relativeX = 0; relativeX < Lod.width; relativeX++) {
             for (int relativeZ = 0; relativeZ < Lod.width; relativeZ++) {
                 int worldX = offsetX + relativeX;
@@ -65,10 +66,7 @@ public class FullBuilder extends LodBuilder
 
                 // Actual Y of top-most block.
                 int topLayer = this.worldInterface.getHighestYAt(worldX, worldZ);
-
-                // Copies of the original values.
                 int hardTopLayer = topLayer;
-                int originalStep = yStep;
 
                 if (includeNonCollidingTopLayer) {
                     outer: while (topLayer + 1 < maxY) {
@@ -118,6 +116,10 @@ public class FullBuilder extends LodBuilder
                     }
 
                     String material = this.worldInterface.getMaterialAt(worldX, highWorldY, worldZ);
+
+                    if (this.worldInterface.isBeacon(worldX, highWorldY, worldZ)) {
+                        beacons.add(new Beacon(worldX, highWorldY, worldZ, Color.WHITE.getRGB())); // TODO: Color
+                    }
 
                     String compositeKey = biome + "|" + material + "|" + this.worldInterface.getBlockStateAsStringAt(worldX, highWorldY, worldZ);
 
@@ -191,6 +193,6 @@ public class FullBuilder extends LodBuilder
             }
         }
 
-        return new Lod(this.worldInterface, this.position, idMappings, columns);
+        return new Lod(this.worldInterface, this.position, idMappings, columns, beacons);
     }
 }

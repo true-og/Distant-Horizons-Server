@@ -47,13 +47,13 @@ public class ConfigLoader extends Handler
         pluginConfig.setDefaults(new MemoryConfiguration());
 
         // Get the config version value from the default config file.
-        Integer pluginConfigVersion = defaultConfig.getInt(DhsConfig.CONFIG_VERSION);
+        Integer bundledConfigVersion = defaultConfig.getInt(DhsConfig.CONFIG_VERSION);
 
         // Get the config version value from the server's config file.
         Integer serverConfigVersion = pluginConfig.getInt(DhsConfig.CONFIG_VERSION);
 
         // If the two values differ, load defaults for missing values.
-        if (!pluginConfigVersion.equals(serverConfigVersion)) {
+        if (!bundledConfigVersion.equals(serverConfigVersion)) {
             this.plugin.getLogger().warning("Your config file is for an older version of this plugin.");
 
             pluginConfig.setDefaults(defaultConfig);
@@ -63,6 +63,9 @@ public class ConfigLoader extends Handler
         // DH Support config.
         Configuration dhsConfig = this.plugin.getDhSupport().getConfig();
 
+        // Get rid of potentially old config values in the case of a reload.
+        dhsConfig.clear();
+
         // Populate DH Support config.
         pluginConfig.getKeys(true).forEach((key) -> dhsConfig.set(key, pluginConfig.get(key)));
     }
@@ -70,10 +73,7 @@ public class ConfigLoader extends Handler
     @Override
     public void onDisable()
     {
-        FileConfiguration pluginConfig = this.plugin.getConfig();
-
-        pluginConfig.getKeys(false).forEach((key) -> {
-            pluginConfig.set(key, null);
-        });
+        // Revert any changes we did.
+        this.plugin.reloadConfig();
     }
 }

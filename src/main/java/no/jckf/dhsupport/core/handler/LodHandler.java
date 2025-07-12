@@ -152,9 +152,7 @@ public class LodHandler
                     boolean sendData = requestMessage.getTimestamp() == null || (requestMessage.getTimestamp() / 1000) < lodModel.getTimestamp();
 
                     if (sendData) {
-                        int myBufferId = playerConfig.getInt("buffer-id", 0) + 1;
-
-                        playerConfig.set("buffer-id", myBufferId);
+                        int myBufferId = playerConfig.increment("buffer-id");
 
                         responseMessage.setBufferId(myBufferId);
                         responseMessage.setBeacons(lodModel.getBeacons());

@@ -1,3 +1,8 @@
+# Where should the plugin store its database file?
+# Required.
+# Default: "{datadir}/data.sqlite"
+database_path: "{datadir}/data.sqlite"
+
 # Maximum supported render distance. Clients will be capped to this value.
 # Required.
 # Default: 1024
@@ -55,10 +60,10 @@ max_data_transfer_speed: 0
 # Default: true
 #generate_new_chunks_warning: false
 
-# Output builder activity to the server console.
-# Optional.
-# Default: true
-#show_builder_activity: false
+# How frequently (in seconds) should LODs be updated if world changes are detected?
+# Required.
+# Default: 5
+lod_refresh_interval: 5
 
 # Select which LOD builder to use.
 # Valid options are: FullBuilder, FastOverworldBuilder, and None.
@@ -68,6 +73,7 @@ builder_type: FullBuilder
 
 # Number of blocks to advance between each sample on the Y axis when generating LODs.
 # A setting of 1 will sample every block, while 2 will sample every other block, and so on.
+# CURRENTLY BROKEN. THIS VALUE IS IGNORED.
 # Required.
 # Default: 2
 builder_resolution: 2
@@ -77,12 +83,6 @@ builder_resolution: 2
 # Optional.
 # Default: true
 #include_non-colliding_top_layer: false
-
-# Should beacons be included in LOD data?
-# It's recommended to leave this disabled for the initial LOD generation, then enable it afterward.
-# Optional.
-# Default: false
-#include_beacons: true
 
 # When running DHS on a proxied server, set this to a value that is unique to this specific server.
 # Optional.
@@ -113,6 +113,12 @@ worlds:
     # Default: false
     #scan_to_sea_level: true
 
+    # When using the FastOverworldBuilder, should the bottom data point be stretched to the lowest permitted build
+    # height? This will make the LODs look more complete, and gives a theoretical boost to render performance.
+    # Optional.
+    # Default: true
+    #fast_underfill: false
+
     # Limit LOD generation to within this area.
     # Optional.
     #border_center_x: 0
@@ -132,8 +138,13 @@ worlds:
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
 # Required.
-# Default: 2
-scheduler_threads: 2
+# Default: 4
+scheduler_threads: 4
+
+# Should we notify server admins when a new version of the plugin is available?
+# Optional.
+# Default: true
+#check_for_updates: false
 
 # Don't touch :)
-config_version: 6
+config_version: 8

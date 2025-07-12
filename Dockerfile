@@ -6,11 +6,11 @@ ARG UID=1000
 ARG GID=1000
 
 # Create a user with the same UID and GID as the host user if they don't already exist.
-RUN getent group $GID || sudo groupadd -g $GID app
-RUN getent passwd $UID || sudo useradd -m -u $UID -g $GID -s /bin/bash -d /app app
+RUN getent group $GID || groupadd -g $GID app
+RUN getent passwd $UID || useradd -m -u $UID -g $GID -s /bin/bash -d /app app
 
 # If an alternate user was created, let it sudo.
-RUN ( getent passwd app > /dev/null && echo 'app ALL=(ALL:ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers > /dev/null ) || true
+RUN ( getent passwd app > /dev/null && echo 'app ALL=(ALL:ALL) NOPASSWD: ALL' | tee -a /etc/sudoers > /dev/null ) || true
 
 # Drop privileges.
 USER $UID:$GID

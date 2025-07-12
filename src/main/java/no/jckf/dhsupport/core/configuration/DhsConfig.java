@@ -24,6 +24,10 @@ public abstract class DhsConfig
 
     public static String DEBUG = "debug";
 
+    public static String DATABASE_PATH = "database_path";
+
+    public static String CHECK_FOR_UPDATES = "check_for_updates";
+
     public static String RENDER_DISTANCE = "render_distance";
 
     public static String DISTANT_GENERATION_ENABLED = "distant_generation_enabled";
@@ -56,7 +60,7 @@ public abstract class DhsConfig
     
     public static String VANILLA_WORLD_BORDER_EXPANSION = "vanilla_world_border_expansion";
 
-    public static String SHOW_BUILDER_ACTIVITY = "show_builder_activity";
+    public static String LOD_REFRESH_INTERVAL = "lod_refresh_interval";
 
     public static String GENERATE_NEW_CHUNKS = "generate_new_chunks";
 
@@ -68,9 +72,9 @@ public abstract class DhsConfig
 
     public static String SCAN_TO_SEA_LEVEL= "scan_to_sea_level";
 
+    public static String FAST_UNDERFILL = "fast_underfill";
+
     public static String INCLUDE_NON_COLLIDING_TOP_LAYER = "include_non-colliding_top_layer";
 
     public static String PERFORM_UNDERGLOW_HACK = "perform_underglow_hack";
-
-    public static String INCLUDE_BEACONS = "include_beacons";
 }

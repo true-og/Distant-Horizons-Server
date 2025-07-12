@@ -25,6 +25,7 @@ import no.jckf.dhsupport.bukkit.handler.PlayerHandler;
 import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
 import no.jckf.dhsupport.bukkit.handler.WorldHandler;
 import no.jckf.dhsupport.core.DhSupport;
+import no.jckf.dhsupport.core.configuration.DhsConfig;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -35,8 +36,6 @@ import java.io.InputStreamReader;
 
 public class DhSupportBukkitPlugin extends JavaPlugin
 {
-    protected static int LOD_REFRESH_INTERVAL = 5 * 20;
-
     protected DhSupport dhSupport;
 
     protected Metrics metrics;
@@ -65,7 +64,7 @@ public class DhSupportBukkitPlugin extends JavaPlugin
 
         this.getLogger().info("I am DHS " + pluginVersion + " for MC " + mcVersion + ".");
 
-        this.dhSupport = new DhSupport();
+        this.dhSupport = new DhSupport(pluginVersion, mcVersion);
         this.dhSupport.setLogger(this.getLogger());
         this.dhSupport.setDataDirectory(this.getDataFolder().getAbsolutePath());
 
@@ -76,15 +75,17 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         this.pluginMessageProxy = new PluginMessageProxy(this);
         this.pluginMessageProxy.onEnable();
 
-        this.dhSupport.onEnable();
-
         this.scheduler = new BukkitScheduler(this);
         this.dhSupport.setScheduler(this.scheduler);
 
+        this.dhSupport.onEnable();
+
+        int lodRefreshInterval = this.getDhSupport().getConfig().getInt(DhsConfig.LOD_REFRESH_INTERVAL) * 20;
+
         this.scheduler.runTimer(() -> {
+            this.dhSupport.getGenerationTracker().prune();
             this.dhSupport.updateTouchedLods();
-            this.dhSupport.printGenerationCount();
-        }, LOD_REFRESH_INTERVAL, LOD_REFRESH_INTERVAL);
+        }, lodRefreshInterval, lodRefreshInterval);
 
         this.getServer().getPluginManager().registerEvents(new WorldHandler(this), this);
         this.getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);

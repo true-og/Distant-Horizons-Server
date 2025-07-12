@@ -12,7 +12,7 @@
 
     <properties>
         <skip-copy>false</skip-copy>
-        <mc.api-version>1.21.3</mc.api-version>
+        <mc.api-version>1.21.7</mc.api-version>
     </properties>
 
     <dependencies>

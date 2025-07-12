@@ -19,7 +19,11 @@
 package no.jckf.dhsupport.bukkit.commands;
 
 import no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin;
+import no.jckf.dhsupport.core.Coordinates;
 import no.jckf.dhsupport.core.PreGenerator;
+import no.jckf.dhsupport.core.Utils;
+import no.jckf.dhsupport.core.configuration.Configuration;
+import no.jckf.dhsupport.core.configuration.DhsConfig;
 import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -29,7 +33,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class DhsCommand implements CommandExecutor
 {
@@ -49,6 +55,9 @@ public class DhsCommand implements CommandExecutor
         }
 
         switch (args[0]) {
+            case "status":
+                return this.status(sender, Arrays.copyOfRange(args, 1, args.length));
+
             case "reload":
                 return this.reload(sender);
 
@@ -57,9 +66,89 @@ public class DhsCommand implements CommandExecutor
 
             case "pregen":
                 return this.pregen(sender, Arrays.copyOfRange(args, 1, args.length));
+
+            case "pause":
+                return this.pause(sender);
+
+            case "unpause":
+                return this.unpause(sender);
+
+            case "trim":
+                return this.trim(sender, Arrays.copyOfRange(args, 1, args.length));
         }
 
         sender.sendMessage(ChatColor.RED + "Unknown sub-command.");
+
+        return true;
+    }
+
+    protected boolean status(CommandSender sender, String[] args)
+    {
+        if (args.length == 0) {
+            return this.statusServer(sender);
+        }
+
+        return this.statusPlayer(sender, args[0]);
+    }
+
+    protected boolean statusServer(CommandSender sender)
+    {
+        Configuration config;
+
+        if (sender instanceof Player) {
+            World world = ((Player) sender).getWorld();
+
+            config = this.plugin.getDhSupport().getWorldInterface(world.getUID()).getConfig();
+
+            sender.sendMessage(ChatColor.BLUE + "Distant Horizons Support status for world " + ChatColor.GREEN + world.getName() + ChatColor.BLUE + ":");
+        } else {
+            config = this.plugin.getDhSupport().getConfig();
+
+            sender.sendMessage(ChatColor.BLUE + "Distant Horizons Support status for " + ChatColor.GREEN + "global context" + ChatColor.BLUE + ":");
+        }
+
+        sender.sendMessage(ChatColor.BLUE + "Distant generation is " + (config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.RENDER_DISTANCE) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Real time updates is " + (config.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Builder type is " + ChatColor.GREEN + config.getString(DhsConfig.BUILDER_TYPE) + ChatColor.BLUE + ".");
+
+        int playerCount = this.plugin.getDhSupport().getPlayerConfigurations().size();
+
+        StringBuilder playerList = new StringBuilder();
+
+        for (UUID playerId : this.plugin.getDhSupport().getPlayerConfigurations().keySet()) {
+            playerList.append(ChatColor.GREEN + this.plugin.getServer().getPlayer(playerId).getName() + ChatColor.BLUE + ", ");
+        }
+
+        sender.sendMessage(ChatColor.BLUE + "There " + (playerCount == 1 ? "is" : "are") + " " + ChatColor.GREEN + playerCount + ChatColor.BLUE + " " + (playerCount == 1 ? "player" : "players") + " online using Distant Horizons" + (playerCount == 0 ? "." : ": " + playerList.substring(0, playerList.length() - 2)));
+
+        sender.sendMessage(ChatColor.BLUE + "Current generation speed: " + ChatColor.GREEN + String.format("%.2f", this.plugin.getDhSupport().getGenerationTracker().getPingsPerSecond() * 16) + " CPS");
+
+        return true;
+    }
+
+    protected boolean statusPlayer(CommandSender sender, String playerName)
+    {
+        Player player = this.plugin.getServer().getPlayer(playerName);
+
+        if (player == null) {
+            sender.sendMessage(ChatColor.RED + "Player not found.");
+
+            return true;
+        }
+
+        Configuration config = this.plugin.getDhSupport().getPlayerConfiguration(player.getUniqueId());
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.YELLOW + "The player " + ChatColor.WHITE + player.getName() + ChatColor.YELLOW + " is not using Distant Horizons.");
+
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.BLUE + "Distant Horizons Support status for player " + ChatColor.GREEN + player.getName() + ChatColor.BLUE + ":");
+
+        sender.sendMessage(ChatColor.BLUE + "Distant generation is " + (config.getBool(DhsConfig.DISTANT_GENERATION_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.RENDER_DISTANCE) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Real time updates is " + (config.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED) ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled") + ChatColor.BLUE + " (" + ChatColor.GREEN + config.getInt(DhsConfig.REAL_TIME_UPDATE_RADIUS) + ChatColor.BLUE + ").");
+        sender.sendMessage(ChatColor.BLUE + "Server has sent " + ChatColor.GREEN + config.getInt("buffer-id", 0) + ChatColor.BLUE + " LODs to them.");
 
         return true;
     }
@@ -150,7 +239,7 @@ public class DhsCommand implements CommandExecutor
         }
 
         if (args.length >= 4) {
-            radius = Integer.parseInt(args[3]);
+            radius = Coordinates.chunkToBlock(Integer.parseInt(args[3]));
         } else {
             radius = world.getWorldBorderRadius();
         }
@@ -160,9 +249,15 @@ public class DhsCommand implements CommandExecutor
             return true;
         }
 
-        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+        boolean force = args.length >= 5 && args[4].equals("force");
 
-        this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius);
+        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + Coordinates.blockToChunk(radius) + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+
+        if (force) {
+            sender.sendMessage(ChatColor.YELLOW + "All existing LODs in this area will be re-generated.");
+        }
+
+        this.plugin.getDhSupport().preGenerate(world, centerX, centerZ, radius, force);
 
         return true;
     }
@@ -227,16 +322,122 @@ public class DhsCommand implements CommandExecutor
             return true;
         }
 
-        if (!this.plugin.getDhSupport().isPreGenerating(world)) {
+        PreGenerator generator = this.plugin.getDhSupport().getPreGenerator(world);
+
+        if (generator == null) {
             sender.sendMessage(ChatColor.RED + "No pre-generator running in world " + ChatColor.YELLOW + world.getName() + ChatColor.RED + ".");
             return true;
         }
 
-        PreGenerator generator = this.plugin.getDhSupport().getPreGenerator(world);
+        Duration elapsedTime = generator.getElapsedTime();
+
+        float momentaryLodsPerSecond = (float) this.plugin.getDhSupport().getGenerationTracker().getPingsPerSecond();
+        float totalLodsPerSecond = (float) generator.getCompletedRequests() / elapsedTime.toSeconds();
 
         sender.sendMessage(ChatColor.GREEN + "Generation progress: " + ChatColor.YELLOW + String.format("%.2f", generator.getProgress() * 100f) + "%");
-        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests());
-        sender.sendMessage(ChatColor.GREEN + "Time estimate: " + ChatColor.YELLOW + String.format("%.2f", (generator.getTargetRequests() - generator.getCompletedRequests()) / this.plugin.getDhSupport().getGenerationPerSecondStat() / 60 / 60) + ChatColor.GREEN + " hours.");
+        sender.sendMessage(ChatColor.GREEN + "Processed LODs: " + ChatColor.YELLOW + generator.getCompletedRequests() + ChatColor.GREEN + " / " + ChatColor.YELLOW + generator.getTargetRequests() + ChatColor.GREEN + " (" + ChatColor.YELLOW + String.format("%.2f", totalLodsPerSecond * 16) + ChatColor.GREEN + " CPS)");
+        sender.sendMessage(ChatColor.GREEN + "Time elapsed: " + ChatColor.YELLOW + Utils.humanReadableDuration(elapsedTime));
+
+        if (generator.isRunning()) {
+            sender.sendMessage(ChatColor.GREEN + "Time remaining: " + ChatColor.YELLOW + Utils.humanReadableDuration(Duration.ofSeconds((long) ((generator.getTargetRequests() - generator.getCompletedRequests()) / momentaryLodsPerSecond))));
+        } else {
+            sender.sendMessage(ChatColor.GREEN + "Generation is complete.");
+        }
+
+        return true;
+    }
+
+    protected boolean pause(CommandSender sender)
+    {
+        if (this.plugin.getDhSupport().isPaused()) {
+            sender.sendMessage(ChatColor.RED + "Already paused.");
+            return true;
+        }
+
+        if (!this.plugin.getDhSupport().pause()) {
+            sender.sendMessage(ChatColor.RED + "Could not pause. Check server log for error messages.");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "DHS has been paused.");
+
+        return true;
+    }
+
+    protected boolean unpause(CommandSender sender)
+    {
+        if (!this.plugin.getDhSupport().isPaused()) {
+            sender.sendMessage(ChatColor.RED + "Not paused.");
+            return true;
+        }
+
+        if (!this.plugin.getDhSupport().unpause()) {
+            sender.sendMessage(ChatColor.RED + "Could not unpause. Check server log for error messages.");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.GREEN + "DHS has been unpaused.");
+
+        return true;
+    }
+
+    protected boolean trim(CommandSender sender, String[] args)
+    {
+        WorldInterface world;
+        Integer centerX;
+        Integer centerZ;
+        Integer radius;
+
+        if (args.length >= 1) {
+            World bukkitWorld = this.plugin.getWorld(args[0]);
+
+            if (bukkitWorld == null) {
+                sender.sendMessage(ChatColor.RED + "Unknown world.");
+                return true;
+            }
+
+            world = this.plugin.getDhSupport().getWorldInterface(bukkitWorld.getUID());
+        } else if (sender instanceof Player) {
+            world = this.plugin.getDhSupport().getWorldInterface(((Player) sender).getWorld().getUID());
+        } else {
+            world = null;
+        }
+
+        if (world == null) {
+            sender.sendMessage(ChatColor.RED + "No world specified.");
+            return true;
+        }
+
+        if (args.length >= 3) {
+            centerX = Integer.parseInt(args[1]);
+            centerZ = Integer.parseInt(args[2]);
+        } else {
+            centerX = world.getWorldBorderX();
+            centerZ = world.getWorldBorderZ();
+        }
+
+        if (centerX == null || centerZ == null) {
+            sender.sendMessage(ChatColor.RED + "No center coordinates specified.");
+            return true;
+        }
+
+        if (args.length >= 4) {
+            radius = Integer.parseInt(args[3]);
+        } else {
+            radius = world.getWorldBorderRadius();
+        }
+
+        if (radius == null) {
+            sender.sendMessage(ChatColor.RED + "No radius specified.");
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "Trimming LODs outside view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " centered at " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+
+        this.plugin.getDhSupport().trim(world, centerX, centerZ, radius)
+            .thenAccept((trimmedCount) -> {
+                sender.sendMessage(ChatColor.GREEN + "Trimming of " + ChatColor.YELLOW + trimmedCount + ChatColor.GREEN + " LODs in " + ChatColor.YELLOW + world.getName() + ChatColor.GREEN + " completed.");
+            });
 
         return true;
     }

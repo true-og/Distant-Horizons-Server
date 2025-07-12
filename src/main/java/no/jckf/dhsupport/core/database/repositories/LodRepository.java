@@ -29,6 +29,16 @@ import java.util.logging.Logger;
 
 public class LodRepository
 {
+    protected static final String SQL_SAVE_LOD = "REPLACE INTO lods (worldId, x, z, data, beacons, timestamp) VALUES (?, ?, ?, ?, ?, ?)";
+
+    protected static final String SQL_LOAD_LOD = "SELECT data, beacons, timestamp FROM lods WHERE worldId = ? AND x = ? AND z = ? LIMIT 1";
+
+    protected static final String SQL_LOD_EXISTS = "SELECT EXISTS( SELECT 1 FROM lods WHERE worldId = ? AND x = ? AND z = ? )";
+
+    protected static final String SQL_DELETE_LOD = "DELETE FROM lods WHERE worldId = ? AND x = ? AND z = ?";
+
+    protected static final String SQL_TRIM_LODS = "DELETE FROM lods WHERE worldId = ? AND (x < ? OR z < ? OR x > ? OR z > ?)";
+
     protected Database database;
 
     protected Logger logger;
@@ -52,9 +62,9 @@ public class LodRepository
     {
         int timestamp = (int) (System.currentTimeMillis() / 1000);
 
-        String sql = "REPLACE INTO lods (worldId, x, z, data, beacons, timestamp) VALUES (?, ?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement statement = this.database.prepareAndReuse(SQL_SAVE_LOD);
 
-        try (PreparedStatement statement = this.database.getConnection().prepareStatement(sql)) {
             statement.setString(1, worldId.toString());
             statement.setInt(2, sectionX);
             statement.setInt(3, sectionZ);
@@ -80,28 +90,28 @@ public class LodRepository
 
     public LodModel loadLod(UUID worldId, int sectionX, int sectionZ)
     {
-        String sql = "SELECT data, beacons, timestamp FROM lods WHERE worldId = ? AND x = ? AND z = ? LIMIT 1";
+        try {
+            PreparedStatement statement = this.database.prepareAndReuse(SQL_LOAD_LOD);
 
-        try (PreparedStatement statement = this.database.getConnection().prepareStatement(sql)) {
             statement.setString(1, worldId.toString());
             statement.setInt(2, sectionX);
             statement.setInt(3, sectionZ);
 
-            ResultSet result = statement.executeQuery();
+            try (ResultSet result = statement.executeQuery()) {
+                byte[] data = result.getBytes("data");
 
-            byte[] data = result.getBytes("data");
+                if (data == null) {
+                    return null;
+                }
 
-            if (data == null) {
-                return null;
+                return LodModel.create()
+                    .setWorldId(worldId)
+                    .setX(sectionX)
+                    .setZ(sectionZ)
+                    .setData(data)
+                    .setBeacons(result.getBytes("beacons"))
+                    .setTimestamp(result.getInt("timestamp"));
             }
-
-            return LodModel.create()
-                .setWorldId(worldId)
-                .setX(sectionX)
-                .setZ(sectionZ)
-                .setData(data)
-                .setBeacons(result.getBytes("beacons"))
-                .setTimestamp(result.getInt("timestamp"));
         } catch (SQLException exception) {
             this.getLogger().warning("Could not load LOD: " + exception);
 
@@ -111,16 +121,16 @@ public class LodRepository
 
     public boolean lodExists(UUID worldId, int sectionX, int sectionZ)
     {
-        String sql = "SELECT EXISTS( SELECT 1 FROM lods WHERE worldId = ? AND x = ? AND z = ? )";
+        try {
+            PreparedStatement statement = this.database.prepareAndReuse(SQL_LOD_EXISTS);
 
-        try (PreparedStatement statement = this.database.getConnection().prepareStatement(sql)) {
             statement.setString(1, worldId.toString());
             statement.setInt(2, sectionX);
             statement.setInt(3, sectionZ);
 
-            ResultSet result = statement.executeQuery();
-
-            return result.getInt(1) == 1;
+            try (ResultSet result = statement.executeQuery()) {
+                return result.getInt(1) == 1;
+            }
         } catch (SQLException exception) {
             this.getLogger().warning("Could not check LOD existence: " + exception);
 
@@ -130,9 +140,9 @@ public class LodRepository
 
     public boolean deleteLod(UUID worldId, int sectionX, int sectionZ)
     {
-        String sql = "DELETE FROM lods WHERE worldId = ? AND x = ? AND z = ?";
+        try {
+            PreparedStatement statement = this.database.prepareAndReuse(SQL_DELETE_LOD);
 
-        try (PreparedStatement statement = this.database.getConnection().prepareStatement(sql)) {
             statement.setString(1, worldId.toString());
             statement.setInt(2, sectionX);
             statement.setInt(3, sectionZ);
@@ -145,5 +155,28 @@ public class LodRepository
 
             return false;
         }
+    }
+
+    public int trimLods(UUID worldId, int lowSectionX, int lowSectionZ, int highSectionX, int highSectionZ)
+    {
+        int affectedRows = 0;
+
+        try {
+            PreparedStatement statement = this.database.prepareAndReuse(SQL_TRIM_LODS);
+
+            statement.setString(1, worldId.toString());
+            statement.setInt(2, lowSectionX);
+            statement.setInt(3, lowSectionZ);
+            statement.setInt(4, highSectionX);
+            statement.setInt(5, highSectionZ);
+
+            affectedRows = statement.executeUpdate();
+
+            this.database.optimize();
+        } catch (Exception exception) {
+            this.getLogger().warning("Could not trim LODs/optimize DB: " + exception);
+        }
+
+        return affectedRows;
     }
 }
