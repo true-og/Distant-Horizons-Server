@@ -457,4 +457,52 @@ public class BukkitWorldInterface implements WorldInterface
             )
             .join();
     }
+
+    @Override
+    public int getBeaconColor(int x, int y, int z)
+    {
+        int skipped = 0;
+        int n = 0;
+        int red = 0;
+        int green = 0;
+        int blue = 0;
+
+        int maxY = this.getMaxY();
+
+        while (y < maxY) {
+            y++;
+
+            String material = this.getMaterialAt(x, y, z);
+
+            if (!material.startsWith("minecraft:") || (!material.endsWith("stained_glass") && !material.endsWith("stained_glass_pane"))) {
+                skipped++;
+
+                if (skipped >= 5) {
+                    break;
+                }
+
+                continue;
+            }
+
+            n++;
+
+            String colorName = material.split("[:_]")[1].toUpperCase();
+
+            Color color = DyeColor.valueOf(colorName).getColor();
+
+            red += color.getRed();
+            green += color.getGreen();
+            blue += color.getBlue();
+        }
+
+        if (n == 0) {
+            return Color.WHITE.asRGB();
+        }
+
+        return (new java.awt.Color(
+            red / n,
+            green / n,
+            blue / n
+        )).getRGB();
+    }
 }

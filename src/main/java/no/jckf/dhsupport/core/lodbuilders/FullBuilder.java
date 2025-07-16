@@ -24,7 +24,6 @@ import no.jckf.dhsupport.core.dataobject.*;
 import no.jckf.dhsupport.core.world.WorldInterface;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,7 +117,16 @@ public class FullBuilder extends LodBuilder
                     String material = this.worldInterface.getMaterialAt(worldX, highWorldY, worldZ);
 
                     if (this.worldInterface.isBeacon(worldX, highWorldY, worldZ)) {
-                        beacons.add(new Beacon(worldX, highWorldY, worldZ, Color.WHITE.getRGB())); // TODO: Color
+                        beacons.add(new Beacon(
+                            worldX,
+                            highWorldY,
+                            worldZ,
+                            worldInterface.getBeaconColor(
+                                worldX,
+                                highWorldY,
+                                worldZ
+                            )
+                        ));
                     }
 
                     String compositeKey = biome + "|" + material + "|" + this.worldInterface.getBlockStateAsStringAt(worldX, highWorldY, worldZ);

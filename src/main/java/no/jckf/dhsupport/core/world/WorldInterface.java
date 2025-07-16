@@ -82,4 +82,6 @@ public interface WorldInterface extends Configurable
     byte getSkyLightAt(int x, int y, int z);
 
     boolean isBeacon(int x, int y, int z);
+
+    int getBeaconColor(int x, int y, int z);
 }
