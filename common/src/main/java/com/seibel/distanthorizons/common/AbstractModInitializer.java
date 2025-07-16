@@ -66,7 +66,7 @@ public abstract class AbstractModInitializer
 	{
 		DependencySetup.createClientBindings();
 		
-		LOGGER.info("Initializing " + ModInfo.READABLE_NAME + " client.");
+		LOGGER.info("Initializing " + ModInfo.READABLE_NAME + " client, firing DhApiBeforeDhInitEvent...");
 		ApiEventInjector.INSTANCE.fireAllEvents(DhApiBeforeDhInitEvent.class, null);
 		
 		this.startup();
@@ -90,7 +90,7 @@ public abstract class AbstractModInitializer
 	{
 		DependencySetup.createServerBindings();
 		
-		LOGGER.info("Initializing " + ModInfo.READABLE_NAME + " server.");
+		LOGGER.info("Initializing " + ModInfo.READABLE_NAME + " server, firing DhApiBeforeDhInitEvent event...");
 		ApiEventInjector.INSTANCE.fireAllEvents(DhApiBeforeDhInitEvent.class, null);
 		
 		this.startup();
@@ -181,9 +181,9 @@ public abstract class AbstractModInitializer
 	
 	private void postInit()
 	{
-		LOGGER.info("Post-Initializing Mod");
+		LOGGER.info("Running Delayed setup...");
 		this.runDelayedSetup();
-		LOGGER.info("Mod Post-Initialized");
+		LOGGER.info("Delayed setup complete, firing DhApiAfterDhInitEvent event...");
 		
 		// should be fired after all delayed setup so singletons and config can be accessed
 		ApiEventInjector.INSTANCE.fireAllEvents(DhApiAfterDhInitEvent.class, null);
