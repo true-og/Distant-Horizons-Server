@@ -493,16 +493,18 @@ public class BukkitWorldInterface implements WorldInterface
             red += color.getRed();
             green += color.getGreen();
             blue += color.getBlue();
+
+            if (n > 1) {
+                red /= 2;
+                green /= 2;
+                blue /= 2;
+            }
         }
 
         if (n == 0) {
             return Color.WHITE.asRGB();
         }
 
-        return (new java.awt.Color(
-            red / n,
-            green / n,
-            blue / n
-        )).getRGB();
+        return (new java.awt.Color(red, green, blue)).getRGB();
     }
 }
