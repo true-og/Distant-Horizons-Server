@@ -57,8 +57,6 @@ public class DhSupport implements Configurable
 {
     protected String pluginVersion;
 
-    protected String mcVersion;
-
     protected String dataDirectory;
 
     protected Database database;
@@ -92,10 +90,9 @@ public class DhSupport implements Configurable
 
     protected Map<UUID, PreGenerator> preGenerators = new HashMap<>();
 
-    public DhSupport(String pluginVersion, String mcVersion)
+    public DhSupport(String pluginVersion)
     {
         this.pluginVersion = pluginVersion;
-        this.mcVersion = mcVersion;
 
         this.configuration = new Configuration();
 

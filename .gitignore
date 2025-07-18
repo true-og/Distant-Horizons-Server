@@ -33,6 +33,10 @@ replay_pid*
 /jars
 /.m2
 
+# Gradle output
+/.gradle
+/build
+
 # Env vars
 .env
 
