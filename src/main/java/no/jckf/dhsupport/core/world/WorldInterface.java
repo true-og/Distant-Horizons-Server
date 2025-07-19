@@ -71,6 +71,8 @@ public interface WorldInterface extends Configurable
 
     String getBiomeAt(int x, int z);
 
+    String getBiomeAt(int x, int y, int z);
+
     String getMaterialAt(int x, int y, int z);
 
     String getBlockStateAsStringAt(int x, int y, int z);

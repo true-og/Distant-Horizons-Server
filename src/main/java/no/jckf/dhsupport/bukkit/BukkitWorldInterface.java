@@ -374,20 +374,26 @@ public class BukkitWorldInterface implements WorldInterface
     }
 
     @Override
-    public String getBiomeAt(int x, int z)
+    public String getBiomeAt(int x, int y, int z)
     {
-        NamespacedKey key = this.getChunk(x, z).getBiome(Coordinates.blockToChunkRelative(x), this.getSeaLevel(), Coordinates.blockToChunkRelative(z)).getKey();
+        NamespacedKey key = this.getChunk(x, z).getBiome(Coordinates.blockToChunkRelative(x), y, Coordinates.blockToChunkRelative(z)).getKey();
 
         // If the server just reports "custom" and we have access to getBiomeKey, try to get the correct biome name.
         if (key.toString().equals("minecraft:custom") && this.getBiomeKey != null) {
             try {
-                key = (NamespacedKey) this.getBiomeKey.invoke(this.unsafeValues, this.world, x, this.getSeaLevel(), z);
+                key = (NamespacedKey) this.getBiomeKey.invoke(this.unsafeValues, this.world, x, y, z);
             } catch (IllegalAccessException | InvocationTargetException exception) {
                 throw new RuntimeException(exception);
             }
         }
 
         return key.toString();
+    }
+
+    @Override
+    public String getBiomeAt(int x, int z)
+    {
+        return this.getBiomeAt(x, this.getSeaLevel(), z);
     }
 
     @Override
