@@ -50,6 +50,7 @@ public class FullBuilder extends LodBuilder
 
         boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, true);
         boolean performUnderglowHack = this.worldInterface.getConfig().getBool(DhsConfig.PERFORM_UNDERGLOW_HACK, false);
+        boolean sampleBiomes3d = this.worldInterface.getConfig().getBool(DhsConfig.SAMPLE_BIOMES_3D, false);
 
         List<IdMapping> idMappings = new ArrayList<>();
         Map<String, Integer> mapMap = new HashMap<>();
@@ -89,7 +90,11 @@ public class FullBuilder extends LodBuilder
                 // Distance from bottom to top-most block.
                 int relativeTopLayer = topLayer - minY;
 
-                String biome = this.worldInterface.getBiomeAt(worldX, worldZ);
+                String biome = "";
+
+                if (!sampleBiomes3d) {
+                    biome = this.worldInterface.getBiomeAt(worldX, worldZ);
+                }
 
                 List<DataPoint> column = new ArrayList<>();
 
@@ -127,6 +132,10 @@ public class FullBuilder extends LodBuilder
                                 worldZ
                             )
                         ));
+                    }
+
+                    if (sampleBiomes3d) {
+                        biome = this.worldInterface.getBiomeAt(worldX, highWorldY, worldZ);
                     }
 
                     String compositeKey = biome + "|" + material + "|" + this.worldInterface.getBlockStateAsStringAt(worldX, highWorldY, worldZ);

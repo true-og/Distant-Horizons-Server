@@ -107,6 +107,12 @@ worlds:
     # Use builder that is optimized for overworld.
     builder_type: FastOverworldBuilder
 
+    # Should biome be checked for every data point, or just once per column?
+    # Enable if your world has 3d/vertical biomes.
+    # Optional.
+    # Default: false
+    #sample_biomes_3d: true
+
     # When using the FastOverworldBuilder, should LODs always contain data down to at least sea level?
     # Enable if your world has floating islands or mountains/structures with large overhangs above sea level.
     # Optional.

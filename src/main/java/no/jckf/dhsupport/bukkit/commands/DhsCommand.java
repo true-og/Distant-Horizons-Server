@@ -78,9 +78,6 @@ public class DhsCommand implements CommandExecutor
 
             case "trim":
                 return this.trim(sender, Arrays.copyOfRange(args, 1, args.length));
-
-            case "biomes":
-                return this.biomes(sender);
         }
 
         sender.sendMessage(ChatColor.RED + "Unknown sub-command.");
@@ -444,48 +441,6 @@ public class DhsCommand implements CommandExecutor
             .thenAccept((trimmedCount) -> {
                 sender.sendMessage(ChatColor.GREEN + "Trimming of " + ChatColor.YELLOW + trimmedCount + ChatColor.GREEN + " LODs in " + ChatColor.YELLOW + world.getName() + ChatColor.GREEN + " completed.");
             });
-
-        return true;
-    }
-
-    protected boolean biomes(CommandSender sender)
-    {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used in-game.");
-            return true;
-        }
-
-        Player player = (Player) sender;
-
-        WorldInterface world = this.plugin.getDhSupport().getWorldInterface(player.getLocation().getWorld().getUID());
-
-        int x = Coordinates.sectionToBlock(Coordinates.blockToSection(player.getLocation().getBlockX()));
-        int y = player.getLocation().getBlockY();
-        int z = Coordinates.sectionToBlock(Coordinates.blockToSection(player.getLocation().getBlockZ()));
-
-        boolean verticalBiomes = false;
-
-        Map<String, Boolean> biomes = new HashMap<>();
-
-        for (int offsetX = 0; offsetX < Lod.width; offsetX++) {
-            for (int offsetZ = 0; offsetZ < Lod.width; offsetZ++) {
-                String biome = world.getBiomeAt(x + offsetX, z + offsetZ);
-                String verticalBiome = world.getBiomeAt(x + offsetX, y, z + offsetZ);
-
-                if (!biome.equals(verticalBiome)) {
-                    verticalBiomes = true;
-                }
-
-                biomes.put(biome, true);
-                biomes.put(verticalBiome, true);
-            }
-        }
-
-        player.sendMessage(ChatColor.GREEN + "Biomes: " + ChatColor.BLUE + String.join(ChatColor.GRAY + ", " + ChatColor.BLUE, biomes.keySet()));
-
-        if (verticalBiomes) {
-            player.sendMessage(ChatColor.YELLOW + "Biomes at sea level and at your level are NOT equal. LOD building will be inaccurate.");
-        }
 
         return true;
     }

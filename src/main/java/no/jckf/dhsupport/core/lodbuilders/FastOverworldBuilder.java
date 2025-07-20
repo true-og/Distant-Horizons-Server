@@ -54,6 +54,7 @@ public class FastOverworldBuilder extends LodBuilder
         boolean scanToSeaLevel = this.worldInterface.getConfig().getBool(DhsConfig.SCAN_TO_SEA_LEVEL, false);
         boolean underfill = this.worldInterface.getConfig().getBool(DhsConfig.FAST_UNDERFILL, true);
         boolean includeNonCollidingTopLayer = this.worldInterface.getConfig().getBool(DhsConfig.INCLUDE_NON_COLLIDING_TOP_LAYER, true);
+        boolean sampleBiomes3d = this.worldInterface.getConfig().getBool(DhsConfig.SAMPLE_BIOMES_3D, false);
 
         List<IdMapping> idMappings = new ArrayList<>();
         Map<String, Integer> mapMap = new HashMap<>();
@@ -93,7 +94,11 @@ public class FastOverworldBuilder extends LodBuilder
                 // Distance from bottom to top-most block.
                 int relativeTopLayer = topLayer - minY;
 
-                String biome = this.worldInterface.getBiomeAt(worldX, worldZ);
+                String biome = "";
+
+                if (!sampleBiomes3d) {
+                    biome = this.worldInterface.getBiomeAt(worldX, worldZ);
+                }
 
                 List<DataPoint> column = new ArrayList<>();
 
@@ -147,6 +152,10 @@ public class FastOverworldBuilder extends LodBuilder
                             case "minecraft:mycelium":
                                 solidGround = Math.min(relativeY - 10, relativeSeaLevel - 10);
                         }
+                    }
+
+                    if (sampleBiomes3d) {
+                        biome = this.worldInterface.getBiomeAt(worldX, highWorldY, worldZ);
                     }
 
                     String compositeKey = biome + "|" + material;
