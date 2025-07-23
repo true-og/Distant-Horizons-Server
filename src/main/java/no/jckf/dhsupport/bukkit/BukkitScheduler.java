@@ -66,13 +66,17 @@ public class BukkitScheduler implements Scheduler
     {
         CompletableFuture<U> future = new CompletableFuture<>();
 
-        this.foliaLib.getScheduler().runNextTick((task) -> {
-            try {
-                future.complete(supplier.get());
-            } catch (Exception exception) {
-                future.completeExceptionally(exception);
-            }
-        });
+        if (this.foliaLib.getScheduler().isGlobalTickThread()) {
+            future.complete(supplier.get());
+        } else {
+            this.foliaLib.getScheduler().runNextTick((task) -> {
+                try {
+                    future.complete(supplier.get());
+                } catch (Exception exception) {
+                    future.completeExceptionally(exception);
+                }
+            });
+        }
 
         return future;
     }
@@ -89,16 +93,20 @@ public class BukkitScheduler implements Scheduler
             z
         );
 
-        this.foliaLib.getScheduler().runAtLocation(
-            location,
-            (task) -> {
-                try {
-                    future.complete(supplier.get());
-                } catch (Exception exception) {
-                    future.completeExceptionally(exception);
-                }
-            }
-        );
+        if (this.foliaLib.getScheduler().isOwnedByCurrentRegion(location)) {
+            future.complete(supplier.get());
+        } else {
+            this.foliaLib.getScheduler().runAtLocation(
+                    location,
+                    (task) -> {
+                        try {
+                            future.complete(supplier.get());
+                        } catch (Exception exception) {
+                            future.completeExceptionally(exception);
+                        }
+                    }
+            );
+        }
 
         return future;
     }
