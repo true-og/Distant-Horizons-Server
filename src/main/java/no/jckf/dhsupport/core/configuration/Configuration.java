@@ -21,6 +21,8 @@ package no.jckf.dhsupport.core.configuration;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,6 +85,16 @@ public class Configuration
     public @Nullable String getString(String key)
     {
         return this.getString(key, null);
+    }
+
+    public @PolyNull List<String> getStringList(String key, @PolyNull List<String> defaultValue)
+    {
+        return (List<String>) this.get(key, defaultValue);
+    }
+
+    public List<String> getStringList(String key)
+    {
+        return this.getStringList(key, new ArrayList<>());
     }
 
     public int increment(String key)

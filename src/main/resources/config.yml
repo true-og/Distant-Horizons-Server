@@ -141,6 +141,27 @@ worlds:
     #perform_underglow_hack: true
     #builder_resolution: 1
 
+# List of events that should trigger LOD updates.
+# Required.
+# Default: A bunch (:
+update_events:
+  - org.bukkit.event.block.BlockPlaceEvent
+  - org.bukkit.event.block.BlockBreakEvent
+  - org.bukkit.event.block.TNTPrimeEvent
+  - org.bukkit.event.block.BlockExplodeEvent
+  - org.bukkit.event.block.BlockIgniteEvent
+  - org.bukkit.event.block.BlockBurnEvent
+  - org.bukkit.event.block.LeavesDecayEvent
+  - org.bukkit.event.block.BlockFadeEvent
+  - org.bukkit.event.block.BlockGrowEvent
+  - org.bukkit.event.block.MoistureChangeEvent
+  - org.bukkit.event.block.BlockRedstoneEvent
+  - org.bukkit.event.block.BlockPistonExtendEvent
+  - org.bukkit.event.block.BlockPistonRetractEvent
+  - org.bukkit.event.block.SpongeAbsorbEvent
+  - org.bukkit.event.inventory.FurnaceBurnEvent
+  - org.bukkit.event.world.StructureGrowEvent
+
 # Number of worker threads used to generate LODs.
 # Does not affect Folia servers.
 # Required.
@@ -152,5 +173,10 @@ scheduler_threads: 4
 # Default: true
 #check_for_updates: false
 
+# Enable debug logging?
+# Optional.
+# Default: false
+#debug: true
+
 # Don't touch :)
-config_version: 8
+config_version: 9

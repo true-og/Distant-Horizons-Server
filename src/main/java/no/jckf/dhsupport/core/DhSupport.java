@@ -271,7 +271,12 @@ public class DhSupport implements Configurable
 
     public void debug(String message)
     {
-        //this.getLogger().info("[DEBUG] " + message);
+        // TODO: Use log levels properly?
+        if (!this.getConfig().getBool(DhsConfig.DEBUG, false)) {
+            return;
+        }
+
+        this.getLogger().info("[DEBUG] " + message);
     }
 
     public void checkUpdates()
@@ -486,7 +491,7 @@ public class DhSupport implements Configurable
             });
     }
 
-    public void touchLod(UUID worldId, int x, int z)
+    public void touchLod(UUID worldId, int x, int z, @Nullable String reason)
     {
         int sectionX = Coordinates.blockToSection(x);
         int sectionZ = Coordinates.blockToSection(z);
@@ -502,7 +507,14 @@ public class DhSupport implements Configurable
             return;
         }
 
+        this.debug("Touched LOD at " + this.getWorldInterface(worldId).getName() + " " + x + " " + z + (reason == null ? "." : ": " + reason));
+
         this.touchedLods.put(key, lodModel);
+    }
+
+    public void touchLod(UUID worldId, int x, int z)
+    {
+        this.touchLod(worldId, x, z, null);
     }
 
     public void updateTouchedLods()
@@ -517,7 +529,7 @@ public class DhSupport implements Configurable
 
             WorldInterface world = this.getWorldInterface(lodModelToDelete.getWorldId());
 
-            this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
+            this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + " " + lodModelToDelete.getZ() + ".");
 
             this.getLodRepository().lodExistsAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ()).thenAccept((exists) -> {
                 if (!exists) {
@@ -527,7 +539,7 @@ public class DhSupport implements Configurable
                 this.getLodRepository().deleteLodAsync(lodModelToDelete.getWorldId(), lodModelToDelete.getX(), lodModelToDelete.getZ())
                     .thenAccept((deleted) -> {
                         if (!deleted) {
-                            this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + ".");
+                            this.warning("Could not delete LOD " + world.getName() + " " + lodModelToDelete.getX() + " " + lodModelToDelete.getZ() + ".");
                             return;
                         }
 
@@ -544,7 +556,7 @@ public class DhSupport implements Configurable
                                 boolean updatesEnabled = worldConfig.getBool(DhsConfig.REAL_TIME_UPDATES_ENABLED);
 
                                 if (!updatesEnabled) {
-                                    this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
+                                    this.debug("New LOD " + world.getName() + " " + lodModelToDelete.getX() + " " + lodModelToDelete.getZ() + " generated, but real-time updates are disabled.");
                                     return;
                                 }
 
@@ -619,7 +631,7 @@ public class DhSupport implements Configurable
                                     this.pluginMessageHandler.sendPluginMessage(player.getUniqueId(), partialUpdateMessage);
                                 }
 
-                                this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + "x" + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
+                                this.debug("Updated LOD " + world.getName() + " " + lodModelToDelete.getX() + " " + lodModelToDelete.getZ() + " sent to " + playersInRangeCount + " players. Found " + playersOutOfRangeCount + " players out of range, and " + playersWithoutDhCount + " players without DH.");
                             });
                     });
             });

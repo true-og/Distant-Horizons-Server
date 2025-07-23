@@ -24,7 +24,6 @@ import no.jckf.dhsupport.core.PreGenerator;
 import no.jckf.dhsupport.core.Utils;
 import no.jckf.dhsupport.core.configuration.Configuration;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import no.jckf.dhsupport.core.dataobject.Lod;
 import no.jckf.dhsupport.core.world.WorldInterface;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -36,8 +35,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class DhsCommand implements CommandExecutor
@@ -254,7 +251,7 @@ public class DhsCommand implements CommandExecutor
 
         boolean force = args.length >= 5 && args[4].equals("force");
 
-        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + Coordinates.blockToChunk(radius) + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+        sender.sendMessage(ChatColor.YELLOW + "Generating LODs for view distance of " + ChatColor.GREEN + Coordinates.blockToChunk(radius) + ChatColor.YELLOW + " chunks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " starting at center " + ChatColor.GREEN + centerX + " " + centerZ + ChatColor.YELLOW + "...");
 
         if (force) {
             sender.sendMessage(ChatColor.YELLOW + "All existing LODs in this area will be re-generated.");
@@ -435,7 +432,7 @@ public class DhsCommand implements CommandExecutor
             return true;
         }
 
-        sender.sendMessage(ChatColor.YELLOW + "Trimming LODs outside view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " centered at " + ChatColor.GREEN + centerX + " x " + centerZ + ChatColor.YELLOW + "...");
+        sender.sendMessage(ChatColor.YELLOW + "Trimming LODs outside view distance of " + ChatColor.GREEN + radius + ChatColor.YELLOW + " blocks in world " + ChatColor.GREEN + world.getName() + ChatColor.YELLOW + " centered at " + ChatColor.GREEN + centerX + " " + centerZ + ChatColor.YELLOW + "...");
 
         this.plugin.getDhSupport().trim(world, centerX, centerZ, radius)
             .thenAccept((trimmedCount) -> {

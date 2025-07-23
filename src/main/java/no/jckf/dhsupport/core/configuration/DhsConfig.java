@@ -79,4 +79,6 @@ public abstract class DhsConfig
     public static String PERFORM_UNDERGLOW_HACK = "perform_underglow_hack";
 
     public static String SAMPLE_BIOMES_3D = "sample_biomes_3d";
+
+    public static String UPDATE_EVENTS = "update_events";
 }
