@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "no.jckf.dhs"
-version = "0.11.0-SNAPSHOT"
+version = "0.11.1"
 description = "Distant Horizons Support"
 
 java {

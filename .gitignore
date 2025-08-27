@@ -11,8 +11,9 @@
 .mtj.tmp/
 
 # Eclipse files
-.settings
-.gradle
+.project
+.settings/
+.gradle/
 .classpath
 
 # Package Files #
