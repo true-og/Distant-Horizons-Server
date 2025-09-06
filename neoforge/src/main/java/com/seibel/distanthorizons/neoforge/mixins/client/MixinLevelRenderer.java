@@ -169,11 +169,6 @@ public class MixinLevelRenderer
 			);
 		}
 		#endif
-		
-		if (Config.Client.Advanced.Debugging.lodOnlyMode.get())
-		{
-			callback.cancel();
-		}
 	}
 	
 	
