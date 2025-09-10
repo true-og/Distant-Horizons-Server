@@ -72,6 +72,7 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	
 	private BlockStateWrapper dirtBlockWrapper;
+	private BlockStateWrapper waterBlockWrapper;
 	private BiomeWrapper plainsBiomeWrapper;
 	@Deprecated // TODO circular references are bad
 	private IDhLevel parentDhLevel;
@@ -207,6 +208,26 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 		return this.getBlockColor(DhBlockPos.ZERO,BiomeWrapper.EMPTY_WRAPPER, this.dirtBlockWrapper);
 	}
 	
+	@Override
+	public int getWaterBlockColor()
+	{
+		if (this.waterBlockWrapper == null)
+		{
+			try
+			{
+				this.waterBlockWrapper = (BlockStateWrapper) BlockStateWrapper.deserialize(BlockStateWrapper.WATER_RESOURCE_LOCATION_STRING, this);
+			}
+			catch (IOException e)
+			{
+				// shouldn't happen, but just in case
+				LOGGER.warn("Unable to get water color with resource location ["+BlockStateWrapper.WATER_RESOURCE_LOCATION_STRING+"] with level ["+this+"].", e);
+				return -1;
+			}
+		}
+		
+		return this.getBlockColor(DhBlockPos.ZERO, BiomeWrapper.EMPTY_WRAPPER, this.waterBlockWrapper);
+	}
+	
 	@Override 
 	public void clearBlockColorCache() { this.blockCache.clear(); }
 	
@@ -256,6 +277,9 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	
 	@Override
 	public int getMaxHeight() { return this.level.getHeight(); }
+	
+	@Override
+	public int getSeaLevel() { return this.level.getSeaLevel(); }
 	
 	@Override
 	public int getMinHeight()
