@@ -279,9 +279,6 @@ public class ClientLevelWrapper implements IClientLevelWrapper
 	public int getMaxHeight() { return this.level.getHeight(); }
 	
 	@Override
-	public int getSeaLevel() { return this.level.getSeaLevel(); }
-	
-	@Override
 	public int getMinHeight()
 	{
         #if MC_VER < MC_1_17_1
