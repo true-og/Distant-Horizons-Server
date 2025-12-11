@@ -6,7 +6,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 plugins {
     java
     eclipse
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradleup.shadow") version "8.3.9"
 }
 
 group = "no.jckf.dhs"
