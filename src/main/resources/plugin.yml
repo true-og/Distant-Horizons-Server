@@ -1,9 +1,9 @@
 name: DHSupport
 version: ${version}
 main: ${mainClass}
-api-version: ${mcApiVersion}
+api-version: 1.19
 prefix: DHS
-folia-supported: true
+folia-supported: false
 author: Jckf
 commands:
   dhs:
