@@ -24,6 +24,7 @@ import no.jckf.dhsupport.core.configuration.DhsConfig;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -141,9 +142,15 @@ public class WorldHandler implements Listener
 
         if (result instanceof Block) {
             this.touchLod(((Block) result).getLocation(), eventClassName);
+        } else if (result instanceof BlockState) {
+            this.touchLod(((BlockState) result).getLocation(), eventClassName);
         } else if (result instanceof List<?>) {
-            for (Block block : (List<Block>) result) {
-                this.touchLod(block.getLocation(), eventClassName);
+            for (Object item : (List<?>) result) {
+                if (item instanceof Block) {
+                    this.touchLod(((Block) item).getLocation(), eventClassName);
+                } else if (item instanceof BlockState) {
+                    this.touchLod(((BlockState) item).getLocation(), eventClassName);
+                }
             }
         } else {
             this.plugin.getDhSupport().warning("Unknown result from event: " + eventClassName);
