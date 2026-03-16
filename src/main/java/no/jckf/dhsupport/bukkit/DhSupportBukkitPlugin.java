@@ -26,7 +26,6 @@ import no.jckf.dhsupport.bukkit.handler.PluginMessageProxy;
 import no.jckf.dhsupport.bukkit.handler.WorldHandler;
 import no.jckf.dhsupport.core.DhSupport;
 import no.jckf.dhsupport.core.configuration.DhsConfig;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,8 +36,6 @@ import java.io.InputStreamReader;
 public class DhSupportBukkitPlugin extends JavaPlugin
 {
     protected DhSupport dhSupport;
-
-    protected Metrics metrics;
 
     protected ConfigLoader configLoader;
 
@@ -65,8 +62,6 @@ public class DhSupportBukkitPlugin extends JavaPlugin
         this.dhSupport = new DhSupport(pluginVersion);
         this.dhSupport.setLogger(this.getLogger());
         this.dhSupport.setDataDirectory(this.getDataFolder().getAbsolutePath());
-
-        this.metrics = new Metrics(this, 21843);
 
         this.loadDhsConfig();
 

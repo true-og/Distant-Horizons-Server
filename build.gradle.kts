@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
     java
@@ -21,13 +21,10 @@ java {
     }
 }
 
-val paperVersions = listOf(
-    "1.16.5",
-)
-
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.purpurmc.org/snapshots")
     maven("https://jitpack.io/")
 }
 
@@ -38,10 +35,9 @@ configurations.named("implementation") {
 
 dependencies {
     compileOnly("org.jetbrains:annotations:25.0.0")
+    compileOnly("org.purpurmc.purpur:purpur-api:1.19.4-R0.1-SNAPSHOT")
+    compileOnly("com.google.guava:guava:33.3.1-jre")
 
-    implementation("com.google.guava:guava:33.3.1-jre")
-
-    shade("org.bstats:bstats-bukkit:3.1.0")
     shade("org.json:json:20240303")
     shade("org.tukaani:xz:1.10")
     shade("com.github.technicallycoded:FoliaLib:v0.4.3")
@@ -49,73 +45,36 @@ dependencies {
     testImplementation("junit:junit:4.11")
 }
 
-paperVersions.forEach { mcVersion ->
-    val taskSuffix = mcVersion.replace('.', '_')
-    val taskName = "buildJar_$taskSuffix"
-    val outputDir = file("build/libs/$mcVersion")
-
-    val apiVersion = mcVersion.split('.').take(2).joinToString(".")
-
-    val sourceSetName = "main"
-
-    // Custom processResources task per version
-    val processTask = tasks.register<Copy>("processResources_$taskSuffix") {
-        val srcSets = project.extensions.getByName("sourceSets") as SourceSetContainer
-        from(srcSets[sourceSetName].resources.srcDirs)
-        into(layout.buildDirectory.dir("resources-processed/$mcVersion"))
-
-        include("**/*.yml")
-
+tasks.named<ProcessResources>("processResources") {
+    filesMatching("plugin.yml") {
         expand(
             mapOf(
-                "version" to project.version,
+                "version" to project.version.toString(),
                 "mainClass" to "no.jckf.dhsupport.bukkit.DhSupportBukkitPlugin",
-                "mcApiVersion" to apiVersion,
+                "mcApiVersion" to "1.19"
             )
         )
     }
-
-    configurations.maybeCreate("compileOnly$mcVersion").apply {
-        isCanBeResolved = true
-    }
-
-    dependencies {
-        add("compileOnly", "com.destroystokyo.paper:paper-api:${mcVersion}-R0.1-SNAPSHOT")
-        //compileOnly("io.papermc.paper:paper-api:${mcVersion}-R0.1-SNAPSHOT")
-    }
-
-    tasks.register<ShadowJar>(taskName) {
-        group = "build"
-
-        archiveBaseName.set("DistantHorizonsSupport")
-        archiveVersion.set(version.toString())
-        destinationDirectory.set(outputDir)
-
-        // Use processed resources as input
-        // Exclude raw YAML to avoid unprocessed plugin.yml in final JAR
-        val srcSets = project.extensions.getByName("sourceSets") as SourceSetContainer
-        from(srcSets["main"].output) {
-            exclude("**/*.yml")
-        }
-
-        from(layout.buildDirectory.dir("resources-processed/$mcVersion"))
-
-        configurations = listOf(project.configurations.getByName("shade"))
-
-        relocate("org.bstats", "no.jckf.dhsupport.bstats")
-        relocate("org.json", "no.jckf.dhsupport.json")
-        relocate("org.tukaani.xz", "no.jckf.dhsupport.xz")
-        relocate("com.tcoded.folialib", "no.jckf.dhsupport.folialib")
-
-        exclude("org/jetbrains/**")
-        exclude("org/intellij/**")
-
-        dependsOn(processTask)
-    }
-
-    tasks.named("build") {
-        dependsOn(taskName)
-    }
-
 }
 
+tasks.named<Jar>("jar") {
+    enabled = false
+}
+
+tasks.named<ShadowJar>("shadowJar") {
+    archiveFileName.set("Distant-Horizons-Server.jar")
+
+    configurations = listOf(project.configurations.getByName("shade"))
+
+    relocate("org.bstats", "no.jckf.dhsupport.bstats")
+    relocate("org.json", "no.jckf.dhsupport.json")
+    relocate("org.tukaani.xz", "no.jckf.dhsupport.xz")
+    relocate("com.tcoded.folialib", "no.jckf.dhsupport.folialib")
+
+    exclude("org/jetbrains/**")
+    exclude("org/intellij/**")
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
+}

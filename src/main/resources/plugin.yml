@@ -1,7 +1,7 @@
-name: DHSupport
+name: Distant-Horizons-Server
 version: ${version}
 main: ${mainClass}
-api-version: 1.19
+api-version: ${mcApiVersion}
 prefix: DHS
 folia-supported: false
 author: Jckf
