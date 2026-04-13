@@ -131,7 +131,7 @@ public class DhSupport implements Configurable
             this.warning("If you understand what this means and would like to disable this warning, set " + DhsConfig.GENERATE_NEW_CHUNKS_WARNING + " to false in your config.");
         }
 
-        if (this.getConfig().getBool(DhsConfig.CHECK_FOR_UPDATES, true)) {
+        if (this.getConfig().getBool(DhsConfig.CHECK_FOR_UPDATES, false)) {
             this.getScheduler().runOnSeparateThread(() -> {
                 this.checkUpdates();
                 return null;

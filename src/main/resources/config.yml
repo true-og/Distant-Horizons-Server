@@ -170,8 +170,8 @@ scheduler_threads: 4
 
 # Should we notify server admins when a new version of the plugin is available?
 # Optional.
-# Default: true
-#check_for_updates: false
+# Default: false
+check_for_updates: false
 
 # Enable debug logging?
 # Optional.
