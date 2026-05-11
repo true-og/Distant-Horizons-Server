@@ -507,7 +507,16 @@ public class DhSupport implements Configurable
             return;
         }
 
-        this.debug("Touched LOD at " + this.getWorldInterface(worldId).getName() + " " + x + " " + z + (reason == null ? "." : ": " + reason));
+        WorldInterface world = this.getWorldInterface(worldId);
+
+        if (world == null) {
+            this.debug("Ignoring touched LOD for unloaded world " + worldId + " " + x + " " + z
+                + (reason == null ? "." : ": " + reason));
+            return;
+        }
+
+        this.debug("Touched LOD at " + world.getName() + " " + x + " " + z
+            + (reason == null ? "." : ": " + reason));
 
         this.touchedLods.put(key, lodModel);
     }
@@ -527,7 +536,17 @@ public class DhSupport implements Configurable
             LodModel lodModelToDelete = this.touchedLods.get(key);
             this.touchedLods.remove(key);
 
+            if (lodModelToDelete == null) {
+                continue;
+            }
+
             WorldInterface world = this.getWorldInterface(lodModelToDelete.getWorldId());
+
+            if (world == null) {
+                this.debug("Dropping touched LOD for unloaded world " + lodModelToDelete.getWorldId() + " "
+                    + lodModelToDelete.getX() + " " + lodModelToDelete.getZ() + ".");
+                continue;
+            }
 
             this.debug("Changes detected in " + world.getName() + " " + lodModelToDelete.getX() + " " + lodModelToDelete.getZ() + ".");
 
@@ -574,8 +593,15 @@ public class DhSupport implements Configurable
                                 int playersOutOfRangeCount = 0;
                                 int playersWithoutDhCount = 0;
 
+                                org.bukkit.World bukkitWorld = Bukkit.getWorld(newLodModel.getWorldId());
+
+                                if (bukkitWorld == null) {
+                                    this.debug("Skipping real-time LOD update for unloaded world " + newLodModel.getWorldId() + ".");
+                                    return;
+                                }
+
                                 // TODO: Don't use Bukkit classes.
-                                for (Player player : Bukkit.getWorld(newLodModel.getWorldId()).getPlayers()) {
+                                for (Player player : bukkitWorld.getPlayers()) {
                                     Configuration playerConfig = this.getPlayerConfiguration(player.getUniqueId());
 
                                     // No config for this player? Probably not using DH.
