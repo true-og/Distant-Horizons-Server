@@ -27,7 +27,7 @@ real_time_updates_enabled: true
 # How close to an update players have to be in order to receive it.
 # Required.
 # Default: 128
-real_time_update_radius: 128
+real_time_update_radius: 256
 
 # Let clients ask for updates to LODs they've previously downloaded.
 # Required.
@@ -37,7 +37,7 @@ login_data_sync_enabled: true
 # How far away can a player request updates for during login sync?
 # Required.
 # Default: 128
-login_data_sync_radius: 128
+login_data_sync_radius: 64
 
 # How many login sync requests can a client send at once?
 # Required.
@@ -134,7 +134,7 @@ worlds:
   world_nether:
     # It might make sense to have a lower view distance in the nether, since visibility will be low simply because of
     # the level design anyway.
-    render_distance: 64
+    render_distance: 128
 
     # This is a hack to prevent light from shining through ceilings, mostly noticeable on the nether ceiling.
     # Only works with the FullBuilder, should only be used with builder_resolution=1, and does have some side effects.
@@ -166,7 +166,7 @@ update_events:
 # Does not affect Folia servers.
 # Required.
 # Default: 4
-scheduler_threads: 6
+scheduler_threads: 8
 
 # Should we notify server admins when a new version of the plugin is available?
 # Optional.
